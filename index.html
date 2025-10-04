@@ -1055,12 +1055,129 @@
             font-size: 14pt;
             font-weight: 600;
         }
-        
+
+        #printArea {
+            display: none;
+        }
+
+        .print-wrapper {
+            padding: 40px 30px;
+            color: #0f172a;
+        }
+
+        .print-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .print-header h1 {
+            font-size: 24pt;
+            letter-spacing: 0.08em;
+        }
+
+        .print-meta {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px 24px;
+            margin-top: 12px;
+            font-size: 10pt;
+            color: #334155;
+        }
+
+        .print-section {
+            margin-top: 25px;
+        }
+
+        .print-section h2 {
+            font-size: 16pt;
+            color: #1e293b;
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 6px;
+            margin-bottom: 12px;
+        }
+
+        .print-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        .print-grid-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            min-height: 70px;
+        }
+
+        .print-label {
+            display: block;
+            font-size: 8.5pt;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+
+        .print-value {
+            font-size: 11pt;
+            font-weight: 600;
+            color: #0f172a;
+            line-height: 1.4;
+        }
+
+        .print-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+
+        .print-table th,
+        .print-table td {
+            border: 1px solid #cbd5e1;
+            padding: 8px 10px;
+            text-align: left;
+            font-size: 10pt;
+            vertical-align: top;
+        }
+
+        .print-table th {
+            background: #e2e8f0;
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .print-list {
+            margin: 0;
+            padding-left: 20px;
+            color: #1e293b;
+        }
+
+        .print-note {
+            margin-bottom: 10px;
+            font-size: 10.5pt;
+            line-height: 1.5;
+        }
+
+        .export-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .export-note {
+            font-size: 9pt;
+            color: #64748b;
+            line-height: 1.4;
+        }
+
         @media print {
             body {
                 padding: 0;
             }
-            
+
             .security-bar,
             .nav-tabs,
             .no-print,
@@ -1068,9 +1185,19 @@
             .modal {
                 display: none !important;
             }
-            
+
             .section-content.locked {
                 display: none !important;
+            }
+
+            #mainContent,
+            #welcomeScreen,
+            #unlockScreen {
+                display: none !important;
+            }
+
+            #printArea {
+                display: block !important;
             }
         }
         
@@ -1367,6 +1494,29 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="app.closeQRModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📄 Export &amp; Share</h3>
+            </div>
+            <div class="modal-body">
+                <p>Select how you'd like to share or archive this record.</p>
+                <div class="export-options">
+                    <button class="btn btn-primary" id="printSummaryBtn">🖨️ Printable Care Summary</button>
+                    <button class="btn btn-secondary" id="exportFhirBtn">🔄 Download FHIR JSON Bundle</button>
+                </div>
+                <p class="export-note">
+                    The printable summary reformats your record into an easy-to-read care handoff.
+                    The FHIR bundle follows the HL7 FHIR R4 standard so it can be shared with modern EHR platforms.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="exportCloseBtn">Close</button>
             </div>
         </div>
     </div>
@@ -1965,12 +2115,14 @@
             </div>
         </div>
 
-        <div class="info-box" style="margin-top: 30px;">
-            <strong>Important:</strong> This HTML file contains all your encrypted medical data. 
-            After making changes, click "Download Updated Vault" to save the new file. 
-            Replace your old file with the new one. Keep backups in secure locations.
-        </div>
+    <div class="info-box" style="margin-top: 30px;">
+        <strong>Important:</strong> This HTML file contains all your encrypted medical data.
+        After making changes, click "Download Updated Vault" to save the new file.
+        Replace your old file with the new one. Keep backups in secure locations.
     </div>
+    </div>
+
+    <div id="printArea"></div>
 
     <!-- Embedded Data Script (Added by save function) -->
     <script id="embedded-vault-data" type="application/json">
@@ -2365,8 +2517,19 @@
                 document.getElementById('saveBtn').addEventListener('click', () => this.saveVault());
                 document.getElementById('settingsBtn').addEventListener('click', () => this.openSettings());
                 document.getElementById('emergencyQRBtn').addEventListener('click', () => this.openQRGenerator());
-                document.getElementById('exportBtn').addEventListener('click', () => this.exportPDF());
+                document.getElementById('exportBtn').addEventListener('click', () => this.openExportOptions());
                 document.getElementById('lockBtn')?.addEventListener('click', () => this.toggleLock());
+
+                document.getElementById('printSummaryBtn')?.addEventListener('click', () => {
+                    this.closeExportOptions();
+                    this.printSummary();
+                });
+
+                document.getElementById('exportFhirBtn')?.addEventListener('click', () => {
+                    this.downloadFHIR();
+                });
+
+                document.getElementById('exportCloseBtn')?.addEventListener('click', () => this.closeExportOptions());
                 
                 // Navigation
                 document.querySelectorAll('.tab').forEach(tab => {
@@ -3447,7 +3610,777 @@
             }
             
             exportPDF() {
-                window.print();
+                this.openExportOptions();
+            }
+
+            openExportOptions() {
+                document.getElementById('exportModal')?.classList.add('active');
+            }
+
+            closeExportOptions() {
+                document.getElementById('exportModal')?.classList.remove('active');
+            }
+
+            printSummary() {
+                const printArea = document.getElementById('printArea');
+                if (!printArea) {
+                    window.print();
+                    return;
+                }
+
+                this.buildPrintSummary(printArea);
+
+                requestAnimationFrame(() => {
+                    window.print();
+                });
+
+                const cleanup = () => {
+                    printArea.innerHTML = '';
+                    window.removeEventListener('afterprint', cleanup);
+                };
+
+                window.addEventListener('afterprint', cleanup, { once: true });
+            }
+
+            buildPrintSummary(printArea) {
+                const formData = this.collectFormData();
+                const lastUpdatedText = document.getElementById('lastUpdatedHeader')?.textContent?.replace('Last Updated: ', '') || 'Never';
+                const fullNameParts = [formData.firstName, formData.middleInitial, formData.lastName].filter(Boolean);
+                const fullName = fullNameParts.length ? fullNameParts.join(' ') : '—';
+
+                const overviewGrid = this.buildKeyValueGrid([
+                    { label: 'Date of Birth', value: this.formatDate(formData.dateOfBirth) },
+                    { label: 'Medical Record #', value: this.formatValue(formData.mrn) },
+                    { label: 'Sex Assigned at Birth', value: this.formatValue(formData.biologicalSex) },
+                    { label: 'Phone', value: this.formatValue(formData.phone) },
+                    { label: 'Email', value: this.formatValue(formData.email) },
+                    { label: 'Address', allowHTML: true, value: this.formatTextBlock(formData.address) }
+                ]);
+
+                const emergencyGrid = this.buildKeyValueGrid([
+                    { label: 'Blood Type', value: this.formatValue(formData.bloodType) },
+                    { label: 'Advance Directive', value: this.formatValue(formData.advanceDirective) },
+                    { label: 'Organ Donor', value: this.formatValue(formData.organDonor) },
+                    { label: 'Critical Allergies', allowHTML: true, value: this.formatTextBlock(formData.criticalAllergies) },
+                    { label: 'Critical Conditions', allowHTML: true, value: this.formatTextBlock(formData.criticalConditions) },
+                    { label: 'Medication Contraindications', allowHTML: true, value: this.formatTextBlock(formData.medicationContraindications) },
+                    { label: 'Preferred Hospital', value: this.formatValue(formData.preferredHospital) },
+                    { label: 'Medical Power of Attorney', value: this.formatValue(formData.medicalPOA) }
+                ]);
+
+                const latestVitalsGrid = this.buildKeyValueGrid([
+                    { label: 'Blood Pressure', value: this.formatValue(formData.lastBP) },
+                    { label: 'Pulse', value: this.formatValue(formData.lastPulse) },
+                    { label: 'Temperature', value: this.formatValue(formData.lastTemp) },
+                    { label: 'Respirations', value: this.formatValue(formData.lastResp) },
+                    { label: 'O₂ Saturation', value: this.formatValue(formData.lastO2) },
+                    { label: 'Weight', value: this.formatValue(formData.weight) },
+                    { label: 'Height', value: this.formatValue(formData.height) },
+                    { label: 'BMI', value: this.formatValue(formData.bmi) }
+                ]);
+
+                const emergencyContacts = this.collectListData('emergency-contacts-container');
+                const medications = this.collectListData('medications-container');
+                const vitalsHistory = this.collectListData('vitals-history-container');
+                const labs = this.collectListData('labs-container');
+                const conditions = this.collectListData('conditions-container').map(item => item.value).filter(Boolean);
+                const surgeries = this.collectListData('surgeries-container').map(item => item.value).filter(Boolean);
+                const providers = this.collectListData('providers-container').map(item => item.value).filter(Boolean);
+                const notes = this.collectListData('notes-container').map(item => item.value).filter(Boolean);
+                const covidVaccines = this.collectListData('covid-vaccines-container').map(item => item.value).filter(Boolean);
+                const otherVaccines = this.collectListData('vaccines-container').map(item => item.value).filter(Boolean);
+
+                const medicationRows = medications
+                    .filter(med => Object.values(med).some(value => value))
+                    .map(med => ({
+                        name: this.formatValue(med.name),
+                        instructions: [med.dose, med.frequency, med.route].filter(Boolean).map(v => this.escapeHTML(v)).join('<br>') || '—',
+                        indication: this.formatValue(med.purpose),
+                        prescriber: this.formatValue(med.prescriber),
+                        pharmacy: this.formatValue(med.pharmacy)
+                    }));
+
+                const emergencyContactRows = emergencyContacts
+                    .filter(contact => Object.values(contact).some(value => value))
+                    .map(contact => ({
+                        name: this.formatValue(contact.name),
+                        relationship: this.formatValue(contact.relationship),
+                        phones: [contact.phone, contact.altPhone].filter(Boolean).map(v => this.escapeHTML(v)).join('<br>') || '—'
+                    }));
+
+                const vitalRows = vitalsHistory
+                    .filter(vital => Object.values(vital).some(value => value))
+                    .map(vital => ({
+                        date: this.formatDate(vital.date),
+                        bp: this.formatValue(vital.bp),
+                        pulse: this.formatValue(vital.pulse),
+                        temp: this.formatValue(vital.temp),
+                        o2: this.formatValue(vital.o2),
+                        weight: this.formatValue(vital.weight)
+                    }));
+
+                const labRows = labs
+                    .filter(lab => Object.values(lab).some(value => value))
+                    .map(lab => ({
+                        test: this.formatValue(lab.test),
+                        date: this.formatDate(lab.date),
+                        result: this.formatValue(lab.result),
+                        range: this.formatValue(lab.range)
+                    }));
+
+                const medicationAllergies = this.splitToList(formData.medicationAllergies);
+                const foodAllergies = this.splitToList(formData.foodAllergies);
+                const environmentalAllergies = this.splitToList(formData.environmentalAllergies);
+
+                const allergySectionParts = [];
+                if (medicationAllergies.length) {
+                    allergySectionParts.push(`<div class="print-note"><strong>Medication:</strong><ul class="print-list">${medicationAllergies.map(item => `<li>${this.escapeHTML(item)}</li>`).join('')}</ul></div>`);
+                }
+                if (foodAllergies.length) {
+                    allergySectionParts.push(`<div class="print-note"><strong>Food:</strong><ul class="print-list">${foodAllergies.map(item => `<li>${this.escapeHTML(item)}</li>`).join('')}</ul></div>`);
+                }
+                if (environmentalAllergies.length) {
+                    allergySectionParts.push(`<div class="print-note"><strong>Environmental:</strong><ul class="print-list">${environmentalAllergies.map(item => `<li>${this.escapeHTML(item)}</li>`).join('')}</ul></div>`);
+                }
+
+                if (!allergySectionParts.length) {
+                    allergySectionParts.push('<p class="print-note">—</p>');
+                }
+
+                const socialHistory = this.buildKeyValueGrid([
+                    { label: 'Smoking Status', value: this.formatValue(formData.smokingStatus) },
+                    { label: 'Alcohol Use', value: this.formatValue(formData.alcoholUse) },
+                    { label: 'Exercise Frequency', value: this.formatValue(formData.exerciseFrequency) }
+                ]);
+
+                const providerGrid = this.buildKeyValueGrid([
+                    { label: 'Primary Care Provider', value: this.formatValue(formData.pcpName) },
+                    { label: 'PCP Phone', value: this.formatValue(formData.pcpPhone) },
+                    { label: 'Last Visit', value: this.formatDate(formData.pcpLastVisit) }
+                ]);
+
+                const insuranceGrid = this.buildKeyValueGrid([
+                    { label: 'Insurance Company', value: this.formatValue(formData.insuranceCompany) },
+                    { label: 'Member ID', value: this.formatValue(formData.memberId) },
+                    { label: 'Group Number', value: this.formatValue(formData.groupNumber) },
+                    { label: 'Policy Holder', value: this.formatValue(formData.policyHolder) },
+                    { label: 'Relationship', value: this.formatValue(formData.policyRelationship) },
+                    { label: 'Insurance Phone', value: this.formatValue(formData.insurancePhone) },
+                    { label: 'Deductible', value: this.formatValue(formData.deductible) },
+                    { label: 'Out-of-Pocket Max', value: this.formatValue(formData.oopMax) },
+                    { label: 'Primary Care Copay', value: this.formatValue(formData.coPayPrimary) }
+                ]);
+
+                const vaccineLists = [];
+                if (formData.lastFluShot) {
+                    vaccineLists.push(`<div class="print-grid-item"><span class="print-label">Flu Shot</span><span class="print-value">${this.formatDate(formData.lastFluShot)}</span></div>`);
+                }
+                if (formData.lastTetanus) {
+                    vaccineLists.push(`<div class="print-grid-item"><span class="print-label">Tetanus (Tdap)</span><span class="print-value">${this.formatDate(formData.lastTetanus)}</span></div>`);
+                }
+
+                const covidList = covidVaccines.length ? `<div class="print-note"><strong>COVID-19:</strong><ul class="print-list">${covidVaccines.map(item => `<li>${this.escapeHTML(item)}</li>`).join('')}</ul></div>` : '';
+                const otherVaccineList = otherVaccines.length ? `<div class="print-note"><strong>Other Vaccines:</strong><ul class="print-list">${otherVaccines.map(item => `<li>${this.escapeHTML(item)}</li>`).join('')}</ul></div>` : '';
+
+                const html = `
+                    <div class="print-wrapper">
+                        <div class="print-header">
+                            <h1>Patient Care Summary</h1>
+                            <div class="print-meta">
+                                <span><strong>Patient:</strong> ${this.escapeHTML(fullName)}</span>
+                                <span><strong>Date of Birth:</strong> ${this.formatDate(formData.dateOfBirth)}</span>
+                                <span><strong>Last Updated:</strong> ${this.escapeHTML(lastUpdatedText)}</span>
+                            </div>
+                        </div>
+                        <section class="print-section">
+                            <h2>Patient Overview</h2>
+                            ${overviewGrid}
+                        </section>
+                        <section class="print-section">
+                            <h2>Emergency Readiness</h2>
+                            ${emergencyGrid}
+                        </section>
+                        <section class="print-section">
+                            <h2>Latest Vital Snapshot</h2>
+                            ${latestVitalsGrid}
+                        </section>
+                        ${this.buildTableSection('Emergency Contacts', [
+                            { key: 'name', label: 'Name' },
+                            { key: 'relationship', label: 'Relationship' },
+                            { key: 'phones', label: 'Phone(s)', allowHTML: true }
+                        ], emergencyContactRows)}
+                        ${this.buildTableSection('Current Medications', [
+                            { key: 'name', label: 'Medication' },
+                            { key: 'instructions', label: 'Instructions', allowHTML: true },
+                            { key: 'indication', label: 'Indication' },
+                            { key: 'prescriber', label: 'Prescriber' },
+                            { key: 'pharmacy', label: 'Pharmacy' }
+                        ], medicationRows)}
+                        <section class="print-section">
+                            <h2>Allergies</h2>
+                            ${allergySectionParts.join('')}
+                        </section>
+                        ${this.buildListSection('Medical Conditions', conditions)}
+                        ${this.buildListSection('Surgical History', surgeries)}
+                        <section class="print-section">
+                            <h2>Family &amp; Social History</h2>
+                            <div class="print-grid">
+                                <div class="print-grid-item">
+                                    <span class="print-label">Family History</span>
+                                    <span class="print-value">${this.formatTextBlock(formData.familyHistory)}</span>
+                                </div>
+                            </div>
+                            ${socialHistory}
+                        </section>
+                        ${this.buildTableSection('Vital Signs Trend', [
+                            { key: 'date', label: 'Date' },
+                            { key: 'bp', label: 'Blood Pressure' },
+                            { key: 'pulse', label: 'Pulse' },
+                            { key: 'temp', label: 'Temperature' },
+                            { key: 'o2', label: 'O₂ Saturation' },
+                            { key: 'weight', label: 'Weight' }
+                        ], vitalRows)}
+                        ${this.buildTableSection('Laboratory Results', [
+                            { key: 'test', label: 'Test' },
+                            { key: 'date', label: 'Date' },
+                            { key: 'result', label: 'Result' },
+                            { key: 'range', label: 'Reference Range' }
+                        ], labRows)}
+                        <section class="print-section">
+                            <h2>Care Team</h2>
+                            ${providerGrid}
+                            ${providers.length ? `<ul class="print-list">${providers.map(item => `<li>${this.escapeHTML(item)}</li>`).join('')}</ul>` : '<p class="print-note">—</p>'}
+                        </section>
+                        <section class="print-section">
+                            <h2>Insurance Coverage</h2>
+                            ${insuranceGrid}
+                        </section>
+                        <section class="print-section">
+                            <h2>Immunizations</h2>
+                            ${vaccineLists.length ? `<div class="print-grid">${vaccineLists.join('')}</div>` : ''}
+                            ${covidList || otherVaccineList || '<p class="print-note">—</p>'}
+                        </section>
+                        <section class="print-section">
+                            <h2>Care Notes</h2>
+                            ${notes.length ? notes.map(note => `<div class="print-note">${this.formatTextBlock(note)}</div>`).join('') : '<p class="print-note">—</p>'}
+                        </section>
+                    </div>
+                `;
+
+                printArea.innerHTML = html;
+            }
+
+            buildKeyValueGrid(pairs = []) {
+                if (!pairs.length) {
+                    return '<p class="print-note">—</p>';
+                }
+
+                return `
+                    <div class="print-grid">
+                        ${pairs.map(pair => {
+                            const value = pair.allowHTML ? (pair.value || '—') : this.formatValue(pair.value);
+                            return `
+                                <div class="print-grid-item">
+                                    <span class="print-label">${this.escapeHTML(pair.label)}</span>
+                                    <span class="print-value">${value}</span>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            }
+
+            buildTableSection(title, columns, rows = []) {
+                if (!rows.length) {
+                    return '';
+                }
+
+                const header = columns.map(col => `<th>${this.escapeHTML(col.label)}</th>`).join('');
+                const body = rows.map(row => `<tr>${columns.map(col => {
+                    const value = col.allowHTML ? (row[col.key] || '—') : this.formatValue(row[col.key]);
+                    return `<td>${value}</td>`;
+                }).join('')}</tr>`).join('');
+
+                return `
+                    <section class="print-section">
+                        <h2>${this.escapeHTML(title)}</h2>
+                        <table class="print-table">
+                            <thead><tr>${header}</tr></thead>
+                            <tbody>${body}</tbody>
+                        </table>
+                    </section>
+                `;
+            }
+
+            buildListSection(title, items = []) {
+                if (!items.length) {
+                    return `
+                        <section class="print-section">
+                            <h2>${this.escapeHTML(title)}</h2>
+                            <p class="print-note">—</p>
+                        </section>
+                    `;
+                }
+
+                return `
+                    <section class="print-section">
+                        <h2>${this.escapeHTML(title)}</h2>
+                        <ul class="print-list">
+                            ${items.map(item => `<li>${this.escapeHTML(item)}</li>`).join('')}
+                        </ul>
+                    </section>
+                `;
+            }
+
+            collectListData(containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return [];
+
+                return Array.from(container.querySelectorAll('.list-item')).map(item => {
+                    const entry = {};
+                    item.querySelectorAll('.form-data').forEach(input => {
+                        const fieldKey = input.dataset.field || '';
+                        const key = fieldKey.includes('_') ? fieldKey.substring(fieldKey.lastIndexOf('_') + 1) : fieldKey;
+                        const value = input.type === 'checkbox' ? input.checked : input.value;
+                        entry[key] = value;
+                    });
+                    return entry;
+                });
+            }
+
+            formatValue(value) {
+                if (value === undefined || value === null || value === '') {
+                    return '—';
+                }
+
+                if (typeof value === 'boolean') {
+                    return value ? 'Yes' : 'No';
+                }
+
+                return this.escapeHTML(value);
+            }
+
+            formatDate(value) {
+                if (!value) return '—';
+                const date = new Date(value);
+                if (!isNaN(date)) {
+                    return this.escapeHTML(date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }));
+                }
+
+                return this.escapeHTML(value);
+            }
+
+            formatTextBlock(value) {
+                if (!value) return '—';
+                return this.escapeHTML(value).replace(/\n/g, '<br>');
+            }
+
+            splitToList(text) {
+                if (!text) return [];
+                return text
+                    .split(/\r?\n|,/)
+                    .map(item => item.trim())
+                    .filter(Boolean);
+            }
+
+            escapeHTML(value) {
+                return String(value)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
+            generateFHIRBundle() {
+                const formData = this.collectFormData();
+                const patientId = this.generateFHIRId('patient');
+                const patientReference = `urn:uuid:${patientId}`;
+
+                const bundle = {
+                    resourceType: 'Bundle',
+                    type: 'collection',
+                    timestamp: new Date().toISOString(),
+                    entry: []
+                };
+
+                const patientResource = {
+                    resourceType: 'Patient',
+                    id: patientId,
+                    identifier: [],
+                    name: [],
+                    telecom: [],
+                    address: [],
+                    communication: []
+                };
+
+                const name = {
+                    use: 'official',
+                    family: formData.lastName || undefined,
+                    given: [formData.firstName, formData.middleInitial].filter(Boolean)
+                };
+
+                if (name.family || name.given.length) {
+                    patientResource.name.push(name);
+                }
+
+                if (formData.mrn) {
+                    patientResource.identifier.push({
+                        system: 'urn:healthvault:mrn',
+                        value: formData.mrn
+                    });
+                }
+
+                if (formData.ssn) {
+                    patientResource.identifier.push({
+                        system: 'http://hl7.org/fhir/sid/us-ssn',
+                        value: formData.ssn
+                    });
+                }
+
+                if (formData.phone) {
+                    patientResource.telecom.push({ system: 'phone', value: formData.phone, use: 'mobile' });
+                }
+
+                if (formData.email) {
+                    patientResource.telecom.push({ system: 'email', value: formData.email, use: 'home' });
+                }
+
+                if (formData.address) {
+                    patientResource.address.push({
+                        text: formData.address
+                    });
+                }
+
+                if (formData.primaryLanguage) {
+                    patientResource.communication.push({
+                        language: { text: formData.primaryLanguage }
+                    });
+                }
+
+                if (formData.biologicalSex) {
+                    const genderMap = {
+                        Female: 'female',
+                        Male: 'male',
+                        Intersex: 'other',
+                        Other: 'other'
+                    };
+                    patientResource.gender = genderMap[formData.biologicalSex] || 'unknown';
+                }
+
+                if (formData.dateOfBirth) {
+                    patientResource.birthDate = formData.dateOfBirth;
+                }
+
+                bundle.entry.push({
+                    fullUrl: patientReference,
+                    resource: patientResource
+                });
+
+                const emergencyContacts = this.collectListData('emergency-contacts-container');
+                emergencyContacts.forEach(contact => {
+                    if (!contact.name) return;
+                    const relatedId = this.generateFHIRId('related-person');
+                    const relatedResource = {
+                        resourceType: 'RelatedPerson',
+                        id: relatedId,
+                        patient: { reference: patientReference },
+                        relationship: contact.relationship ? [{ text: contact.relationship }] : undefined,
+                        name: [{ text: contact.name }],
+                        telecom: []
+                    };
+
+                    if (contact.phone) {
+                        relatedResource.telecom.push({ system: 'phone', value: contact.phone, use: 'mobile' });
+                    }
+
+                    if (contact.altPhone) {
+                        relatedResource.telecom.push({ system: 'phone', value: contact.altPhone, use: 'home' });
+                    }
+
+                    bundle.entry.push({
+                        fullUrl: `urn:uuid:${relatedId}`,
+                        resource: relatedResource
+                    });
+                });
+
+                const conditionTexts = [
+                    ...this.collectListData('conditions-container').map(item => item.value).filter(Boolean),
+                    ...this.splitToList(formData.criticalConditions)
+                ];
+
+                conditionTexts.forEach(text => {
+                    const conditionId = this.generateFHIRId('condition');
+                    bundle.entry.push({
+                        fullUrl: `urn:uuid:${conditionId}`,
+                        resource: {
+                            resourceType: 'Condition',
+                            id: conditionId,
+                            clinicalStatus: {
+                                coding: [{ system: 'http://terminology.hl7.org/CodeSystem/condition-clinical', code: 'active' }]
+                            },
+                            code: { text },
+                            subject: { reference: patientReference }
+                        }
+                    });
+                });
+
+                const surgeries = this.collectListData('surgeries-container').map(item => item.value).filter(Boolean);
+                surgeries.forEach(text => {
+                    const procedureId = this.generateFHIRId('procedure');
+                    bundle.entry.push({
+                        fullUrl: `urn:uuid:${procedureId}`,
+                        resource: {
+                            resourceType: 'Procedure',
+                            id: procedureId,
+                            status: 'completed',
+                            code: { text },
+                            subject: { reference: patientReference }
+                        }
+                    });
+                });
+
+                const medications = this.collectListData('medications-container');
+                medications.forEach(med => {
+                    if (!med.name) return;
+                    const medId = this.generateFHIRId('medicationstatement');
+                    const dosageText = [med.dose, med.frequency, med.route].filter(Boolean).join(', ');
+
+                    const resource = {
+                        resourceType: 'MedicationStatement',
+                        id: medId,
+                        status: 'active',
+                        subject: { reference: patientReference },
+                        medicationCodeableConcept: { text: med.name },
+                        dosage: []
+                    };
+
+                    if (dosageText) {
+                        resource.dosage.push({ text: dosageText });
+                    }
+
+                    if (med.purpose) {
+                        resource.reasonReference = [{ display: med.purpose }];
+                    }
+
+                    if (med.prescriber) {
+                        resource.informationSource = { display: med.prescriber };
+                    }
+
+                    if (med.pharmacy) {
+                        resource.note = [{ text: `Dispensed at: ${med.pharmacy}` }];
+                    }
+
+                    bundle.entry.push({
+                        fullUrl: `urn:uuid:${medId}`,
+                        resource
+                    });
+                });
+
+                const allergyCategories = [
+                    { items: this.splitToList(formData.medicationAllergies), category: 'medication', criticality: 'low' },
+                    { items: this.splitToList(formData.foodAllergies), category: 'food', criticality: 'low' },
+                    { items: this.splitToList(formData.environmentalAllergies), category: 'environment', criticality: 'low' },
+                    { items: this.splitToList(formData.criticalAllergies), category: 'medication', criticality: 'high' }
+                ];
+
+                allergyCategories.forEach(group => {
+                    group.items.forEach(entry => {
+                        const [substance, reaction] = entry.split(/[-–:]/).map(part => part.trim());
+                        if (!substance) return;
+                        const allergyId = this.generateFHIRId('allergy');
+                        const resource = {
+                            resourceType: 'AllergyIntolerance',
+                            id: allergyId,
+                            clinicalStatus: {
+                                coding: [{ system: 'http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical', code: 'active' }]
+                            },
+                            verificationStatus: {
+                                coding: [{ system: 'http://terminology.hl7.org/CodeSystem/allergyintolerance-verification', code: 'confirmed' }]
+                            },
+                            category: [group.category],
+                            criticality: group.criticality === 'high' ? 'high' : 'low',
+                            code: { text: substance },
+                            patient: { reference: patientReference }
+                        };
+
+                        if (reaction) {
+                            resource.reaction = [{ description: reaction }];
+                        }
+
+                        bundle.entry.push({
+                            fullUrl: `urn:uuid:${allergyId}`,
+                            resource
+                        });
+                    });
+                });
+
+                const vitals = this.collectListData('vitals-history-container');
+                vitals.forEach(vital => {
+                    const hasData = ['bp', 'pulse', 'temp', 'o2', 'weight'].some(key => vital[key]);
+                    if (!hasData && !vital.date) return;
+
+                    const observationId = this.generateFHIRId('observation');
+                    const resource = {
+                        resourceType: 'Observation',
+                        id: observationId,
+                        status: 'final',
+                        category: [{
+                            coding: [{ system: 'http://terminology.hl7.org/CodeSystem/observation-category', code: 'vital-signs', display: 'Vital Signs' }]
+                        }],
+                        code: { text: 'Vital signs panel' },
+                        subject: { reference: patientReference },
+                        component: []
+                    };
+
+                    if (vital.date) {
+                        resource.effectiveDateTime = vital.date;
+                    }
+
+                    if (vital.bp) {
+                        resource.component.push({ code: { text: 'Blood Pressure' }, valueString: vital.bp });
+                    }
+                    if (vital.pulse) {
+                        resource.component.push({ code: { text: 'Pulse' }, valueString: `${vital.pulse} bpm` });
+                    }
+                    if (vital.temp) {
+                        resource.component.push({ code: { text: 'Temperature' }, valueString: vital.temp });
+                    }
+                    if (vital.o2) {
+                        resource.component.push({ code: { text: 'Oxygen Saturation' }, valueString: `${vital.o2}%` });
+                    }
+                    if (vital.weight) {
+                        resource.component.push({ code: { text: 'Weight' }, valueString: vital.weight });
+                    }
+
+                    bundle.entry.push({
+                        fullUrl: `urn:uuid:${observationId}`,
+                        resource
+                    });
+                });
+
+                const labs = this.collectListData('labs-container');
+                labs.forEach(lab => {
+                    if (!lab.test) return;
+                    const labId = this.generateFHIRId('observation');
+                    const resource = {
+                        resourceType: 'Observation',
+                        id: labId,
+                        status: 'final',
+                        category: [{
+                            coding: [{ system: 'http://terminology.hl7.org/CodeSystem/observation-category', code: 'laboratory', display: 'Laboratory' }]
+                        }],
+                        code: { text: lab.test },
+                        subject: { reference: patientReference }
+                    };
+
+                    if (lab.date) {
+                        resource.effectiveDateTime = lab.date;
+                    }
+
+                    if (lab.result) {
+                        resource.valueString = lab.result;
+                    }
+
+                    if (lab.range) {
+                        resource.referenceRange = [{ text: lab.range }];
+                    }
+
+                    bundle.entry.push({
+                        fullUrl: `urn:uuid:${labId}`,
+                        resource
+                    });
+                });
+
+                const immunizations = [
+                    formData.lastFluShot ? { code: 'Influenza', date: formData.lastFluShot } : null,
+                    formData.lastTetanus ? { code: 'Tetanus (Tdap)', date: formData.lastTetanus } : null
+                ].filter(Boolean);
+
+                const covidVaccines = this.collectListData('covid-vaccines-container').map(item => item.value).filter(Boolean);
+                covidVaccines.forEach(text => {
+                    immunizations.push({ code: text });
+                });
+
+                const otherVaccines = this.collectListData('vaccines-container').map(item => item.value).filter(Boolean);
+                otherVaccines.forEach(text => {
+                    immunizations.push({ code: text });
+                });
+
+                immunizations.forEach(vaccine => {
+                    const immId = this.generateFHIRId('immunization');
+                    const resource = {
+                        resourceType: 'Immunization',
+                        id: immId,
+                        status: 'completed',
+                        vaccineCode: { text: vaccine.code },
+                        patient: { reference: patientReference }
+                    };
+
+                    if (vaccine.date) {
+                        resource.occurrenceDateTime = vaccine.date;
+                    }
+
+                    bundle.entry.push({
+                        fullUrl: `urn:uuid:${immId}`,
+                        resource
+                    });
+                });
+
+                if (formData.insuranceCompany || formData.memberId) {
+                    const coverageId = this.generateFHIRId('coverage');
+                    const resource = {
+                        resourceType: 'Coverage',
+                        id: coverageId,
+                        status: 'active',
+                        beneficiary: { reference: patientReference },
+                        payor: formData.insuranceCompany ? [{ display: formData.insuranceCompany }] : undefined,
+                        subscriberId: formData.memberId || undefined,
+                        class: []
+                    };
+
+                    if (formData.groupNumber) {
+                        resource.class.push({ type: { text: 'Group' }, value: formData.groupNumber });
+                    }
+
+                    if (formData.policyHolder) {
+                        resource.policyHolder = { display: formData.policyHolder };
+                    }
+
+                    if (formData.policyRelationship) {
+                        resource.relationship = { text: formData.policyRelationship };
+                    }
+
+                    bundle.entry.push({
+                        fullUrl: `urn:uuid:${coverageId}`,
+                        resource
+                    });
+                }
+
+                return bundle;
+            }
+
+            downloadFHIR() {
+                const bundle = this.generateFHIRBundle();
+                this.closeExportOptions();
+
+                const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/fhir+json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `health_vault_${this.vaultIdentity}_fhir.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            generateFHIRId(prefix) {
+                if (window.crypto?.randomUUID) {
+                    return `${prefix}-${window.crypto.randomUUID()}`;
+                }
+
+                return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
             }
             
             toggleLock() {
