@@ -3267,13 +3267,21 @@
             openSettings() {
                 const modal = document.getElementById('settingsModal');
                 modal.classList.add('active');
-                
+
                 document.getElementById('module-identity').checked = this.modules.identity;
                 document.getElementById('module-gac').checked = this.modules.gac;
                 document.getElementById('module-mental').checked = this.modules.mental;
                 document.getElementById('module-chronic').checked = this.modules.chronic;
-                
+
+                this.renderTOTPStatus();
+            }
+
+            renderTOTPStatus() {
                 const statusDiv = document.getElementById('totpStatus');
+                if (!statusDiv) {
+                    return;
+                }
+
                 if (this.requires2FA) {
                     statusDiv.innerHTML = `
                         <div style="display: flex; align-items: center; gap: 10px;">
@@ -3297,11 +3305,20 @@
                                 </span>
                             </div>
                         </div>
+                        <button class="btn btn-primary" id="enable2FASettingsBtn" style="margin-top: 12px;">Enable 2FA Now</button>
                         <p style="margin-top: 10px; font-size: 9pt; color: #94a3b8;">
-                            To enable 2FA, create a new vault with the option selected.
+                            Add an authenticator app for extra protection without recreating your vault.
                         </p>
                     `;
+
+                    document.getElementById('enable2FASettingsBtn')?.addEventListener('click', () => {
+                        this.start2FAEnrollmentFromSettings();
+                    });
                 }
+            }
+
+            start2FAEnrollmentFromSettings() {
+                this.setupTOTP();
             }
             
             closeSettings() {
@@ -3372,43 +3389,57 @@
                     return;
                 }
                 
+                const wasInitialized = this.isInitialized;
+
                 this.totpSecret = this.currentTOTPSecret;
-                
-                document.getElementById('totpModal').classList.remove('active');
-                document.getElementById('mainContent').style.display = 'block';
-                document.getElementById('navTabs').style.display = 'block';
-                
-                this.isInitialized = true;
-                this.hasUnsavedChanges = true;
-                this.updateSaveStatus();
-                
-                alert(`✅ Two-factor authentication enabled!\n\n` +
-                      `Your vault "${this.vaultIdentity}" is ready to use.\n\n` +
-                      `• Enter your medical information\n` +
-                      `• Click "Download Encrypted Vault" when ready to save\n` +
-                      `• You'll need both password AND authenticator code to unlock`);
-                
+                this.requires2FA = true;
                 this.currentTOTPSecret = null;
+
+                document.getElementById('totpModal').classList.remove('active');
+
+                if (!wasInitialized) {
+                    document.getElementById('mainContent').style.display = 'block';
+                    document.getElementById('navTabs').style.display = 'block';
+
+                    this.isInitialized = true;
+                    this.hasUnsavedChanges = true;
+                    this.updateSaveStatus();
+
+                    alert(`✅ Two-factor authentication enabled!\n\n` +
+                          `Your vault "${this.vaultIdentity}" is ready to use.\n\n` +
+                          `• Enter your medical information\n` +
+                          `• Click "Download Encrypted Vault" when ready to save\n` +
+                          `• You'll need both password AND authenticator code to unlock`);
+                } else {
+                    this.hasUnsavedChanges = true;
+                    this.updateSaveStatus();
+                    this.renderTOTPStatus();
+                    document.getElementById('totpField').style.display = 'block';
+
+                    alert('✅ Two-factor authentication is now enabled. Download a fresh copy of your vault to keep the new security settings.');
+                }
             }
-            
+
             cancelTOTP() {
                 this.currentTOTPSecret = null;
                 document.getElementById('totpModal').classList.remove('active');
-                
+
                 if (!this.isInitialized) {
                     this.requires2FA = false;
                     document.getElementById('mainContent').style.display = 'block';
                     document.getElementById('navTabs').style.display = 'block';
-                    
+
                     this.isInitialized = true;
                     this.hasUnsavedChanges = true;
                     this.updateSaveStatus();
-                    
+
                     alert(`✅ Vault created without 2FA!\n\n` +
                           `Your vault "${this.vaultIdentity}" is ready to use.\n\n` +
                           `• Enter your medical information\n` +
                           `• Click "Download Encrypted Vault" when ready to save\n` +
                           `• Keep your password safe - there's no recovery without it`);
+                } else {
+                    this.renderTOTPStatus();
                 }
             }
             
@@ -4694,6 +4725,7 @@
                 document.getElementById('lockBtn').innerHTML = '🔒 Unlock';
                 document.getElementById('mainContent').style.display = 'none';
                 document.getElementById('unlockScreen').style.display = 'flex';
+                document.getElementById('totpField').style.display = this.requires2FA ? 'block' : 'none';
             }
             
             unlock() {
