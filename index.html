@@ -213,7 +213,14 @@
             flex-grow: 0;
             flex-shrink: 0;
         }
-        
+
+        .action-toggle {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: auto;
+        }
+
         .btn {
             padding: 5px 12px;
             border: none;
@@ -1106,15 +1113,27 @@
                 padding: 10px 12px;
             }
 
-            .security-status,
-            .action-buttons {
+            .security-status {
                 width: 100%;
                 justify-content: space-between;
             }
 
+            .action-toggle {
+                display: inline-flex;
+                width: 100%;
+                justify-content: center;
+            }
+
             .action-buttons {
-                flex-wrap: wrap;
-                gap: 6px;
+                display: none;
+                flex-direction: column;
+                gap: 8px;
+                width: 100%;
+                align-items: stretch;
+            }
+
+            .action-buttons.is-open {
+                display: flex;
             }
 
             .save-status {
@@ -1124,8 +1143,7 @@
             }
 
             .action-buttons .btn {
-                flex: 1 1 45%;
-                min-width: 140px;
+                width: 100%;
             }
 
             .nav-tabs {
@@ -1706,7 +1724,10 @@
         <div class="save-status never-saved" id="saveStatus">
             ⚠️ Not Initialized - Create Your Vault
         </div>
-        <div class="action-buttons">
+        <button class="action-toggle btn btn-secondary" id="actionMenuToggle" aria-expanded="false" aria-controls="securityActions">
+            ☰ Vault Actions
+        </button>
+        <div class="action-buttons" id="securityActions">
             <button class="btn btn-secondary" id="settingsBtn">⚙️ Settings</button>
             <button class="btn btn-secondary" id="emergencyQRBtn">🚨 Emergency QR</button>
             <button class="btn btn-lock" id="lockBtn" style="display: none;">🔓 Lock</button>
@@ -2672,33 +2693,49 @@
         
         // QR Code wrapper for emergency medical data
         const QRGenerator = {
-            generate: function(data, container, size = { width: 256, height: 256 }) {
-                // Clear any existing content
-                container.innerHTML = '';
+            _renderIntoContainer(tempContainer, target) {
+                const qrElement = tempContainer.querySelector('canvas, img, table');
 
-                // Create QR code with text data and specified size
-                new QRCode(container, {
+                target.innerHTML = '';
+                target.removeAttribute('title');
+
+                if (qrElement) {
+                    qrElement.removeAttribute('title');
+                    target.appendChild(qrElement);
+                }
+            },
+
+            generate: function(data, container, size = { width: 256, height: 256 }) {
+                if (!container) return;
+
+                const tempContainer = document.createElement('div');
+
+                new QRCode(tempContainer, {
                     text: typeof data === 'object' ? JSON.stringify(data) : data,
                     width: size.width,
                     height: size.height,
                     correctLevel: QRCode.CorrectLevel.L
                 });
+
+                this._renderIntoContainer(tempContainer, container);
             },
-            
+
             generateOTPAuth: function(secret, label, issuer, container) {
+                if (!container) return;
+
                 const uri = `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(label)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}`;
-                
-                // Clear container
-                container.innerHTML = '';
-                
-                // Generate QR code
+
                 try {
-                    new QRCode(container, {
+                    const tempContainer = document.createElement('div');
+
+                    new QRCode(tempContainer, {
                         text: uri,
                         width: 256,
                         height: 256,
                         correctLevel: QRCode.CorrectLevel.M
                     });
+
+                    this._renderIntoContainer(tempContainer, container);
                 } catch (e) {
                     console.error('TOTP QR generation failed:', e);
                 }
@@ -2988,6 +3025,39 @@
                         this.recoverWithCode();
                     }
                 });
+
+                const actionButtons = document.getElementById('securityActions');
+                const actionMenuToggle = document.getElementById('actionMenuToggle');
+                if (actionButtons && actionMenuToggle) {
+                    const mobileQuery = window.matchMedia('(max-width: 900px)');
+                    const syncActionMenu = (mq) => {
+                        if (!mq.matches) {
+                            actionButtons.classList.remove('is-open');
+                            actionMenuToggle.setAttribute('aria-expanded', 'false');
+                        }
+                    };
+
+                    actionMenuToggle.addEventListener('click', () => {
+                        const isOpen = actionButtons.classList.toggle('is-open');
+                        actionMenuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                    });
+
+                    actionButtons.querySelectorAll('button').forEach((btn) => {
+                        btn.addEventListener('click', () => {
+                            if (mobileQuery.matches) {
+                                actionButtons.classList.remove('is-open');
+                                actionMenuToggle.setAttribute('aria-expanded', 'false');
+                            }
+                        });
+                    });
+
+                    syncActionMenu(mobileQuery);
+                    if (mobileQuery.addEventListener) {
+                        mobileQuery.addEventListener('change', syncActionMenu);
+                    } else if (mobileQuery.addListener) {
+                        mobileQuery.addListener(syncActionMenu);
+                    }
+                }
 
                 document.getElementById('printSummaryBtn')?.addEventListener('click', () => {
                     this.closeExportOptions();
@@ -3964,13 +4034,21 @@
             openSettings() {
                 const modal = document.getElementById('settingsModal');
                 modal.classList.add('active');
-                
+
                 document.getElementById('module-identity').checked = this.modules.identity;
                 document.getElementById('module-gac').checked = this.modules.gac;
                 document.getElementById('module-mental').checked = this.modules.mental;
                 document.getElementById('module-chronic').checked = this.modules.chronic;
-                
+
+                this.renderTOTPStatus();
+            }
+
+            renderTOTPStatus() {
                 const statusDiv = document.getElementById('totpStatus');
+                if (!statusDiv) {
+                    return;
+                }
+
                 if (this.requires2FA) {
                     statusDiv.innerHTML = `
                         <div style="display: flex; align-items: center; gap: 10px;">
@@ -3994,13 +4072,22 @@
                                 </span>
                             </div>
                         </div>
+                        <button class="btn btn-primary" id="enable2FASettingsBtn" style="margin-top: 12px;">Enable 2FA Now</button>
                         <p style="margin-top: 10px; font-size: 9pt; color: #94a3b8;">
-                            To enable 2FA, create a new vault with the option selected.
+                            Add an authenticator app for extra protection without recreating your vault.
                         </p>
                     `;
+
+                    document.getElementById('enable2FASettingsBtn')?.addEventListener('click', () => {
+                        this.start2FAEnrollmentFromSettings();
+                    });
                 }
 
                 this.updateRecoveryStatus();
+            }
+
+            start2FAEnrollmentFromSettings() {
+                this.setupTOTP();
             }
             
             closeSettings() {
@@ -4076,10 +4163,40 @@
                 document.getElementById('totpModal').classList.remove('active');
                 await this.finishInitialSetup({ twoFAEnabled: true, codes: this.pendingRecoveryCodes });
 
+                
+                const wasInitialized = this.isInitialized;
+
+                this.totpSecret = this.currentTOTPSecret;
+                this.requires2FA = true;
                 this.currentTOTPSecret = null;
+
+                document.getElementById('totpModal').classList.remove('active');
+
+                if (!wasInitialized) {
+                    document.getElementById('mainContent').style.display = 'block';
+                    document.getElementById('navTabs').style.display = 'block';
+
+                    this.isInitialized = true;
+                    this.hasUnsavedChanges = true;
+                    this.updateSaveStatus();
+
+                    alert(`✅ Two-factor authentication enabled!\n\n` +
+                          `Your vault "${this.vaultIdentity}" is ready to use.\n\n` +
+                          `• Enter your medical information\n` +
+                          `• Click "Download Encrypted Vault" when ready to save\n` +
+                          `• You'll need both password AND authenticator code to unlock`);
+                } else {
+                    this.hasUnsavedChanges = true;
+                    this.updateSaveStatus();
+                    this.renderTOTPStatus();
+                    document.getElementById('totpField').style.display = 'block';
+
+                    alert('✅ Two-factor authentication is now enabled. Download a fresh copy of your vault to keep the new security settings.');
+                }
             }
 
             async cancelTOTP() {
+            cancelTOTP() {
                 this.currentTOTPSecret = null;
                 document.getElementById('totpModal').classList.remove('active');
 
@@ -4088,6 +4205,20 @@
                     await this.finishInitialSetup({ twoFAEnabled: false, codes: this.pendingRecoveryCodes });
                 } else {
                     this.showToast('Two-factor setup canceled.', 'info');
+                    document.getElementById('mainContent').style.display = 'block';
+                    document.getElementById('navTabs').style.display = 'block';
+
+                    this.isInitialized = true;
+                    this.hasUnsavedChanges = true;
+                    this.updateSaveStatus();
+
+                    alert(`✅ Vault created without 2FA!\n\n` +
+                          `Your vault "${this.vaultIdentity}" is ready to use.\n\n` +
+                          `• Enter your medical information\n` +
+                          `• Click "Download Encrypted Vault" when ready to save\n` +
+                          `• Keep your password safe - there's no recovery without it`);
+                } else {
+                    this.renderTOTPStatus();
                 }
             }
             
@@ -5373,6 +5504,7 @@
                 document.getElementById('lockBtn').innerHTML = '🔒 Unlock';
                 document.getElementById('mainContent').style.display = 'none';
                 document.getElementById('unlockScreen').style.display = 'flex';
+                document.getElementById('totpField').style.display = this.requires2FA ? 'block' : 'none';
             }
             
             unlock() {
