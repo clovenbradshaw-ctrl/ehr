@@ -4710,7 +4710,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
 @media (max-width: 640px) { .share-card { padding: 20px; } .share-input { flex-direction: column; } }
 `;
 
-                const bundleJSON = JSON.stringify(bundle);
+                const bundleJSON = JSON.stringify(bundle)
+                    .replace(/</g, '\\u003c')
+                    .replace(/>/g, '\\u003e')
+                    .replace(/&/g, '\\u0026')
+                    .replace(/\u2028/g, '\\u2028')
+                    .replace(/\u2029/g, '\\u2029');
                 const title = this.escapeHTML(`${this.vaultIdentity} Share Access`);
 
                 return `<!DOCTYPE html>
@@ -4751,8 +4756,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
             </div>
         </section>
     </div>
+    <script type="application/json" id="sharePackageData">${bundleJSON}</script>
     <script>
-    const sharePackage = ${bundleJSON};
+    const shareDataEl = document.getElementById('sharePackageData');
+    let sharePackage = null;
+    try {
+        sharePackage = shareDataEl ? JSON.parse(shareDataEl.textContent) : null;
+    } catch (parseError) {
+        console.error('Unable to parse share package data', parseError);
+    }
+
+    if (!sharePackage) {
+        document.body.innerHTML = "<div style=\"max-width: 600px; margin: 40px auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; text-align: center;\">⚠️ Unable to load share package data. Please request a new share link.</div>";
+        throw new Error('Share package data missing');
+    }
     const escapeHTML = (value) => String(value ?? '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
