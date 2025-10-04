@@ -146,11 +146,11 @@
             justify-content: space-between;
             z-index: 1000;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             gap: 8px;
             min-height: 48px;
         }
-        
+
         .save-status {
             padding: 4px 12px;
             border-radius: 4px;
@@ -159,8 +159,10 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            white-space: nowrap;
-            flex-shrink: 0;
+            white-space: normal;
+            text-align: center;
+            justify-content: center;
+            flex: 0 1 340px;
             margin: 0 10px;
         }
         
@@ -213,14 +215,7 @@
             flex-grow: 0;
             flex-shrink: 0;
         }
-
-        .action-toggle {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            width: auto;
-        }
-
+        
         .btn {
             padding: 5px 12px;
             border: none;
@@ -706,6 +701,100 @@
             background: #f8fafc;
             position: relative;
         }
+
+        .note-item {
+            background: #f1f5f9;
+        }
+
+        .note-header {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .note-meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 9pt;
+            color: #64748b;
+        }
+
+        .note-meta-row .note-created-display {
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .note-tag-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .note-tag-options label {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: #e2e8f0;
+            border-radius: 999px;
+            margin: 0;
+            font-weight: 500;
+            font-size: 9pt;
+            cursor: pointer;
+        }
+
+        .note-tag-options input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+        }
+
+        .tag-manager {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .tag-manager input {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .tag-chip-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: #e0f2fe;
+            color: #0369a1;
+            border-radius: 999px;
+            font-size: 9pt;
+        }
+
+        .tag-chip button {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: #0ea5e9;
+            font-size: 10pt;
+            line-height: 1;
+        }
+
+        .tag-chip button:hover {
+            color: #ef4444;
+        }
         
         .delete-btn {
             position: absolute;
@@ -1113,37 +1202,28 @@
                 padding: 10px 12px;
             }
 
-            .security-status {
+            .security-status,
+            .action-buttons {
                 width: 100%;
                 justify-content: space-between;
             }
 
-            .action-toggle {
-                display: inline-flex;
-                width: 100%;
-                justify-content: center;
-            }
-
             .action-buttons {
-                display: none;
-                flex-direction: column;
-                gap: 8px;
-                width: 100%;
-                align-items: stretch;
-            }
-
-            .action-buttons.is-open {
-                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
             }
 
             .save-status {
                 width: 100%;
                 justify-content: center;
                 margin: 0;
+                flex: 1 1 100%;
+                max-width: none;
             }
 
             .action-buttons .btn {
-                width: 100%;
+                flex: 1 1 45%;
+                min-width: 140px;
             }
 
             .nav-tabs {
@@ -1450,6 +1530,16 @@
             line-height: 1.5;
         }
 
+        .print-note-meta {
+            font-size: 9.5pt;
+            color: #475569;
+            margin-bottom: 4px;
+        }
+
+        .print-note-body {
+            color: #0f172a;
+        }
+
         .export-options {
             display: flex;
             flex-direction: column;
@@ -1554,10 +1644,7 @@
         <div class="save-status never-saved" id="saveStatus">
             ⚠️ Not Initialized - Create Your Vault
         </div>
-        <button class="action-toggle btn btn-secondary" id="actionMenuToggle" aria-expanded="false" aria-controls="securityActions">
-            ☰ Vault Actions
-        </button>
-        <div class="action-buttons" id="securityActions">
+        <div class="action-buttons">
             <button class="btn btn-secondary" id="settingsBtn">⚙️ Settings</button>
             <button class="btn btn-secondary" id="emergencyQRBtn">🚨 Emergency QR</button>
             <button class="btn btn-lock" id="lockBtn" style="display: none;">🔓 Lock</button>
@@ -1875,6 +1962,16 @@
                             <div class="field-block full">
                                 <label>Home Address</label>
                                 <input type="text" class="form-data" data-field="address" placeholder="Street address, City, State ZIP"/>
+                            </div>
+                        </div>
+                        <div class="field-row" id="corePronounRow" style="display: none;">
+                            <div class="field">
+                                <label>Chosen Name (Daily Use)</label>
+                                <input type="text" class="form-data" data-field="chosenName" placeholder="Preferred name for day-to-day use" />
+                            </div>
+                            <div class="field">
+                                <label>Pronouns</label>
+                                <input type="text" class="form-data" data-field="pronouns" placeholder="she/her, they/them, he/him" />
                             </div>
                         </div>
                     </div>
@@ -2210,6 +2307,17 @@
                 <h2>📝 Health Notes & Journal</h2>
             </div>
             <div class="section-content">
+                <div class="field">
+                    <label>Available Note Tags</label>
+                    <p style="font-size: 9pt; color: #64748b; margin-bottom: 8px;">Create custom tags to organize notes across your care team. Tags can be reused for gender-affirming care notes and general health entries.</p>
+                    <div class="tag-manager">
+                        <input type="text" id="noteTagInput" placeholder="Create a new tag and press Enter" />
+                        <button class="add-btn no-print" type="button" id="addNoteTagBtn">+ Add Tag</button>
+                    </div>
+                    <div class="tag-chip-list" id="noteTagList"></div>
+                    <input type="hidden" class="form-data" data-field="noteTagLibrary" id="noteTagStorage" value="[]" />
+                    <datalist id="noteProviderOptions"></datalist>
+                </div>
                 <div id="notes-container"></div>
                 <button class="add-btn no-print" id="addNoteBtn">+ Add Note</button>
             </div>
@@ -2287,6 +2395,13 @@
                 <h3>Gender-Affirming Procedures</h3>
                 <div id="gac-procedures-container"></div>
                 <button class="add-btn no-print" id="addGACProcedureBtn">+ Add Procedure</button>
+
+                <h3>Gender-Affirming Care Notes</h3>
+                <div class="info-box">
+                    Track care plans, provider feedback, goals, and milestones that are specific to gender-affirming care. Each note supports optional event dates, provider tagging, and reusable tags for quick filtering.
+                </div>
+                <div id="gac-notes-container"></div>
+                <button class="add-btn no-print" id="addGACNoteBtn">+ Add GAC Note</button>
             </div>
         </div>
 
@@ -2484,33 +2599,49 @@
         
         // QR Code wrapper for emergency medical data
         const QRGenerator = {
-            generate: function(data, container, size = { width: 256, height: 256 }) {
-                // Clear any existing content
-                container.innerHTML = '';
+            _renderIntoContainer(tempContainer, target) {
+                const qrElement = tempContainer.querySelector('canvas, img, table');
 
-                // Create QR code with text data and specified size
-                new QRCode(container, {
+                target.innerHTML = '';
+                target.removeAttribute('title');
+
+                if (qrElement) {
+                    qrElement.removeAttribute('title');
+                    target.appendChild(qrElement);
+                }
+            },
+
+            generate: function(data, container, size = { width: 256, height: 256 }) {
+                if (!container) return;
+
+                const tempContainer = document.createElement('div');
+
+                new QRCode(tempContainer, {
                     text: typeof data === 'object' ? JSON.stringify(data) : data,
                     width: size.width,
                     height: size.height,
                     correctLevel: QRCode.CorrectLevel.L
                 });
+
+                this._renderIntoContainer(tempContainer, container);
             },
-            
+
             generateOTPAuth: function(secret, label, issuer, container) {
+                if (!container) return;
+
                 const uri = `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(label)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}`;
-                
-                // Clear container
-                container.innerHTML = '';
-                
-                // Generate QR code
+
                 try {
-                    new QRCode(container, {
+                    const tempContainer = document.createElement('div');
+
+                    new QRCode(tempContainer, {
                         text: uri,
                         width: 256,
                         height: 256,
                         correctLevel: QRCode.CorrectLevel.M
                     });
+
+                    this._renderIntoContainer(tempContainer, container);
                 } catch (e) {
                     console.error('TOTP QR generation failed:', e);
                 }
@@ -2698,6 +2829,7 @@
                     mental: false,
                     chronic: false
                 };
+                this.noteTags = [];
                 this.sectionLocks = {};
                 this.fieldHistory = {};
 
@@ -2805,39 +2937,6 @@
                     });
                 }
 
-                const actionButtons = document.getElementById('securityActions');
-                const actionMenuToggle = document.getElementById('actionMenuToggle');
-                if (actionButtons && actionMenuToggle) {
-                    const mobileQuery = window.matchMedia('(max-width: 900px)');
-                    const syncActionMenu = (mq) => {
-                        if (!mq.matches) {
-                            actionButtons.classList.remove('is-open');
-                            actionMenuToggle.setAttribute('aria-expanded', 'false');
-                        }
-                    };
-
-                    actionMenuToggle.addEventListener('click', () => {
-                        const isOpen = actionButtons.classList.toggle('is-open');
-                        actionMenuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-                    });
-
-                    actionButtons.querySelectorAll('button').forEach((btn) => {
-                        btn.addEventListener('click', () => {
-                            if (mobileQuery.matches) {
-                                actionButtons.classList.remove('is-open');
-                                actionMenuToggle.setAttribute('aria-expanded', 'false');
-                            }
-                        });
-                    });
-
-                    syncActionMenu(mobileQuery);
-                    if (mobileQuery.addEventListener) {
-                        mobileQuery.addEventListener('change', syncActionMenu);
-                    } else if (mobileQuery.addListener) {
-                        mobileQuery.addListener(syncActionMenu);
-                    }
-                }
-
                 document.getElementById('printSummaryBtn')?.addEventListener('click', () => {
                     this.closeExportOptions();
                     this.printSummary();
@@ -2865,11 +2964,36 @@
                 document.getElementById('addSurgeryBtn')?.addEventListener('click', () => this.addSurgery());
                 document.getElementById('addProviderBtn')?.addEventListener('click', () => this.addProvider());
                 document.getElementById('addNoteBtn')?.addEventListener('click', () => this.addNote());
+                document.getElementById('addGACNoteBtn')?.addEventListener('click', () => this.addGACNote());
                 document.getElementById('addVitalBtn')?.addEventListener('click', () => this.addVitalSign());
                 document.getElementById('addLabBtn')?.addEventListener('click', () => this.addLabResult());
                 document.getElementById('addCovidVaccineBtn')?.addEventListener('click', () => this.addCovidVaccine());
                 document.getElementById('addVaccineBtn')?.addEventListener('click', () => this.addVaccine());
-                
+
+                document.getElementById('addNoteTagBtn')?.addEventListener('click', () => this.handleAddNoteTag());
+                const noteTagInput = document.getElementById('noteTagInput');
+                if (noteTagInput) {
+                    noteTagInput.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            this.handleAddNoteTag();
+                        }
+                    });
+                }
+
+                const tagList = document.getElementById('noteTagList');
+                if (tagList) {
+                    tagList.addEventListener('click', (e) => {
+                        const button = e.target.closest('button[data-tag-remove]');
+                        if (button) {
+                            e.preventDefault();
+                            this.removeNoteTag(button.dataset.tagRemove);
+                        }
+                    });
+                }
+
+                document.getElementById('providers-container')?.addEventListener('input', () => this.refreshProviderOptions());
+
                 // Track changes
                 const identityFields = new Set(['firstName', 'lastName', 'middleInitial', 'mrn', 'biologicalSex', 'dateOfBirth']);
 
@@ -2904,12 +3028,19 @@
                         this.saveVault();
                     }
                 });
+
+                this.syncFieldInputs('pronouns');
+                this.syncFieldInputs('chosenName');
                 this.updatePatientSummaryDisplay();
+                this.initializeExistingNotes();
+                this.restoreNoteTagsFromStorage();
+                this.refreshProviderOptions();
+                this.refreshAllNoteTagSelectors();
             }
             
             startSetup() {
                 const identityHTML = `
-                    <div style="margin: 20px 0; padding: 20px; background: #eff6ff; border-radius: 8px; text-align: center;">
+                    <div id="vaultIdentityBlock" style="margin: 20px 0; padding: 20px; background: #eff6ff; border-radius: 8px; text-align: center;">
                         <h3 style="margin: 0 0 10px 0; color: #1e293b;">Your Vault Identity</h3>
                         <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
                             <h2 id="vaultName" style="color: #3b82f6; margin: 0;">🔷 ${this.vaultIdentity}</h2>
@@ -2927,13 +3058,56 @@
                 const modal = document.getElementById('passwordModal');
                 modal.classList.add('active');
                 document.getElementById('modalTitle').textContent = 'Create Your Health Vault';
-                
+
                 const modalBody = modal.querySelector('.modal-body');
                 const firstField = modalBody.querySelector('.field');
-                firstField.insertAdjacentHTML('beforebegin', identityHTML);
-                
+                if (!document.getElementById('vaultIdentityBlock')) {
+                    firstField.insertAdjacentHTML('beforebegin', identityHTML);
+                } else {
+                    document.getElementById('vaultName').innerHTML = `🔷 ${this.vaultIdentity}`;
+                }
+
+                const moduleSelectionHTML = `
+                    <div id="setupModuleSelection" style="margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 6px;">
+                        <h4 style="margin: 0 0 10px 0;">Enable Optional Modules</h4>
+                        <p style="margin: 0 0 12px 0; font-size: 9pt; color: #64748b;">
+                            Choose any specialized sections to include from the start. You can adjust these later in Settings.
+                        </p>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <label class="checkbox-item" style="align-items: flex-start; gap: 10px;">
+                                <input type="checkbox" id="setup-module-identity">
+                                <span>
+                                    <strong>Extended Identity</strong><br>
+                                    <span style="font-size: 9pt; color: #64748b;">Pronouns, chosen names, context-specific usage</span>
+                                </span>
+                            </label>
+                            <label class="checkbox-item" style="align-items: flex-start; gap: 10px;">
+                                <input type="checkbox" id="setup-module-gac">
+                                <span>
+                                    <strong>Gender Affirming Care</strong><br>
+                                    <span style="font-size: 9pt; color: #64748b;">HRT tracking, surgeries, specialized providers</span>
+                                </span>
+                            </label>
+                            <label class="checkbox-item" style="align-items: flex-start; gap: 10px;">
+                                <input type="checkbox" id="setup-module-mental">
+                                <span>
+                                    <strong>Mental Health</strong><br>
+                                    <span style="font-size: 9pt; color: #64748b;">Mood tracking, therapy notes, crisis resources</span>
+                                </span>
+                            </label>
+                            <label class="checkbox-item" style="align-items: flex-start; gap: 10px;">
+                                <input type="checkbox" id="setup-module-chronic">
+                                <span>
+                                    <strong>Chronic Disease</strong><br>
+                                    <span style="font-size: 9pt; color: #64748b;">Diabetes, hypertension, pain management</span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                `;
+
                 const twoFAHTML = `
-                    <div style="margin-top: 20px; padding: 15px; background: #f0f9ff; border-radius: 6px;">
+                    <div id="setupTwoFAOption" style="margin-top: 20px; padding: 15px; background: #f0f9ff; border-radius: 6px;">
                         <div class="checkbox-item">
                             <input type="checkbox" id="enable2FA">
                             <label for="enable2FA"><strong>Enable Two-Factor Authentication (Optional)</strong></label>
@@ -2945,11 +3119,67 @@
                         </p>
                     </div>
                 `;
-                
+
                 const confirmField = document.getElementById('confirmPasswordField');
-                confirmField.insertAdjacentHTML('afterend', twoFAHTML);
+                if (!document.getElementById('setupModuleSelection')) {
+                    confirmField.insertAdjacentHTML('afterend', moduleSelectionHTML);
+                }
+
+                ['identity', 'gac', 'mental', 'chronic'].forEach(module => {
+                    const setupToggle = document.getElementById(`setup-module-${module}`);
+                    if (setupToggle) {
+                        setupToggle.checked = this.modules[module];
+                    }
+                });
+
+                if (!document.getElementById('setupTwoFAOption')) {
+                    const insertAfter = document.getElementById('setupModuleSelection') || confirmField;
+                    insertAfter.insertAdjacentHTML('afterend', twoFAHTML);
+                }
             }
-            
+
+            applySetupModuleSelections() {
+                const moduleKeys = ['identity', 'gac', 'mental', 'chronic'];
+                let selectionsFound = false;
+
+                moduleKeys.forEach((module) => {
+                    const setupToggle = document.getElementById(`setup-module-${module}`);
+                    if (setupToggle) {
+                        selectionsFound = true;
+                        const isChecked = setupToggle.checked;
+                        this.modules[module] = isChecked;
+
+                        const settingsToggle = document.getElementById(`module-${module}`);
+                        if (settingsToggle) {
+                            settingsToggle.checked = isChecked;
+                        }
+                    }
+                });
+
+                if (selectionsFound) {
+                    this.updateModuleVisibility();
+                }
+            }
+
+            syncFieldInputs(fieldName) {
+                const inputs = Array.from(document.querySelectorAll(`.form-data[data-field="${fieldName}"]`));
+
+                if (inputs.length < 2) {
+                    return;
+                }
+
+                inputs.forEach((input) => {
+                    input.addEventListener('input', (event) => {
+                        const { value } = event.target;
+                        inputs.forEach((other) => {
+                            if (other !== event.target && other.value !== value) {
+                                other.value = value;
+                            }
+                        });
+                    });
+                });
+            }
+
             regenerateVaultName() {
                 this.vaultIdentity = this.generateVaultName();
                 document.getElementById('vaultName').innerHTML = `🔷 ${this.vaultIdentity}`;
@@ -3023,17 +3253,20 @@
                 const gacSection = document.getElementById('gac-section');
                 const mentalSection = document.getElementById('mental-section');
                 const chronicSection = document.getElementById('chronic-section');
-                
+                const corePronounRow = document.getElementById('corePronounRow');
+
                 identitySection.style.display = this.modules.identity ? 'block' : 'none';
                 gacSection.style.display = this.modules.gac ? 'block' : 'none';
                 mentalSection.style.display = this.modules.mental ? 'block' : 'none';
                 chronicSection.style.display = this.modules.chronic ? 'block' : 'none';
-                
+
+                if (corePronounRow) {
+                    corePronounRow.style.display = this.modules.gac ? 'flex' : 'none';
+                }
+
                 if (this.modules.identity || this.modules.gac) {
-                    const mainContent = document.getElementById('mainContent');
                     const emergencySection = document.getElementById('emergency-section');
-                    const coreSection = document.getElementById('core-section');
-                    
+
                     if (this.modules.identity && identitySection) {
                         emergencySection.after(identitySection);
                     }
@@ -3310,10 +3543,11 @@
                     alert('Password must be at least 8 characters');
                     return;
                 }
-                
+
                 this.sessionPassword = password;
+                this.applySetupModuleSelections();
                 this.closePasswordModal();
-                
+
                 if (enable2FA) {
                     this.requires2FA = true;
                     this.setupTOTP();
@@ -3443,257 +3677,10 @@
 
                 document.getElementById('lastUpdatedHeader').textContent = `Last Updated: ${data.lastUpdated || 'Never'}`;
                 this.updatePatientSummaryDisplay();
-                this.updateAllFieldTooltips();
-            }
-
-            recordFieldChange(element, source = 'Manual Update') {
-                if (!element || !element.dataset?.field) {
-                    return;
-                }
-
-                const field = element.dataset.field;
-                const value = element.type === 'checkbox' ? element.checked : element.value;
-                const timestamp = new Date().toISOString();
-
-                if (!this.fieldHistory[field]) {
-                    this.fieldHistory[field] = [];
-                }
-
-                const history = this.fieldHistory[field];
-                const lastEntry = history[history.length - 1];
-
-                if (lastEntry && this.valuesEqual(lastEntry.value, value)) {
-                    return;
-                }
-
-                history.push({
-                    timestamp,
-                    value,
-                    source
-                });
-
-                this.updateFieldTooltip(element);
-            }
-
-            updateFieldTooltip(element) {
-                if (!element || !element.dataset?.field) {
-                    return;
-                }
-
-                const field = element.dataset.field;
-                const history = this.fieldHistory?.[field];
-
-                if (!history || history.length === 0) {
-                    element.removeAttribute('title');
-                    return;
-                }
-
-                const lines = history.map(entry => {
-                    const when = this.formatHistoryTimestamp(entry.timestamp);
-                    const valueText = this.formatHistoryValue(entry.value);
-                    const sourceText = entry.source ? ` (${entry.source})` : '';
-                    return `${when} • ${valueText}${sourceText}`;
-                });
-
-                element.setAttribute('title', lines.join('\n'));
-            }
-
-            updateAllFieldTooltips() {
-                document.querySelectorAll('.form-data').forEach(input => this.updateFieldTooltip(input));
-            }
-
-            formatHistoryValue(value) {
-                if (value === undefined) {
-                    return '[not set]';
-                }
-
-                if (value === null) {
-                    return '[cleared]';
-                }
-
-                if (typeof value === 'boolean') {
-                    return value ? 'Yes' : 'No';
-                }
-
-                if (value === '') {
-                    return '[empty]';
-                }
-
-                return String(value).replace(/\s+/g, ' ').trim();
-            }
-
-            formatHistoryTimestamp(timestamp) {
-                if (!timestamp) {
-                    return 'Unknown time';
-                }
-
-                const date = new Date(timestamp);
-                if (Number.isNaN(date.getTime())) {
-                    return timestamp;
-                }
-
-                return date.toLocaleString();
-            }
-
-            cloneHistory(history) {
-                try {
-                    return JSON.parse(JSON.stringify(history || {}));
-                } catch (error) {
-                    return {};
-                }
-            }
-
-            toISODate(value) {
-                if (!value) {
-                    return new Date().toISOString();
-                }
-
-                if (value instanceof Date) {
-                    return Number.isNaN(value.getTime()) ? new Date().toISOString() : value.toISOString();
-                }
-
-                const parsed = new Date(value);
-                if (Number.isNaN(parsed.getTime())) {
-                    return new Date().toISOString();
-                }
-
-                return parsed.toISOString();
-            }
-
-            valuesEqual(a, b) {
-                return a === b;
-            }
-
-            compactHistory(entries = []) {
-                if (!Array.isArray(entries)) {
-                    return [];
-                }
-
-                const sorted = entries
-                    .map(entry => ({
-                        timestamp: this.toISODate(entry.timestamp),
-                        value: entry.value,
-                        source: entry.source
-                    }))
-                    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-
-                return sorted.reduce((acc, entry) => {
-                    const last = acc[acc.length - 1];
-                    if (last && last.timestamp === entry.timestamp && this.valuesEqual(last.value, entry.value)) {
-                        if (!last.source && entry.source) {
-                            last.source = entry.source;
-                        }
-                        return acc;
-                    }
-
-                    acc.push(entry);
-                    return acc;
-                }, []);
-            }
-
-            normalizeHistory(data = {}, options = {}) {
-                const { sourceLabel = 'Snapshot', fallbackTimestamp } = options;
-                const normalized = {};
-                const baseHistory = this.cloneHistory(data.__history);
-                const metaFields = new Set(['__history', 'lastUpdated', 'totpSecret']);
-                const fallbackISO = this.toISODate(fallbackTimestamp || data.lastUpdated || new Date());
-
-                Object.entries(baseHistory).forEach(([field, entries]) => {
-                    if (!entries) return;
-                    normalized[field] = this.compactHistory(entries.map(entry => ({
-                        timestamp: entry.timestamp || fallbackISO,
-                        value: entry.value,
-                        source: entry.source || sourceLabel
-                    })));
-                });
-
-                Object.keys(data).forEach(field => {
-                    if (metaFields.has(field)) {
-                        return;
-                    }
-
-                    const value = data[field];
-                    const historyEntries = normalized[field] || [];
-
-                    if (historyEntries.length === 0) {
-                        if (value !== undefined) {
-                            historyEntries.push({
-                                timestamp: fallbackISO,
-                                value,
-                                source: sourceLabel
-                            });
-                        }
-                    } else {
-                        const last = historyEntries[historyEntries.length - 1];
-                        if (value !== undefined && !this.valuesEqual(last.value, value)) {
-                            historyEntries.push({
-                                timestamp: fallbackISO,
-                                value,
-                                source: sourceLabel
-                            });
-                        }
-                    }
-
-                    if (historyEntries.length > 0) {
-                        normalized[field] = this.compactHistory(historyEntries);
-                    }
-                });
-
-                return normalized;
-            }
-
-            ensureFieldsExist(fieldKeys = []) {
-                if (!Array.isArray(fieldKeys)) {
-                    fieldKeys = Object.keys(fieldKeys || {});
-                }
-
-                const createdIds = new Set();
-                const genericConfig = {
-                    condition: { container: 'conditions-container', placeholder: 'Enter condition (e.g., Type 2 Diabetes - 2023)' },
-                    surgery: { container: 'surgeries-container', placeholder: 'Enter surgery (e.g., Appendectomy - 2020)' },
-                    provider: { container: 'providers-container', placeholder: 'Enter provider (Name, Specialty, Phone)' },
-                    note: { container: 'notes-container', placeholder: 'Enter health note' },
-                    covid: { container: 'covid-vaccines-container', placeholder: 'Enter vaccine (e.g., Pfizer Booster - 10/2024)' },
-                    vaccine: { container: 'vaccines-container', placeholder: 'Enter vaccine (e.g., Shingles - 05/2024)' }
-                };
-
-                fieldKeys.forEach(field => {
-                    if (typeof field !== 'string' || !field.includes('_')) {
-                        return;
-                    }
-
-                    if (document.querySelector(`[data-field="${field}"]`)) {
-                        return;
-                    }
-
-                    const id = field.substring(0, field.lastIndexOf('_'));
-                    if (!id || createdIds.has(id)) {
-                        return;
-                    }
-
-                    createdIds.add(id);
-                    const prefix = id.split('_')[0];
-
-                    switch (prefix) {
-                        case 'med':
-                            this.addMedication(id);
-                            break;
-                        case 'contact':
-                            this.addEmergencyContact(id);
-                            break;
-                        case 'vital':
-                            this.addVitalSign(id);
-                            break;
-                        case 'lab':
-                            this.addLabResult(id);
-                            break;
-                        default:
-                            if (genericConfig[prefix]) {
-                                const config = genericConfig[prefix];
-                                this.addGenericItem(config.container, prefix, config.placeholder, id);
-                            }
-                    }
-                });
+                this.restoreNoteTagsFromStorage();
+                this.initializeExistingNotes();
+                this.refreshProviderOptions();
+                this.refreshAllNoteTagSelectors();
             }
 
             calculateAge(dobString) {
@@ -4402,24 +4389,139 @@
                 container.insertAdjacentHTML('beforeend', html);
                 this.markAsChanged();
             }
+            
+            addCondition() { this.addGenericItem('conditions-container', 'condition', 'Enter condition (e.g., Type 2 Diabetes - 2023)'); }
+            addSurgery() { this.addGenericItem('surgeries-container', 'surgery', 'Enter surgery (e.g., Appendectomy - 2020)'); }
+            addProvider() {
+                const id = this.addGenericItem('providers-container', 'provider', 'Enter provider (Name, Specialty, Phone)');
+                this.refreshProviderOptions();
+                return id;
+            }
+            addNote(existingData = null) { return this.createDetailedNote('notes-container', 'note', existingData); }
+            addGACNote(existingData = null) { return this.createDetailedNote('gac-notes-container', 'gacnote', existingData); }
+            addCovidVaccine() { this.addGenericItem('covid-vaccines-container', 'covid', 'Enter vaccine (e.g., Pfizer Booster - 10/2024)'); }
+            addVaccine() { this.addGenericItem('vaccines-container', 'vaccine', 'Enter vaccine (e.g., Shingles - 05/2024)'); }
 
-            addCondition(presetId) { this.addGenericItem('conditions-container', 'condition', 'Enter condition (e.g., Type 2 Diabetes - 2023)', presetId); }
-            addSurgery(presetId) { this.addGenericItem('surgeries-container', 'surgery', 'Enter surgery (e.g., Appendectomy - 2020)', presetId); }
-            addProvider(presetId) { this.addGenericItem('providers-container', 'provider', 'Enter provider (Name, Specialty, Phone)', presetId); }
-            addNote(presetId) { this.addGenericItem('notes-container', 'note', 'Enter health note', presetId); }
-            addCovidVaccine(presetId) { this.addGenericItem('covid-vaccines-container', 'covid', 'Enter vaccine (e.g., Pfizer Booster - 10/2024)', presetId); }
-            addVaccine(presetId) { this.addGenericItem('vaccines-container', 'vaccine', 'Enter vaccine (e.g., Shingles - 05/2024)', presetId); }
-
-            addGenericItem(containerId, prefix, placeholder, presetId) {
+            createDetailedNote(containerId, prefix, existingData = null) {
                 const container = document.getElementById(containerId);
-                if (!container) return;
+                if (!container) return null;
 
-                const id = presetId || `${prefix}_${Date.now()}`;
+                const id = `${prefix}_${Date.now()}`;
+                const createdAt = existingData?.createdAt || new Date().toISOString();
+                const provider = existingData?.provider || '';
+                const eventDate = existingData?.eventDate || '';
+                const noteText = existingData?.note || existingData?.value || '';
+                const selectedTags = this.parseNoteTags(existingData?.tags);
+                const hiddenTagValue = this.stringifyNoteTags(selectedTags);
 
-                if (document.querySelector(`[data-item-id="${id}"]`)) {
+                const html = `
+                    <div class="list-item note-item" data-item-id="${id}">
+                        <button class="delete-btn no-print" onclick="app.removeItem('${id}')">Remove</button>
+                        <div class="note-header">
+                            <div class="field">
+                                <label>Provider</label>
+                                <input type="text" class="form-data note-provider" data-field="${id}_provider"
+                                       list="noteProviderOptions"
+                                       placeholder="Select or type provider"
+                                       value="${this.escapeHTML(provider)}" />
+                            </div>
+                            <div class="field">
+                                <label>Event Date (optional)</label>
+                                <input type="date" class="form-data" data-field="${id}_eventDate" value="${this.escapeHTML(eventDate)}" />
+                            </div>
+                        </div>
+                        <div class="note-meta-row">
+                            <span>Created <span class="note-created-display"></span></span>
+                        </div>
+                        <div class="field">
+                            <label>Note Details</label>
+                            <textarea rows="4" class="form-data" data-field="${id}_note">${this.escapeHTML(noteText)}</textarea>
+                        </div>
+                        <div class="field">
+                            <label>Tags</label>
+                            <div class="note-tag-options" data-note-id="${id}"></div>
+                            <input type="hidden" class="form-data" data-field="${id}_tags" value='${this.escapeHTML(hiddenTagValue)}' />
+                        </div>
+                        <input type="hidden" class="form-data" data-field="${id}_createdAt" value="${this.escapeHTML(createdAt)}" />
+                    </div>
+                `;
+
+                container.insertAdjacentHTML('beforeend', html);
+                const noteEl = container.querySelector(`[data-item-id="${id}"]`);
+                this.initializeNoteElement(noteEl);
+                this.markAsChanged();
+                return id;
+            }
+
+            initializeNoteElement(noteEl) {
+                if (!noteEl) return;
+
+                const createdInput = noteEl.querySelector('[data-field$="_createdAt"]');
+                if (createdInput) {
+                    if (!createdInput.value) {
+                        createdInput.value = new Date().toISOString();
+                    }
+                    const displayEl = noteEl.querySelector('.note-created-display');
+                    if (displayEl) {
+                        displayEl.textContent = this.formatDateTime(createdInput.value);
+                    }
+                }
+
+                this.renderTagCheckboxesForNote(noteEl);
+            }
+
+            renderTagCheckboxesForNote(noteEl) {
+                if (!noteEl) return;
+                const optionsContainer = noteEl.querySelector('.note-tag-options');
+                const hiddenInput = noteEl.querySelector('[data-field$="_tags"]');
+                if (!optionsContainer || !hiddenInput) return;
+
+                const availableTags = Array.isArray(this.noteTags) ? [...this.noteTags] : [];
+                let selected = this.parseNoteTags(hiddenInput.value);
+                if (availableTags.length === 0) {
+                    hiddenInput.value = this.stringifyNoteTags([]);
+                    optionsContainer.innerHTML = '<span style="font-size: 9pt; color: #94a3b8;">Add tags to categorize your notes.</span>';
                     return;
                 }
 
+                selected = selected.filter(tag => availableTags.includes(tag));
+                hiddenInput.value = this.stringifyNoteTags(selected);
+
+                optionsContainer.innerHTML = availableTags.map(tag => {
+                    const checkboxId = `${noteEl.dataset.itemId}_${tag.replace(/[^a-z0-9]+/gi, '_').toLowerCase()}`;
+                    const isChecked = selected.includes(tag) ? 'checked' : '';
+                    return `
+                        <label for="${checkboxId}">
+                            <input type="checkbox" id="${checkboxId}" value="${this.escapeHTML(tag)}" ${isChecked}>
+                            ${this.escapeHTML(tag)}
+                        </label>
+                    `;
+                }).join('');
+
+                optionsContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    cb.addEventListener('change', () => this.updateNoteTagHiddenInput(noteEl));
+                });
+            }
+
+            updateNoteTagHiddenInput(noteEl) {
+                if (!noteEl) return;
+                const hiddenInput = noteEl.querySelector('[data-field$="_tags"]');
+                if (!hiddenInput) return;
+
+                const selected = Array.from(noteEl.querySelectorAll('.note-tag-options input[type="checkbox"]:checked')).map(cb => cb.value);
+                hiddenInput.value = this.stringifyNoteTags(selected);
+                this.markAsChanged();
+            }
+
+            refreshAllNoteTagSelectors() {
+                document.querySelectorAll('.note-item').forEach(noteEl => this.renderTagCheckboxesForNote(noteEl));
+            }
+
+            addGenericItem(containerId, prefix, placeholder) {
+                const container = document.getElementById(containerId);
+                if (!container) return null;
+
+                const id = `${prefix}_${Date.now()}`;
                 const html = `
                     <div class="list-item" data-item-id="${id}">
                         <button class="delete-btn no-print" onclick="app.removeItem('${id}')">Remove</button>
@@ -4432,14 +4534,215 @@
 
                 container.insertAdjacentHTML('beforeend', html);
                 this.markAsChanged();
+                return id;
             }
-            
+
             removeItem(id) {
                 const item = document.querySelector(`[data-item-id="${id}"]`);
                 if (item && confirm('Remove this item?')) {
+                    const parentContainer = item.parentElement;
                     item.remove();
                     this.markAsChanged();
+                    if (parentContainer?.id === 'providers-container') {
+                        this.refreshProviderOptions();
+                    }
+                    if (parentContainer?.id === 'notes-container' || parentContainer?.id === 'gac-notes-container') {
+                        this.refreshAllNoteTagSelectors();
+                    }
                 }
+            }
+
+            initializeExistingNotes() {
+                document.querySelectorAll('.note-item').forEach(noteEl => this.initializeNoteElement(noteEl));
+            }
+
+            handleAddNoteTag() {
+                const input = document.getElementById('noteTagInput');
+                if (!input) return;
+
+                const value = input.value.trim();
+                if (!value) return;
+
+                const normalized = value.replace(/\s+/g, ' ').trim();
+                if (!normalized) {
+                    input.value = '';
+                    return;
+                }
+
+                const exists = this.noteTags.some(tag => tag.toLowerCase() === normalized.toLowerCase());
+                if (exists) {
+                    input.value = '';
+                    return;
+                }
+
+                this.noteTags.push(normalized);
+                this.noteTags.sort((a, b) => a.localeCompare(b));
+                input.value = '';
+                this.saveNoteTagsToStorage();
+                this.renderTagChips();
+                this.refreshAllNoteTagSelectors();
+                this.markAsChanged();
+            }
+
+            removeNoteTag(tag) {
+                if (!tag) return;
+                const index = this.noteTags.findIndex(existing => existing === tag);
+                if (index === -1) return;
+
+                this.noteTags.splice(index, 1);
+                this.saveNoteTagsToStorage();
+                this.renderTagChips();
+                this.refreshAllNoteTagSelectors();
+                this.markAsChanged();
+            }
+
+            renderTagChips() {
+                const container = document.getElementById('noteTagList');
+                if (!container) return;
+
+                if (!this.noteTags.length) {
+                    container.innerHTML = '<span style="font-size: 9pt; color: #94a3b8;">No tags yet. Add tags to organize your notes.</span>';
+                    return;
+                }
+
+                container.innerHTML = this.noteTags.map(tag => `
+                    <span class="tag-chip">
+                        ${this.escapeHTML(tag)}
+                        <button type="button" data-tag-remove="${this.escapeHTML(tag)}" aria-label="Remove tag ${this.escapeHTML(tag)}">✕</button>
+                    </span>
+                `).join('');
+            }
+
+            saveNoteTagsToStorage() {
+                const storage = document.getElementById('noteTagStorage');
+                if (storage) {
+                    storage.value = this.stringifyNoteTags(this.noteTags);
+                }
+            }
+
+            restoreNoteTagsFromStorage() {
+                const storage = document.getElementById('noteTagStorage');
+                if (!storage) return;
+
+                const raw = storage.value;
+                const parsed = this.parseNoteTags(raw);
+                this.noteTags = Array.isArray(parsed) ? parsed.slice().sort((a, b) => a.localeCompare(b)) : [];
+                storage.value = this.stringifyNoteTags(this.noteTags);
+                this.renderTagChips();
+                this.refreshAllNoteTagSelectors();
+            }
+
+            parseNoteTags(raw) {
+                if (!raw) return [];
+                if (Array.isArray(raw)) {
+                    return raw.filter(Boolean);
+                }
+
+                if (typeof raw === 'string') {
+                    const trimmed = raw.trim();
+                    if (!trimmed) return [];
+
+                    try {
+                        const parsed = JSON.parse(trimmed);
+                        if (Array.isArray(parsed)) {
+                            return parsed.filter(tag => typeof tag === 'string' && tag.trim() !== '').map(tag => tag.trim());
+                        }
+                    } catch (err) {
+                        // Fall back to splitting by commas or newlines
+                    }
+
+                    return trimmed
+                        .split(/\r?\n|,/)
+                        .map(tag => tag.trim())
+                        .filter(Boolean);
+                }
+
+                return [];
+            }
+
+            stringifyNoteTags(tags) {
+                if (!Array.isArray(tags)) return '[]';
+                const unique = [];
+                tags.forEach(tag => {
+                    if (typeof tag !== 'string') return;
+                    const normalized = tag.trim();
+                    if (!normalized) return;
+                    if (!unique.some(existing => existing.toLowerCase() === normalized.toLowerCase())) {
+                        unique.push(normalized);
+                    }
+                });
+                return JSON.stringify(unique);
+            }
+
+            refreshProviderOptions() {
+                const datalist = document.getElementById('noteProviderOptions');
+                if (!datalist) return;
+
+                const providers = this.getProviderNames();
+                datalist.innerHTML = providers.map(name => `<option value="${this.escapeHTML(name)}"></option>`).join('');
+            }
+
+            getProviderNames() {
+                const providerInputs = document.querySelectorAll('#providers-container .form-data');
+                const names = new Set();
+                providerInputs.forEach(input => {
+                    const value = input.value?.trim();
+                    if (value) {
+                        names.add(value);
+                    }
+                });
+                return Array.from(names).sort((a, b) => a.localeCompare(b));
+            }
+
+            normalizeNoteRecord(raw) {
+                const record = raw && typeof raw === 'object' ? raw : {};
+                const text = typeof record.note === 'string' ? record.note : (typeof record.value === 'string' ? record.value : '');
+                const provider = typeof record.provider === 'string' ? record.provider : '';
+                const eventDate = typeof record.eventDate === 'string' ? record.eventDate : '';
+                const createdAt = typeof record.createdAt === 'string' ? record.createdAt : '';
+                const tags = this.parseNoteTags(record.tags);
+
+                return {
+                    note: text,
+                    provider,
+                    eventDate,
+                    createdAt,
+                    tags
+                };
+            }
+
+            noteHasContent(note) {
+                if (!note) return false;
+                const textPresent = typeof note.note === 'string' && note.note.trim() !== '';
+                return textPresent || Boolean(note.provider || note.eventDate || (note.tags && note.tags.length));
+            }
+
+            buildNotePrintBlock(note) {
+                const metaParts = [];
+                if (note.provider) {
+                    metaParts.push(`Provider: ${this.escapeHTML(note.provider)}`);
+                }
+
+                const formattedEvent = this.formatDate(note.eventDate);
+                if (formattedEvent !== '—') {
+                    metaParts.push(`Event Date: ${formattedEvent}`);
+                }
+
+                const formattedCreated = this.formatDateTime(note.createdAt);
+                if (formattedCreated !== '—') {
+                    metaParts.push(`Created: ${formattedCreated}`);
+                }
+
+                if (note.tags && note.tags.length) {
+                    const tagText = note.tags.map(tag => this.escapeHTML(tag)).join(', ');
+                    if (tagText) {
+                        metaParts.push(`Tags: ${tagText}`);
+                    }
+                }
+
+                const metaHtml = metaParts.length ? `<div class="print-note-meta"><strong>${metaParts.join(' • ')}</strong></div>` : '';
+                const bodyHtml = `<div class="print-note-body">${this.formatTextBlock(note.note)}</div>`;
+                return `<div class="print-note">${metaHtml}${bodyHtml}</div>`;
             }
             
             exportPDF() {
@@ -4519,7 +4822,10 @@
                 const conditions = this.collectListData('conditions-container').map(item => item.value).filter(Boolean);
                 const surgeries = this.collectListData('surgeries-container').map(item => item.value).filter(Boolean);
                 const providers = this.collectListData('providers-container').map(item => item.value).filter(Boolean);
-                const notes = this.collectListData('notes-container').map(item => item.value).filter(Boolean);
+                const noteEntries = this.collectListData('notes-container');
+                const gacNoteEntries = this.collectListData('gac-notes-container');
+                const notes = noteEntries.map(entry => this.normalizeNoteRecord(entry)).filter(note => this.noteHasContent(note));
+                const gacNotes = gacNoteEntries.map(entry => this.normalizeNoteRecord(entry)).filter(note => this.noteHasContent(note));
                 const covidVaccines = this.collectListData('covid-vaccines-container').map(item => item.value).filter(Boolean);
                 const otherVaccines = this.collectListData('vaccines-container').map(item => item.value).filter(Boolean);
 
@@ -4695,8 +5001,13 @@
                         </section>
                         <section class="print-section">
                             <h2>Care Notes</h2>
-                            ${notes.length ? notes.map(note => `<div class="print-note">${this.formatTextBlock(note)}</div>`).join('') : '<p class="print-note">—</p>'}
+                            ${notes.length ? notes.map(note => this.buildNotePrintBlock(note)).join('') : '<p class="print-note">—</p>'}
                         </section>
+                        ${(this.modules?.gac || gacNotes.length) ? `
+                        <section class="print-section">
+                            <h2>Gender-Affirming Care Notes</h2>
+                            ${gacNotes.length ? gacNotes.map(note => this.buildNotePrintBlock(note)).join('') : '<p class="print-note">—</p>'}
+                        </section>` : ''}
                     </div>
                 `;
 
@@ -4798,6 +5109,22 @@
                 const date = new Date(value);
                 if (!isNaN(date)) {
                     return this.escapeHTML(date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }));
+                }
+
+                return this.escapeHTML(value);
+            }
+
+            formatDateTime(value) {
+                if (!value) return '—';
+                const date = new Date(value);
+                if (!isNaN(date)) {
+                    return this.escapeHTML(date.toLocaleString(undefined, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit'
+                    }));
                 }
 
                 return this.escapeHTML(value);
