@@ -934,8 +934,11 @@
             padding: 15px;
             background: white;
             border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
-        
+
         #qr-canvas {
             margin: 15px auto;
             border: 1px solid #e2e8f0;
@@ -945,6 +948,26 @@
             justify-content: center;
             align-items: center;
             min-height: 200px;
+        }
+
+        .qr-preview-text {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 9pt;
+            text-align: left;
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .qr-warning {
+            color: #dc2626;
+            font-size: 9pt;
+            text-align: left;
         }
         
         #qr-canvas canvas,
@@ -1332,6 +1355,8 @@
                     </div>
                     <div class="qr-preview">
                         <div id="qr-canvas"></div>
+                        <pre class="qr-preview-text" id="qrPreviewText"></pre>
+                        <div class="qr-warning" id="qrWarning"></div>
                         <div class="qr-actions">
                             <button class="btn btn-secondary" onclick="app.downloadQR('wallet')">Wallet Card</button>
                             <button class="btn btn-secondary" onclick="app.downloadQR('bracelet')">Bracelet</button>
@@ -2048,19 +2073,14 @@
             generate: function(data, container, size = { width: 256, height: 256 }) {
                 // Clear any existing content
                 container.innerHTML = '';
-                
+
                 // Create QR code with text data and specified size
-                try {
-                    new QRCode(container, {
-                        text: typeof data === 'object' ? JSON.stringify(data) : data,
-                        width: size.width,
-                        height: size.height,
-                        correctLevel: QRCode.CorrectLevel.L
-                    });
-                } catch (e) {
-                    console.error('QR generation failed:', e);
-                    container.innerHTML = '<div style="padding: 20px; border: 2px dashed #dc2626; color: #dc2626;">QR generation failed. Please try again.</div>';
-                }
+                new QRCode(container, {
+                    text: typeof data === 'object' ? JSON.stringify(data) : data,
+                    width: size.width,
+                    height: size.height,
+                    correctLevel: QRCode.CorrectLevel.L
+                });
             },
             
             generateOTPAuth: function(secret, label, issuer, container) {
@@ -2221,7 +2241,7 @@
             constructor() {
                 // Vault identity word lists - expanded for 1M+ combinations
                 this.adjectives = [
-                    'gentle', 'crystal', 'golden', 'silver', 'cosmic', 'serene', 
+                    'gentle', 'crystal', 'golden', 'silver', 'cosmic', 'serene',
                     'mystic', 'eternal', 'tranquil', 'radiant', 'peaceful', 'stellar',
                     'azure', 'crimson', 'emerald', 'violet', 'ancient', 'sacred',
                     'bright', 'calm', 'noble', 'pure', 'wise', 'brave',
@@ -2265,7 +2285,12 @@
                     chronic: false
                 };
                 this.sectionLocks = {};
-                
+
+                // Emergency QR helpers
+                this.QR_BYTE_LIMIT = 1500;
+                this.truncationNotice = '\n\n⚠️ Additional emergency details omitted. See vault for full record.';
+                this._textEncoder = new TextEncoder();
+
                 // Initialize
                 this.init();
             }
@@ -2910,96 +2935,179 @@
             openQRGenerator() {
                 document.getElementById('qrModal').classList.add('active');
             }
-            
+
             generateQR() {
                 const container = document.getElementById('qr-canvas');
+                const previewEl = document.getElementById('qrPreviewText');
+                const warningEl = document.getElementById('qrWarning');
+
                 container.innerHTML = '';
-                
-                let medicalText = "EMERGENCY MEDICAL INFO\n";
-                medicalText += "Generated: " + new Date().toLocaleDateString() + "\n";
-                medicalText += "═══════════════════\n\n";
-                
-                if (document.getElementById('qr-name').checked) {
-                    const firstName = document.querySelector('[data-field="firstName"]')?.value || '';
-                    const lastName = document.querySelector('[data-field="lastName"]')?.value || '';
-                    if (firstName || lastName) {
-                        medicalText += "NAME: " + firstName + " " + lastName + "\n";
+                if (previewEl) previewEl.textContent = '';
+                if (warningEl) warningEl.textContent = '';
+
+                const { text: summaryText, hasDetails } = this.buildEmergencySummary();
+                const { text: qrText, truncated } = this.fitTextForQR(summaryText);
+
+                if (previewEl) {
+                    previewEl.textContent = qrText;
+                    previewEl.scrollTop = 0;
+                }
+
+                if (warningEl) {
+                    if (!hasDetails) {
+                        warningEl.textContent = 'Add emergency details to include more information in the QR code.';
+                    } else if (truncated) {
+                        warningEl.textContent = 'Emergency summary shortened to fit inside the QR code. Review the preview for omitted details.';
                     }
                 }
-                
-                if (document.getElementById('qr-dob').checked) {
-                    const dob = document.querySelector('[data-field="dateOfBirth"]')?.value || '';
-                    if (dob) {
-                        medicalText += "DOB: " + dob + "\n";
-                    }
-                }
-                
-                if (document.getElementById('qr-blood').checked) {
-                    const bloodType = document.querySelector('[data-field="bloodType"]')?.value || '';
-                    if (bloodType) {
-                        medicalText += "BLOOD TYPE: " + bloodType + "\n";
-                    }
-                }
-                
-                if (document.getElementById('qr-allergies').checked) {
-                    const allergies = document.querySelector('[data-field="criticalAllergies"]')?.value || '';
-                    const medAllergies = document.querySelector('[data-field="medicationAllergies"]')?.value || '';
-                    const foodAllergies = document.querySelector('[data-field="foodAllergies"]')?.value || '';
-                    
-                    if (allergies || medAllergies || foodAllergies) {
-                        medicalText += "\nALLERGIES:\n";
-                        if (allergies) medicalText += "• Critical: " + allergies + "\n";
-                        if (medAllergies) medicalText += "• Medications: " + medAllergies + "\n";
-                        if (foodAllergies) medicalText += "• Food: " + foodAllergies + "\n";
-                    }
-                }
-                
-                if (document.getElementById('qr-conditions').checked) {
-                    const conditions = document.querySelector('[data-field="criticalConditions"]')?.value || '';
-                    if (conditions) {
-                        medicalText += "\nMEDICAL CONDITIONS:\n" + conditions + "\n";
-                    }
-                }
-                
-                if (document.getElementById('qr-medications').checked) {
-                    const contraindications = document.querySelector('[data-field="medicationContraindications"]')?.value || '';
-                    if (contraindications) {
-                        medicalText += "\nDO NOT GIVE:\n" + contraindications + "\n";
-                    }
-                }
-                
-                if (document.getElementById('qr-contacts').checked) {
-                    const contactContainers = document.querySelectorAll('#emergency-contacts-container .list-item');
-                    if (contactContainers.length > 0) {
-                        medicalText += "\nEMERGENCY CONTACTS:\n";
-                        contactContainers.forEach((container) => {
-                            const name = container.querySelector('[data-field$="_name"]')?.value;
-                            const relationship = container.querySelector('[data-field$="_relationship"]')?.value;
-                            const phone = container.querySelector('[data-field$="_phone"]')?.value;
-                            
-                            if (name && phone) {
-                                medicalText += `• ${name}`;
-                                if (relationship) medicalText += ` (${relationship})`;
-                                medicalText += `: ${phone}\n`;
-                            }
-                        });
-                    }
-                }
-                
-                const hospital = document.querySelector('[data-field="preferredHospital"]')?.value;
-                if (hospital) {
-                    medicalText += "\nPREFERRED HOSPITAL: " + hospital + "\n";
-                }
-                
-                // Generate QR with correct aspect ratio for cards
+
                 try {
-                    container.innerHTML = '';
-                    QRGenerator.generate(medicalText, container, { width: 200, height: 200 });
-                    console.log('QR generated with text:', medicalText);
+                    QRGenerator.generate(qrText, container, { width: 200, height: 200 });
+                    console.log('QR generated with text:', qrText);
                 } catch (e) {
                     console.error('QR generation failed:', e);
-                    this.createFallbackDisplay(container, medicalText);
+                    this.createFallbackDisplay(container, qrText);
+                    if (warningEl) {
+                        warningEl.textContent = 'Unable to render QR code. Emergency summary shown below for quick reference.';
+                    }
                 }
+            }
+
+            buildEmergencySummary() {
+                const lines = [
+                    'EMERGENCY MEDICAL INFO',
+                    `Generated: ${new Date().toLocaleDateString()}`,
+                    '═══════════════════',
+                    ''
+                ];
+
+                let hasDetails = false;
+
+                const addValueLine = (label, value) => {
+                    const trimmed = value?.trim();
+                    if (!trimmed) return;
+                    lines.push(`${label}: ${trimmed}`);
+                    hasDetails = true;
+                };
+
+                const addListSection = (title, items) => {
+                    const cleaned = items.map(item => item.trim()).filter(Boolean);
+                    if (cleaned.length === 0) return;
+                    lines.push(title);
+                    cleaned.forEach(item => lines.push(`• ${item}`));
+                    lines.push('');
+                    hasDetails = true;
+                };
+
+                if (document.getElementById('qr-name').checked) {
+                    const firstName = document.querySelector('[data-field="firstName"]')?.value.trim() || '';
+                    const lastName = document.querySelector('[data-field="lastName"]')?.value.trim() || '';
+                    const fullName = `${firstName} ${lastName}`.trim();
+                    if (fullName) addValueLine('NAME', fullName.replace(/\s+/g, ' '));
+                }
+
+                if (document.getElementById('qr-dob').checked) {
+                    addValueLine('DOB', document.querySelector('[data-field="dateOfBirth"]')?.value);
+                }
+
+                if (document.getElementById('qr-blood').checked) {
+                    addValueLine('BLOOD TYPE', document.querySelector('[data-field="bloodType"]')?.value);
+                }
+
+                if (document.getElementById('qr-allergies').checked) {
+                    const critical = document.querySelector('[data-field="criticalAllergies"]')?.value || '';
+                    const med = document.querySelector('[data-field="medicationAllergies"]')?.value || '';
+                    const food = document.querySelector('[data-field="foodAllergies"]')?.value || '';
+
+                    const allergyItems = [];
+                    if (critical.trim()) allergyItems.push(`Critical: ${critical.trim()}`);
+                    if (med.trim()) allergyItems.push(`Medications: ${med.trim()}`);
+                    if (food.trim()) allergyItems.push(`Food: ${food.trim()}`);
+
+                    addListSection('ALLERGIES:', allergyItems);
+                }
+
+                if (document.getElementById('qr-conditions').checked) {
+                    const conditions = document.querySelector('[data-field="criticalConditions"]')?.value || '';
+                    addListSection('MEDICAL CONDITIONS:', this.prepareListFromValue(conditions));
+                }
+
+                if (document.getElementById('qr-medications').checked) {
+                    const contraindications = document.querySelector('[data-field="medicationContraindications"]')?.value || '';
+                    addListSection('DO NOT GIVE:', this.prepareListFromValue(contraindications));
+                }
+
+                if (document.getElementById('qr-contacts').checked) {
+                    const contacts = Array.from(document.querySelectorAll('#emergency-contacts-container .list-item')).map(container => {
+                        const name = container.querySelector('[data-field$="_name"]')?.value.trim();
+                        const relationship = container.querySelector('[data-field$="_relationship"]')?.value.trim();
+                        const phone = container.querySelector('[data-field$="_phone"]')?.value.trim();
+
+                        if (!name || !phone) return '';
+                        return relationship ? `${name} (${relationship}): ${phone}` : `${name}: ${phone}`;
+                    });
+
+                    addListSection('EMERGENCY CONTACTS:', contacts);
+                }
+
+                const hospital = document.querySelector('[data-field="preferredHospital"]')?.value;
+                if (hospital) {
+                    addValueLine('PREFERRED HOSPITAL', hospital);
+                    lines.push('');
+                }
+
+                while (lines.length > 0 && lines[lines.length - 1] === '') {
+                    lines.pop();
+                }
+
+                const text = lines.join('\n');
+                return { text, hasDetails };
+            }
+
+            prepareListFromValue(value) {
+                if (!value) return [];
+                const trimmed = value.trim();
+                if (!trimmed) return [];
+                if (trimmed.includes('\n')) {
+                    return trimmed.split(/\r?\n+/).map(item => item.trim()).filter(Boolean);
+                }
+                return trimmed.split(/[,;]+/).map(item => item.trim()).filter(Boolean);
+            }
+
+            fitTextForQR(text) {
+                const encoder = this._textEncoder;
+                const maxBytes = this.QR_BYTE_LIMIT;
+                const bytes = encoder.encode(text);
+
+                if (bytes.length <= maxBytes) {
+                    return { text, truncated: false };
+                }
+
+                const noticeBytes = encoder.encode(this.truncationNotice).length;
+                const allowance = Math.max(0, maxBytes - noticeBytes);
+
+                let truncatedText = '';
+                let used = 0;
+
+                for (const char of text) {
+                    const charBytes = encoder.encode(char);
+                    if (used + charBytes.length > allowance) break;
+                    truncatedText += char;
+                    used += charBytes.length;
+                }
+
+                truncatedText = truncatedText.trimEnd();
+                const lastBreak = truncatedText.lastIndexOf('\n');
+                if (lastBreak > 0 && truncatedText.length - lastBreak < 10) {
+                    truncatedText = truncatedText.slice(0, lastBreak).trimEnd();
+                }
+
+                if (!truncatedText) {
+                    truncatedText = text.slice(0, Math.max(0, allowance));
+                }
+
+                const finalText = `${truncatedText}${this.truncationNotice}`;
+                return { text: finalText, truncated: true };
             }
             
             createFallbackDisplay(container, text) {
