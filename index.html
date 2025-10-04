@@ -944,20 +944,27 @@
             z-index: 2000;
             align-items: center;
             justify-content: center;
+            padding: 32px 16px;
         }
-        
+
         .modal.active {
             display: flex;
         }
-        
+
         .modal-content {
             background: white;
             padding: 30px;
-            border-radius: 8px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
+            border-radius: 12px;
+            max-width: 640px;
+            width: min(640px, 100%);
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+        }
+
+        @media (max-height: 720px) {
+            .modal-content {
+                max-height: calc(100vh - 80px);
+                overflow-y: auto;
+            }
         }
         
         .modal-header {
@@ -1269,7 +1276,18 @@
             padding: 20px;
             background: white;
             border-radius: 8px;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 220px;
+            height: 220px;
+        }
+
+        .totp-qr canvas,
+        .totp-qr img,
+        .totp-qr table {
+            width: 100% !important;
+            height: 100% !important;
         }
         
         .backup-codes {
@@ -1444,10 +1462,50 @@
         }
 
         .export-options {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+            display: grid;
+            gap: 16px;
             margin: 20px 0;
+        }
+
+        .export-option-card {
+            display: flex;
+            gap: 16px;
+            padding: 18px 20px;
+            border: 1px solid #d0e2ff;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #f8fbff 0%, #eef4ff 100%);
+            align-items: flex-start;
+        }
+
+        .export-option-copy {
+            flex: 1;
+        }
+
+        .export-option-card h4 {
+            margin: 0 0 6px 0;
+            font-size: 12.5pt;
+            color: #1e293b;
+        }
+
+        .export-option-card p {
+            margin: 0 0 12px 0;
+            font-size: 9.5pt;
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        .export-option-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #2563eb;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20pt;
+            flex-shrink: 0;
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
         }
 
         .export-note {
@@ -1506,6 +1564,15 @@
             background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 8px;
+            width: 220px;
+            height: 220px;
+        }
+
+        #shareTotpQR canvas,
+        #shareTotpQR img,
+        #shareTotpQR table {
+            width: 100% !important;
+            height: 100% !important;
         }
 
         .form-control {
@@ -1792,11 +1859,25 @@
             <div class="modal-body">
                 <p>Select how you'd like to share or archive this record.</p>
                 <div class="export-options">
-                    <button class="btn btn-primary" id="printSummaryBtn">🖨️ Printable Care Summary</button>
-                    <button class="btn btn-secondary" id="shareBtn">🔐 TOTP-Protected Share Package</button>
+                    <div class="export-option-card">
+                        <div class="export-option-icon" aria-hidden="true">🖨️</div>
+                        <div class="export-option-copy">
+                            <h4>Printable Care Summary</h4>
+                            <p>Preview a branded, clinic-ready summary that you can print or save as a PDF for appointments and emergency visits.</p>
+                            <button class="btn btn-primary" id="printSummaryBtn" type="button">Open Summary Preview</button>
+                        </div>
+                    </div>
+                    <div class="export-option-card">
+                        <div class="export-option-icon" aria-hidden="true">🔐</div>
+                        <div class="export-option-copy">
+                            <h4>TOTP-Protected Share Package</h4>
+                            <p>Create a read-only HTML package that unlocks with a 6-digit authenticator code. Ideal for specialists and short-term sharing.</p>
+                            <button class="btn btn-secondary" id="shareBtn" type="button">Generate Secure Package</button>
+                        </div>
+                    </div>
                 </div>
                 <p class="export-note">
-                    The printable summary reformats your record into an easy-to-read care handoff that can be printed or saved as a PDF for sharing.
+                    You can always return here to regenerate a fresh summary or secure share with the latest updates from your vault.
                 </p>
             </div>
             <div class="modal-footer">
@@ -2579,6 +2660,19 @@
 
                 if (qrElement) {
                     qrElement.removeAttribute('title');
+                    if ((qrElement.tagName || '').toUpperCase() === 'TABLE') {
+                        qrElement.style.borderCollapse = 'collapse';
+                        const rows = qrElement.querySelectorAll('tr').length || 1;
+                        const cellSize = `${100 / rows}%`;
+                        qrElement.querySelectorAll('td').forEach(cell => {
+                            cell.style.width = cellSize;
+                            cell.style.height = cellSize;
+                            cell.style.padding = '0';
+                        });
+                    }
+
+                    qrElement.style.width = '100%';
+                    qrElement.style.height = '100%';
                     target.appendChild(qrElement);
                 }
             },
@@ -2791,6 +2885,8 @@
                 this.noteTags = [];
                 this.sectionLocks = {};
                 this.fieldHistory = {};
+                this._textEncoder = new TextEncoder();
+                this._textDecoder = new TextDecoder();
 
                 // Initialize
                 this.init();
@@ -2925,6 +3021,7 @@
                 document.getElementById('addProviderBtn')?.addEventListener('click', () => this.addProvider());
                 document.getElementById('addNoteBtn')?.addEventListener('click', () => this.addNote());
                 document.getElementById('addGACNoteBtn')?.addEventListener('click', () => this.addGACNote());
+                document.getElementById('addGACProcedureBtn')?.addEventListener('click', () => this.addGACProcedure());
                 document.getElementById('addVitalBtn')?.addEventListener('click', () => this.addVitalSign());
                 document.getElementById('addLabBtn')?.addEventListener('click', () => this.addLabResult());
                 document.getElementById('addCovidVaccineBtn')?.addEventListener('click', () => this.addCovidVaccine());
@@ -3594,7 +3691,7 @@
             collectFormData() {
                 const formData = {};
                 const inputs = document.querySelectorAll('.form-data');
-                
+
                 inputs.forEach(input => {
                     const field = input.dataset.field;
                     if (input.type === 'checkbox') {
@@ -3603,7 +3700,7 @@
                         formData[field] = input.value;
                     }
                 });
-                
+
                 if (this.requires2FA && this.totpSecret) {
                     formData.totpSecret = this.totpSecret;
                 }
@@ -3612,7 +3709,203 @@
 
                 return formData;
             }
-            
+
+            cloneHistory(history) {
+                if (!history || typeof history !== 'object') {
+                    return {};
+                }
+
+                if (typeof structuredClone === 'function') {
+                    try {
+                        return structuredClone(history);
+                    } catch (error) {
+                        // Fallback below if structuredClone fails
+                    }
+                }
+
+                try {
+                    return JSON.parse(JSON.stringify(history));
+                } catch (error) {
+                    return {};
+                }
+            }
+
+            compactHistory(entries = []) {
+                if (!Array.isArray(entries)) {
+                    return [];
+                }
+
+                const sanitized = entries
+                    .map(entry => ({
+                        value: entry?.value ?? null,
+                        source: entry?.source || 'Unknown Source',
+                        timestamp: this.toISODate(entry?.timestamp)
+                    }))
+                    .filter(entry => entry.timestamp)
+                    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+                const deduped = [];
+                sanitized.forEach(entry => {
+                    const last = deduped[deduped.length - 1];
+                    const serialized = JSON.stringify(entry.value);
+                    const lastSerialized = last ? JSON.stringify(last.value) : null;
+
+                    if (last && lastSerialized === serialized && last.timestamp === entry.timestamp) {
+                        if (entry.source && !last.source.includes(entry.source)) {
+                            last.source = `${last.source}, ${entry.source}`;
+                        }
+                    } else {
+                        deduped.push({ ...entry });
+                    }
+                });
+
+                return deduped;
+            }
+
+            normalizeHistory(data = {}, options = {}) {
+                const {
+                    sourceLabel = 'Unknown Source',
+                    fallbackTimestamp = new Date().toISOString()
+                } = options;
+
+                const normalized = {};
+                const fallbackISO = this.toISODate(fallbackTimestamp) || new Date().toISOString();
+                const rawHistory = data?.__history && typeof data.__history === 'object' ? data.__history : {};
+
+                Object.entries(rawHistory).forEach(([field, entries]) => {
+                    if (!Array.isArray(entries)) {
+                        return;
+                    }
+
+                    normalized[field] = this.compactHistory(entries.map(entry => ({
+                        value: entry?.value ?? null,
+                        source: entry?.source || sourceLabel,
+                        timestamp: this.toISODate(entry?.timestamp) || fallbackISO
+                    })));
+                });
+
+                Object.keys(data || {}).forEach(field => {
+                    if (['__history', 'lastUpdated'].includes(field)) {
+                        return;
+                    }
+
+                    if (!Object.prototype.hasOwnProperty.call(data, field)) {
+                        return;
+                    }
+
+                    const value = data[field];
+                    const existing = Array.isArray(normalized[field]) ? normalized[field] : [];
+                    const lastEntry = existing[existing.length - 1];
+                    const serializedValue = JSON.stringify(value);
+                    const lastSerialized = lastEntry ? JSON.stringify(lastEntry.value) : null;
+
+                    if (!lastEntry || lastSerialized !== serializedValue) {
+                        existing.push({
+                            value,
+                            source: sourceLabel,
+                            timestamp: fallbackISO
+                        });
+                    }
+
+                    normalized[field] = this.compactHistory(existing);
+                });
+
+                return normalized;
+            }
+
+            toISODate(value) {
+                if (!value) {
+                    return null;
+                }
+
+                const date = new Date(value);
+                if (Number.isNaN(date.getTime())) {
+                    return null;
+                }
+
+                return date.toISOString();
+            }
+
+            recordFieldChange(element, sourceLabel = 'Manual Update') {
+                if (!element || !element.dataset?.field) {
+                    return;
+                }
+
+                const field = element.dataset.field;
+                if (!field || field === '__history') {
+                    return;
+                }
+
+                const value = element.type === 'checkbox' ? element.checked : element.value;
+                const timestamp = new Date().toISOString();
+                const currentHistory = Array.isArray(this.fieldHistory[field]) ? [...this.fieldHistory[field]] : [];
+                const lastEntry = currentHistory[currentHistory.length - 1];
+                const serializedValue = JSON.stringify(value);
+                const lastSerialized = lastEntry ? JSON.stringify(lastEntry.value) : null;
+
+                if (lastEntry && lastSerialized === serializedValue) {
+                    return;
+                }
+
+                currentHistory.push({ value, timestamp, source: sourceLabel });
+                this.fieldHistory[field] = this.compactHistory(currentHistory);
+            }
+
+            ensureFieldsExist(fields = []) {
+                if (!Array.isArray(fields)) {
+                    return;
+                }
+
+                const previousState = this.hasUnsavedChanges;
+                const processedIds = new Set();
+
+                fields.forEach(field => {
+                    if (typeof field !== 'string' || !field || ['__history', 'lastUpdated', 'totpSecret'].includes(field)) {
+                        return;
+                    }
+
+                    if (document.querySelector(`[data-field="${field}"]`)) {
+                        return;
+                    }
+
+                    const baseId = field.includes('_') ? field.substring(0, field.lastIndexOf('_')) : field;
+                    if (!baseId || processedIds.has(baseId)) {
+                        return;
+                    }
+
+                    processedIds.add(baseId);
+
+                    if (baseId.startsWith('contact_')) {
+                        this.addEmergencyContact(baseId);
+                    } else if (baseId.startsWith('med_')) {
+                        this.addMedication(baseId);
+                    } else if (baseId.startsWith('vital_')) {
+                        this.addVitalSign(baseId);
+                    } else if (baseId.startsWith('lab_')) {
+                        this.addLabResult(baseId);
+                    } else if (baseId.startsWith('provider_')) {
+                        this.addGenericItem('providers-container', 'provider', 'Enter provider details', baseId);
+                    } else if (baseId.startsWith('note_')) {
+                        this.createDetailedNote('notes-container', 'note', null, baseId);
+                    } else if (baseId.startsWith('gacnote_')) {
+                        this.createDetailedNote('gac-notes-container', 'gacnote', null, baseId);
+                    } else if (baseId.startsWith('condition_')) {
+                        this.addGenericItem('conditions-container', 'condition', 'Enter condition', baseId);
+                    } else if (baseId.startsWith('surgery_')) {
+                        this.addGenericItem('surgeries-container', 'surgery', 'Enter surgery', baseId);
+                    } else if (baseId.startsWith('covid_')) {
+                        this.addGenericItem('covid-vaccines-container', 'covid', 'Enter COVID-19 vaccine', baseId);
+                    } else if (baseId.startsWith('vaccine_')) {
+                        this.addGenericItem('vaccines-container', 'vaccine', 'Enter vaccine', baseId);
+                    } else if (baseId.startsWith('gacproc_')) {
+                        this.addGACProcedure(baseId);
+                    }
+                });
+
+                this.hasUnsavedChanges = previousState;
+                this.updateSaveStatus();
+            }
+
             loadFormData(data) {
                 const historySnapshot = this.normalizeHistory(data, {
                     sourceLabel: 'Vault Snapshot',
@@ -4097,7 +4390,57 @@
                 container.insertAdjacentHTML('beforeend', html);
                 this.markAsChanged();
             }
-            
+
+            addGACProcedure(presetId) {
+                const container = document.getElementById('gac-procedures-container');
+                if (!container) return null;
+
+                const id = presetId || `gacproc_${Date.now()}`;
+                if (document.querySelector(`[data-item-id="${id}"]`)) {
+                    return id;
+                }
+
+                const html = `
+                    <div class="list-item" data-item-id="${id}">
+                        <button class="delete-btn no-print" onclick="app.removeItem('${id}')">Remove</button>
+                        <div class="grid-2">
+                            <div class="field">
+                                <label>Procedure</label>
+                                <input type="text" class="form-data" data-field="${id}_name" placeholder="e.g., Top Surgery" />
+                            </div>
+                            <div class="field">
+                                <label>Status</label>
+                                <select class="form-data" data-field="${id}_status">
+                                    <option value="">Select...</option>
+                                    <option>Planned</option>
+                                    <option>Scheduled</option>
+                                    <option>Completed</option>
+                                    <option>Follow-up</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid-2">
+                            <div class="field">
+                                <label>Date</label>
+                                <input type="date" class="form-data" data-field="${id}_date" />
+                            </div>
+                            <div class="field">
+                                <label>Provider / Facility</label>
+                                <input type="text" class="form-data" data-field="${id}_provider" placeholder="Clinic or surgeon name" />
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Notes</label>
+                            <textarea rows="2" class="form-data" data-field="${id}_notes" placeholder="Outcomes, follow-up care, insurance authorization, etc."></textarea>
+                        </div>
+                    </div>
+                `;
+
+                container.insertAdjacentHTML('beforeend', html);
+                this.markAsChanged();
+                return id;
+            }
+
             addCondition() { this.addGenericItem('conditions-container', 'condition', 'Enter condition (e.g., Type 2 Diabetes - 2023)'); }
             addSurgery() { this.addGenericItem('surgeries-container', 'surgery', 'Enter surgery (e.g., Appendectomy - 2020)'); }
             addProvider() {
@@ -4110,11 +4453,14 @@
             addCovidVaccine() { this.addGenericItem('covid-vaccines-container', 'covid', 'Enter vaccine (e.g., Pfizer Booster - 10/2024)'); }
             addVaccine() { this.addGenericItem('vaccines-container', 'vaccine', 'Enter vaccine (e.g., Shingles - 05/2024)'); }
 
-            createDetailedNote(containerId, prefix, existingData = null) {
+            createDetailedNote(containerId, prefix, existingData = null, presetId = null) {
                 const container = document.getElementById(containerId);
                 if (!container) return null;
 
-                const id = `${prefix}_${Date.now()}`;
+                const id = presetId || existingData?.id || `${prefix}_${Date.now()}`;
+                if (document.querySelector(`[data-item-id="${id}"]`)) {
+                    return id;
+                }
                 const createdAt = existingData?.createdAt || new Date().toISOString();
                 const provider = existingData?.provider || '';
                 const eventDate = existingData?.eventDate || '';
@@ -4225,11 +4571,14 @@
                 document.querySelectorAll('.note-item').forEach(noteEl => this.renderTagCheckboxesForNote(noteEl));
             }
 
-            addGenericItem(containerId, prefix, placeholder) {
+            addGenericItem(containerId, prefix, placeholder, presetId = null) {
                 const container = document.getElementById(containerId);
                 if (!container) return null;
 
-                const id = `${prefix}_${Date.now()}`;
+                const id = presetId || `${prefix}_${Date.now()}`;
+                if (document.querySelector(`[data-item-id="${id}"]`)) {
+                    return id;
+                }
                 const html = `
                     <div class="list-item" data-item-id="${id}">
                         <button class="delete-btn no-print" onclick="app.removeItem('${id}')">Remove</button>
@@ -4552,6 +4901,7 @@
                         surgeries: this.collectListData('surgeries-container'),
                         providers: this.collectListData('providers-container'),
                         notes: this.collectListData('notes-container'),
+                        gacProcedures: this.collectListData('gac-procedures-container'),
                         covidVaccines: this.collectListData('covid-vaccines-container'),
                         otherVaccines: this.collectListData('vaccines-container')
                     };
@@ -4651,6 +5001,8 @@
                             return clone(lists.providers) || [];
                         case 'notes-container':
                             return clone(lists.notes) || [];
+                        case 'gac-procedures-container':
+                            return clone(lists.gacProcedures) || [];
                         case 'covid-vaccines-container':
                             return clone(lists.covidVaccines) || [];
                         case 'vaccines-container':
@@ -4996,6 +5348,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
                 const providers = this.collectListData('providers-container').map(item => item.value).filter(Boolean);
                 const noteEntries = this.collectListData('notes-container');
                 const gacNoteEntries = this.collectListData('gac-notes-container');
+                const gacProcedures = this.collectListData('gac-procedures-container');
                 const notes = noteEntries.map(entry => this.normalizeNoteRecord(entry)).filter(note => this.noteHasContent(note));
                 const gacNotes = gacNoteEntries.map(entry => this.normalizeNoteRecord(entry)).filter(note => this.noteHasContent(note));
                 const covidVaccines = this.collectListData('covid-vaccines-container').map(item => item.value).filter(Boolean);
@@ -5037,6 +5390,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
                         date: this.formatDate(lab.date),
                         result: this.formatValue(lab.result),
                         range: this.formatValue(lab.range)
+                    }));
+
+                const gacProcedureRows = gacProcedures
+                    .filter(proc => Object.values(proc).some(value => value))
+                    .map(proc => ({
+                        name: this.formatValue(proc.name),
+                        status: this.formatValue(proc.status),
+                        date: this.formatDate(proc.date),
+                        provider: this.formatValue(proc.provider),
+                        notes: this.formatTextBlock(proc.notes)
                     }));
 
                 const medicationAllergies = this.splitToList(formData.medicationAllergies);
@@ -5171,6 +5534,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
                             ${vaccineLists.length ? `<div class="print-grid">${vaccineLists.join('')}</div>` : ''}
                             ${covidList || otherVaccineList || '<p class="print-note">—</p>'}
                         </section>
+                        ${(this.modules?.gac || gacProcedureRows.length) ? this.buildTableSection('Gender-Affirming Procedures', [
+                            { key: 'name', label: 'Procedure' },
+                            { key: 'status', label: 'Status' },
+                            { key: 'date', label: 'Date' },
+                            { key: 'provider', label: 'Provider / Facility' },
+                            { key: 'notes', label: 'Notes', allowHTML: true }
+                        ], gacProcedureRows) : ''}
                         <section class="print-section">
                             <h2>Care Notes</h2>
                             ${notes.length ? notes.map(note => this.buildNotePrintBlock(note)).join('') : '<p class="print-note">—</p>'}
