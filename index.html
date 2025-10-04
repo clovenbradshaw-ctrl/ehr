@@ -1634,38 +1634,12 @@
             <div class="modal-body">
                 <div class="qr-generator">
                     <div class="qr-config">
-                        <h4>Include in QR Code:</h4>
-                        <div class="checkbox-group" style="flex-direction: column; align-items: flex-start;">
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="qr-name" checked>
-                                <label for="qr-name">Name</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="qr-dob" checked>
-                                <label for="qr-dob">Date of Birth</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="qr-blood" checked>
-                                <label for="qr-blood">Blood Type</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="qr-allergies" checked>
-                                <label for="qr-allergies">Critical Allergies</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="qr-conditions" checked>
-                                <label for="qr-conditions">Medical Conditions</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="qr-medications" checked>
-                                <label for="qr-medications">Critical Medications</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="qr-contacts" checked>
-                                <label for="qr-contacts">Emergency Contacts</label>
-                            </div>
-                        </div>
-                        <button class="btn btn-primary" onclick="app.generateQR()" style="margin-top: 15px;">Generate QR</button>
+                        <h4>Emergency Contact Details</h4>
+                        <p style="font-size: 10pt; color: #64748b; margin: 10px 0 0;">
+                            The QR code now includes only the names, relationships, and phone numbers from your emergency contacts.
+                            Any blank fields are automatically skipped.
+                        </p>
+                        <button class="btn btn-primary" onclick="app.generateQR()" style="margin-top: 20px;">Generate QR</button>
                     </div>
                     <div class="qr-preview">
                         <div id="qr-canvas"></div>
@@ -3356,86 +3330,47 @@
 
             buildEmergencySummary() {
                 const lines = [
-                    'EMERGENCY MEDICAL INFO',
+                    'EMERGENCY CONTACTS',
                     `Generated: ${new Date().toLocaleDateString()}`,
-                    '═══════════════════',
-                    ''
+                    '═══════════════════'
                 ];
 
                 let hasDetails = false;
 
-                const addValueLine = (label, value) => {
-                    const trimmed = value?.trim();
-                    if (!trimmed) return;
-                    lines.push(`${label}: ${trimmed}`);
-                    hasDetails = true;
-                };
+                const contacts = Array.from(document.querySelectorAll('#emergency-contacts-container .list-item'));
 
-                const addListSection = (title, items) => {
-                    const cleaned = items.map(item => item.trim()).filter(Boolean);
-                    if (cleaned.length === 0) return;
-                    lines.push(title);
-                    cleaned.forEach(item => lines.push(`• ${item}`));
-                    lines.push('');
-                    hasDetails = true;
-                };
+                contacts.forEach(container => {
+                    const name = container.querySelector('[data-field$="_name"]')?.value.trim() || '';
+                    const relationship = container.querySelector('[data-field$="_relationship"]')?.value.trim() || '';
+                    const phone = container.querySelector('[data-field$="_phone"]')?.value.trim() || '';
+                    const altPhone = container.querySelector('[data-field$="_altPhone"]')?.value.trim() || '';
 
-                if (document.getElementById('qr-name').checked) {
-                    const firstName = document.querySelector('[data-field="firstName"]')?.value.trim() || '';
-                    const lastName = document.querySelector('[data-field="lastName"]')?.value.trim() || '';
-                    const fullName = `${firstName} ${lastName}`.trim();
-                    if (fullName) addValueLine('NAME', fullName.replace(/\s+/g, ' '));
-                }
+                    const entryLines = [];
 
-                if (document.getElementById('qr-dob').checked) {
-                    addValueLine('DOB', document.querySelector('[data-field="dateOfBirth"]')?.value);
-                }
+                    if (name && relationship) {
+                        entryLines.push(`${name} (${relationship})`);
+                    } else if (name) {
+                        entryLines.push(name);
+                    } else if (relationship) {
+                        entryLines.push(relationship);
+                    }
 
-                if (document.getElementById('qr-blood').checked) {
-                    addValueLine('BLOOD TYPE', document.querySelector('[data-field="bloodType"]')?.value);
-                }
+                    if (phone) {
+                        entryLines.push(`Primary: ${phone}`);
+                    }
 
-                if (document.getElementById('qr-allergies').checked) {
-                    const critical = document.querySelector('[data-field="criticalAllergies"]')?.value || '';
-                    const med = document.querySelector('[data-field="medicationAllergies"]')?.value || '';
-                    const food = document.querySelector('[data-field="foodAllergies"]')?.value || '';
+                    if (altPhone) {
+                        entryLines.push(`Alternate: ${altPhone}`);
+                    }
 
-                    const allergyItems = [];
-                    if (critical.trim()) allergyItems.push(`Critical: ${critical.trim()}`);
-                    if (med.trim()) allergyItems.push(`Medications: ${med.trim()}`);
-                    if (food.trim()) allergyItems.push(`Food: ${food.trim()}`);
-
-                    addListSection('ALLERGIES:', allergyItems);
-                }
-
-                if (document.getElementById('qr-conditions').checked) {
-                    const conditions = document.querySelector('[data-field="criticalConditions"]')?.value || '';
-                    addListSection('MEDICAL CONDITIONS:', this.prepareListFromValue(conditions));
-                }
-
-                if (document.getElementById('qr-medications').checked) {
-                    const contraindications = document.querySelector('[data-field="medicationContraindications"]')?.value || '';
-                    addListSection('DO NOT GIVE:', this.prepareListFromValue(contraindications));
-                }
-
-                if (document.getElementById('qr-contacts').checked) {
-                    const contacts = Array.from(document.querySelectorAll('#emergency-contacts-container .list-item')).map(container => {
-                        const name = container.querySelector('[data-field$="_name"]')?.value.trim();
-                        const relationship = container.querySelector('[data-field$="_relationship"]')?.value.trim();
-                        const phone = container.querySelector('[data-field$="_phone"]')?.value.trim();
-
-                        if (!name || !phone) return '';
-                        return relationship ? `${name} (${relationship}): ${phone}` : `${name}: ${phone}`;
-                    });
-
-                    addListSection('EMERGENCY CONTACTS:', contacts);
-                }
-
-                const hospital = document.querySelector('[data-field="preferredHospital"]')?.value;
-                if (hospital) {
-                    addValueLine('PREFERRED HOSPITAL', hospital);
-                    lines.push('');
-                }
+                    if (entryLines.length > 0) {
+                        if (lines[lines.length - 1] !== '') {
+                            lines.push('');
+                        }
+                        lines.push(...entryLines);
+                        hasDetails = true;
+                    }
+                });
 
                 while (lines.length > 0 && lines[lines.length - 1] === '') {
                     lines.pop();
