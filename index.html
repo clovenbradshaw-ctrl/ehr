@@ -3229,6 +3229,7 @@
                 this.emergencyAccessConfig = null;
                 this.schemaVersion = schemaManager.currentVersion;
                 this.pendingSchemaNotice = null;
+                this.instanceMedicalRecordId = null;
 
                 // Application version metadata
                 this.version = APP_VERSION;
@@ -3251,7 +3252,67 @@
                 const num = Math.floor(Math.random() * 1000);
                 return `${adj}-${noun}-${num}`;
             }
-            
+
+            generateInstanceGuid() {
+                const cryptoSource = (typeof window !== 'undefined' && (window.crypto || window.msCrypto)) || null;
+
+                if (cryptoSource?.randomUUID) {
+                    return cryptoSource.randomUUID();
+                }
+
+                if (cryptoSource?.getRandomValues) {
+                    const bytes = new Uint8Array(16);
+                    cryptoSource.getRandomValues(bytes);
+
+                    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+                    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+                    const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0'));
+                    return `${hex.slice(0, 4).join('')}-${hex.slice(4, 6).join('')}-${hex.slice(6, 8).join('')}-${hex.slice(8, 10).join('')}-${hex.slice(10, 16).join('')}`;
+                }
+
+                let timestamp = Date.now();
+                if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
+                    timestamp += performance.now();
+                }
+
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (char) => {
+                    const random = (timestamp + Math.random() * 16) % 16 | 0;
+                    timestamp = Math.floor(timestamp / 16);
+                    const value = char === 'x' ? random : (random & 0x3) | 0x8;
+                    return value.toString(16);
+                });
+            }
+
+            ensureInstanceMedicalRecordId(options = {}) {
+                const { updateDisplay = true } = options;
+                const mrnField = document.querySelector('.form-data[data-field="mrn"]');
+
+                if (!mrnField) {
+                    return { value: null, generated: false };
+                }
+
+                const existingValue = (mrnField.value || '').trim();
+                if (existingValue) {
+                    this.instanceMedicalRecordId = existingValue;
+                    return { value: existingValue, generated: false };
+                }
+
+                const newValue = this.instanceMedicalRecordId || this.generateInstanceGuid();
+                this.instanceMedicalRecordId = newValue;
+                mrnField.value = newValue;
+
+                if (this.isInitialized && typeof this.markAsChanged === 'function') {
+                    this.markAsChanged();
+                }
+
+                if (updateDisplay && typeof this.updatePatientSummaryDisplay === 'function') {
+                    this.updatePatientSummaryDisplay();
+                }
+
+                return { value: newValue, generated: true };
+            }
+
             checkInitialization() {
                 const embeddedData = document.getElementById('embedded-vault-data');
                 const dataContent = embeddedData?.textContent?.trim();
@@ -3463,6 +3524,8 @@
                 // Clear any cached data
                 localStorage.clear();
                 sessionStorage.clear();
+
+                this.ensureInstanceMedicalRecordId();
             }
 
             applyVersionMetadata() {
@@ -4167,6 +4230,7 @@
             }
 
             collectFormData() {
+                const { generated } = this.ensureInstanceMedicalRecordId({ updateDisplay: false });
                 const formData = {};
                 const inputs = document.querySelectorAll('.form-data');
 
@@ -4186,6 +4250,10 @@
 
                 formData.schemaVersion = schemaManager.currentVersion;
                 formData.appVersion = APP_VERSION;
+
+                if (generated && typeof this.updatePatientSummaryDisplay === 'function') {
+                    this.updatePatientSummaryDisplay();
+                }
 
                 return formData;
             }
@@ -4273,6 +4341,7 @@
                 this.updateEmergencySettingsVisibility();
 
                 document.getElementById('lastUpdatedHeader').textContent = `Last Updated: ${normalizedData.lastUpdated || 'Never'}`;
+                this.ensureInstanceMedicalRecordId({ updateDisplay: false });
                 this.updatePatientSummaryDisplay();
                 this.restoreNoteTagsFromStorage();
                 this.initializeExistingNotes();
