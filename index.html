@@ -739,7 +739,42 @@
             margin: 15px 0;
             font-size: 9pt;
         }
-        
+
+        .password-update-option {
+            margin-bottom: 15px;
+        }
+
+        .password-update-option label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .password-update-option p {
+            margin: 6px 0 0 26px;
+            color: #64748b;
+            font-size: 9pt;
+        }
+
+        .password-update-fields {
+            margin: 12px 0 0 26px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .password-update-fields .field {
+            margin-bottom: 10px;
+        }
+
+        .password-update-note {
+            font-size: 9pt;
+            color: #64748b;
+            margin: 12px 0 0 0;
+        }
+
         .danger-box {
             background: #fee2e2;
             border: 1px solid #dc2626;
@@ -1950,6 +1985,49 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" id="modalCancel">Cancel</button>
                 <button class="btn btn-primary" id="modalSubmit">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Update Modal -->
+    <div class="modal" id="passwordUpdateModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Save Vault</h3>
+            </div>
+            <div class="modal-body">
+                <div class="password-update-option">
+                    <label>
+                        <input type="radio" name="passwordUpdateChoice" value="keep" checked>
+                        Keep current password
+                    </label>
+                    <p>
+                        Your vault will be encrypted with the password you unlocked it with.
+                    </p>
+                </div>
+                <div class="password-update-option">
+                    <label>
+                        <input type="radio" name="passwordUpdateChoice" value="change">
+                        Set a new password before saving
+                    </label>
+                    <div class="password-update-fields" id="passwordUpdateFields" style="display: none;">
+                        <div class="field">
+                            <label>New Password</label>
+                            <input type="password" id="updateNewPassword" placeholder="Enter new password">
+                        </div>
+                        <div class="field">
+                            <label>Confirm New Password</label>
+                            <input type="password" id="updateConfirmPassword" placeholder="Confirm new password">
+                        </div>
+                    </div>
+                </div>
+                <p class="password-update-note" id="passwordUpdate2FANote" style="display: none;">
+                    Two-factor authentication stays connected—your existing authenticator codes will continue to work after changing your password.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="passwordUpdateCancel">Cancel</button>
+                <button class="btn btn-primary" id="passwordUpdateSubmit">Save Vault</button>
             </div>
         </div>
     </div>
@@ -3602,7 +3680,25 @@
                 // Password modal
                 document.getElementById('modalSubmit').addEventListener('click', () => this.handlePasswordSubmit());
                 document.getElementById('modalCancel').addEventListener('click', () => this.closePasswordModal());
-                
+                document.getElementById('passwordUpdateSubmit')?.addEventListener('click', () => this.handlePasswordUpdateSubmit());
+                document.getElementById('passwordUpdateCancel')?.addEventListener('click', () => this.closePasswordUpdateModal());
+                document.querySelectorAll('input[name="passwordUpdateChoice"]').forEach((input) => {
+                    input.addEventListener('change', (event) => {
+                        this.togglePasswordUpdateMode(event.target.value);
+                    });
+                });
+                ['updateNewPassword', 'updateConfirmPassword'].forEach((id) => {
+                    const input = document.getElementById(id);
+                    if (input) {
+                        input.addEventListener('keydown', (event) => {
+                            if (event.key === 'Enter') {
+                                event.preventDefault();
+                                this.handlePasswordUpdateSubmit();
+                            }
+                        });
+                    }
+                });
+
                 // Keyboard shortcuts
                 document.addEventListener('keydown', (e) => {
                     if ((e.ctrlKey || e.metaKey) && e.key === 's') {
@@ -3997,7 +4093,7 @@
                 if (!this.sessionPassword) {
                     this.showPasswordModal();
                 } else {
-                    await this.performSave(this.sessionPassword);
+                    this.showPasswordUpdateModal();
                 }
             }
             
@@ -4012,12 +4108,84 @@
                 document.getElementById('modalPassword').value = '';
                 document.getElementById('modalConfirmPassword').value = '';
             }
-            
+
+            showPasswordUpdateModal() {
+                const modal = document.getElementById('passwordUpdateModal');
+                if (!modal) {
+                    return;
+                }
+
+                modal.classList.add('active');
+
+                const keepOption = document.querySelector('input[name="passwordUpdateChoice"][value="keep"]');
+                const changeOption = document.querySelector('input[name="passwordUpdateChoice"][value="change"]');
+                const newPasswordInput = document.getElementById('updateNewPassword');
+                const confirmPasswordInput = document.getElementById('updateConfirmPassword');
+
+                if (keepOption) {
+                    keepOption.checked = true;
+                }
+
+                if (changeOption) {
+                    changeOption.checked = false;
+                }
+
+                if (newPasswordInput) {
+                    newPasswordInput.value = '';
+                }
+
+                if (confirmPasswordInput) {
+                    confirmPasswordInput.value = '';
+                }
+
+                this.togglePasswordUpdateMode('keep');
+
+                const note = document.getElementById('passwordUpdate2FANote');
+                if (note) {
+                    note.style.display = this.requires2FA ? 'block' : 'none';
+                }
+            }
+
+            closePasswordUpdateModal() {
+                const modal = document.getElementById('passwordUpdateModal');
+                if (!modal) {
+                    return;
+                }
+
+                modal.classList.remove('active');
+                this.togglePasswordUpdateMode('keep');
+            }
+
+            togglePasswordUpdateMode(mode) {
+                const fields = document.getElementById('passwordUpdateFields');
+                const newPasswordInput = document.getElementById('updateNewPassword');
+                const confirmPasswordInput = document.getElementById('updateConfirmPassword');
+
+                if (!fields) {
+                    return;
+                }
+
+                if (mode === 'change') {
+                    fields.style.display = 'block';
+                    if (newPasswordInput) {
+                        newPasswordInput.focus();
+                    }
+                } else {
+                    fields.style.display = 'none';
+                    if (newPasswordInput) {
+                        newPasswordInput.value = '';
+                    }
+                    if (confirmPasswordInput) {
+                        confirmPasswordInput.value = '';
+                    }
+                }
+            }
+
             async handlePasswordSubmit() {
                 const password = document.getElementById('modalPassword').value;
                 const confirmPassword = document.getElementById('modalConfirmPassword').value;
                 const enable2FA = document.getElementById('enable2FA')?.checked;
-                
+
                 if (!password) {
                     alert('Please enter a password');
                     return;
@@ -4055,7 +4223,44 @@
                           `• Keep your password safe - there's no recovery without it`);
                 }
             }
-            
+
+            async handlePasswordUpdateSubmit() {
+                const selectedOption = document.querySelector('input[name="passwordUpdateChoice"]:checked');
+                const choice = selectedOption ? selectedOption.value : 'keep';
+
+                if (choice === 'keep') {
+                    this.closePasswordUpdateModal();
+                    if (this.sessionPassword) {
+                        await this.performSave(this.sessionPassword);
+                    } else {
+                        this.showPasswordModal();
+                    }
+                    return;
+                }
+
+                const newPassword = document.getElementById('updateNewPassword')?.value || '';
+                const confirmPassword = document.getElementById('updateConfirmPassword')?.value || '';
+
+                if (!newPassword) {
+                    alert('Please enter a new password');
+                    return;
+                }
+
+                if (newPassword !== confirmPassword) {
+                    alert('New passwords do not match');
+                    return;
+                }
+
+                if (newPassword.length < 8) {
+                    alert('New password must be at least 8 characters');
+                    return;
+                }
+
+                this.sessionPassword = newPassword;
+                this.closePasswordUpdateModal();
+                await this.performSave(newPassword);
+            }
+
             async performSave(password) {
                 this.version = APP_VERSION;
                 this.schemaVersion = schemaManager.currentVersion;
