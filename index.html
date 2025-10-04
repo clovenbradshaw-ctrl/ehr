@@ -1695,11 +1695,9 @@
                 <p>Select how you'd like to share or archive this record.</p>
                 <div class="export-options">
                     <button class="btn btn-primary" id="printSummaryBtn">🖨️ Printable Care Summary</button>
-                    <button class="btn btn-secondary" id="exportFhirBtn">🔄 Download FHIR JSON Bundle</button>
                 </div>
                 <p class="export-note">
-                    The printable summary reformats your record into an easy-to-read care handoff.
-                    The FHIR bundle follows the HL7 FHIR R4 standard so it can be shared with modern EHR platforms.
+                    The printable summary reformats your record into an easy-to-read care handoff that can be printed or saved as a PDF for sharing.
                 </p>
             </div>
             <div class="modal-footer">
@@ -2710,10 +2708,6 @@
                 document.getElementById('printSummaryBtn')?.addEventListener('click', () => {
                     this.closeExportOptions();
                     this.printSummary();
-                });
-
-                document.getElementById('exportFhirBtn')?.addEventListener('click', () => {
-                    this.downloadFHIR();
                 });
 
                 document.getElementById('exportCloseBtn')?.addEventListener('click', () => this.closeExportOptions());
@@ -4545,21 +4539,6 @@
                 }
 
                 return bundle;
-            }
-
-            downloadFHIR() {
-                const bundle = this.generateFHIRBundle();
-                this.closeExportOptions();
-
-                const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/fhir+json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `health_vault_${this.vaultIdentity}_fhir.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
             }
 
             generateFHIRId(prefix) {
