@@ -1073,12 +1073,26 @@
             border-radius: 6px;
             padding: 15px;
         }
-        
+
         .settings-section h4 {
             margin-bottom: 10px;
             color: #1e293b;
         }
-        
+
+        .settings-version {
+            margin-top: 8px;
+            font-size: 10pt;
+            color: #475569;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: baseline;
+        }
+
+        .settings-version strong {
+            color: #0f172a;
+        }
+
         .module-toggle {
             display: flex;
             justify-content: space-between;
@@ -1741,6 +1755,12 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>⚙️ Settings & Modules</h3>
+                <p class="settings-version">
+                    <strong>Version:</strong>
+                    <span id="appVersion">2024.03.29.1700</span>
+                    <span>(Last updated: <span id="appLastUpdated">Mar 29, 2024 17:00 UTC</span>)</span>
+                </p>
+                <!-- Update the version number and timestamp above to reflect the latest deployment each time changes are pushed. -->
             </div>
             <div class="modal-body">
                 <div class="settings-grid">
@@ -2894,6 +2914,11 @@
             }
         };
         
+        // Application metadata
+        const APP_VERSION = '2024.03.29.1700';
+        const APP_LAST_UPDATED = '2024-03-29T17:00:00Z';
+        // NOTE: Update APP_VERSION and APP_LAST_UPDATED to match the latest deployment timestamp whenever changes are pushed.
+
         // Main Application Class
         class HealthVaultApp {
             constructor() {
@@ -2945,6 +2970,11 @@
                 this.noteTags = [];
                 this.sectionLocks = {};
                 this.emergencyAccessConfig = null;
+
+                // Application version metadata
+                this.version = APP_VERSION;
+                this.lastUpdated = APP_LAST_UPDATED;
+                this.applyVersionMetadata();
 
                 // Emergency QR helpers
                 this.QR_BYTE_LIMIT = 1500;
@@ -3159,12 +3189,44 @@
             init() {
                 this.setupEventListeners();
                 this.updateSaveStatus();
-                
+
                 // Clear any cached data
                 localStorage.clear();
                 sessionStorage.clear();
             }
-            
+
+            applyVersionMetadata() {
+                const versionEl = document.getElementById('appVersion');
+                if (versionEl && this.version) {
+                    versionEl.textContent = this.version;
+                }
+
+                const updatedEl = document.getElementById('appLastUpdated');
+                if (!updatedEl) {
+                    return;
+                }
+
+                if (!this.lastUpdated) {
+                    updatedEl.textContent = '—';
+                    return;
+                }
+
+                const parsedDate = new Date(this.lastUpdated);
+                if (!Number.isNaN(parsedDate.getTime())) {
+                    updatedEl.textContent = parsedDate.toLocaleString(undefined, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        timeZone: 'UTC',
+                        timeZoneName: 'short'
+                    });
+                } else {
+                    updatedEl.textContent = this.lastUpdated;
+                }
+            }
+
             setupEventListeners() {
                 // Main buttons
                 document.getElementById('saveBtn').addEventListener('click', () => this.saveVault());
@@ -3907,6 +3969,7 @@
             openSettings() {
                 const modal = document.getElementById('settingsModal');
                 modal.classList.add('active');
+                this.applyVersionMetadata();
 
                 document.getElementById('module-identity').checked = this.modules.identity;
                 document.getElementById('module-gac').checked = this.modules.gac;
