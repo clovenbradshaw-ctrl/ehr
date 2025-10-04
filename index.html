@@ -1962,6 +1962,16 @@
                                 <input type="text" class="form-data" data-field="address" placeholder="Street address, City, State ZIP"/>
                             </div>
                         </div>
+                        <div class="field-row" id="corePronounRow" style="display: none;">
+                            <div class="field">
+                                <label>Chosen Name (Daily Use)</label>
+                                <input type="text" class="form-data" data-field="chosenName" placeholder="Preferred name for day-to-day use" />
+                            </div>
+                            <div class="field">
+                                <label>Pronouns</label>
+                                <input type="text" class="form-data" data-field="pronouns" placeholder="she/her, they/them, he/him" />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2990,6 +3000,9 @@
                         this.saveVault();
                     }
                 });
+
+                this.syncFieldInputs('pronouns');
+                this.syncFieldInputs('chosenName');
                 this.updatePatientSummaryDisplay();
                 this.initializeExistingNotes();
                 this.restoreNoteTagsFromStorage();
@@ -2999,7 +3012,7 @@
             
             startSetup() {
                 const identityHTML = `
-                    <div style="margin: 20px 0; padding: 20px; background: #eff6ff; border-radius: 8px; text-align: center;">
+                    <div id="vaultIdentityBlock" style="margin: 20px 0; padding: 20px; background: #eff6ff; border-radius: 8px; text-align: center;">
                         <h3 style="margin: 0 0 10px 0; color: #1e293b;">Your Vault Identity</h3>
                         <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
                             <h2 id="vaultName" style="color: #3b82f6; margin: 0;">🔷 ${this.vaultIdentity}</h2>
@@ -3017,13 +3030,56 @@
                 const modal = document.getElementById('passwordModal');
                 modal.classList.add('active');
                 document.getElementById('modalTitle').textContent = 'Create Your Health Vault';
-                
+
                 const modalBody = modal.querySelector('.modal-body');
                 const firstField = modalBody.querySelector('.field');
-                firstField.insertAdjacentHTML('beforebegin', identityHTML);
-                
+                if (!document.getElementById('vaultIdentityBlock')) {
+                    firstField.insertAdjacentHTML('beforebegin', identityHTML);
+                } else {
+                    document.getElementById('vaultName').innerHTML = `🔷 ${this.vaultIdentity}`;
+                }
+
+                const moduleSelectionHTML = `
+                    <div id="setupModuleSelection" style="margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 6px;">
+                        <h4 style="margin: 0 0 10px 0;">Enable Optional Modules</h4>
+                        <p style="margin: 0 0 12px 0; font-size: 9pt; color: #64748b;">
+                            Choose any specialized sections to include from the start. You can adjust these later in Settings.
+                        </p>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <label class="checkbox-item" style="align-items: flex-start; gap: 10px;">
+                                <input type="checkbox" id="setup-module-identity">
+                                <span>
+                                    <strong>Extended Identity</strong><br>
+                                    <span style="font-size: 9pt; color: #64748b;">Pronouns, chosen names, context-specific usage</span>
+                                </span>
+                            </label>
+                            <label class="checkbox-item" style="align-items: flex-start; gap: 10px;">
+                                <input type="checkbox" id="setup-module-gac">
+                                <span>
+                                    <strong>Gender Affirming Care</strong><br>
+                                    <span style="font-size: 9pt; color: #64748b;">HRT tracking, surgeries, specialized providers</span>
+                                </span>
+                            </label>
+                            <label class="checkbox-item" style="align-items: flex-start; gap: 10px;">
+                                <input type="checkbox" id="setup-module-mental">
+                                <span>
+                                    <strong>Mental Health</strong><br>
+                                    <span style="font-size: 9pt; color: #64748b;">Mood tracking, therapy notes, crisis resources</span>
+                                </span>
+                            </label>
+                            <label class="checkbox-item" style="align-items: flex-start; gap: 10px;">
+                                <input type="checkbox" id="setup-module-chronic">
+                                <span>
+                                    <strong>Chronic Disease</strong><br>
+                                    <span style="font-size: 9pt; color: #64748b;">Diabetes, hypertension, pain management</span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                `;
+
                 const twoFAHTML = `
-                    <div style="margin-top: 20px; padding: 15px; background: #f0f9ff; border-radius: 6px;">
+                    <div id="setupTwoFAOption" style="margin-top: 20px; padding: 15px; background: #f0f9ff; border-radius: 6px;">
                         <div class="checkbox-item">
                             <input type="checkbox" id="enable2FA">
                             <label for="enable2FA"><strong>Enable Two-Factor Authentication (Optional)</strong></label>
@@ -3035,11 +3091,67 @@
                         </p>
                     </div>
                 `;
-                
+
                 const confirmField = document.getElementById('confirmPasswordField');
-                confirmField.insertAdjacentHTML('afterend', twoFAHTML);
+                if (!document.getElementById('setupModuleSelection')) {
+                    confirmField.insertAdjacentHTML('afterend', moduleSelectionHTML);
+                }
+
+                ['identity', 'gac', 'mental', 'chronic'].forEach(module => {
+                    const setupToggle = document.getElementById(`setup-module-${module}`);
+                    if (setupToggle) {
+                        setupToggle.checked = this.modules[module];
+                    }
+                });
+
+                if (!document.getElementById('setupTwoFAOption')) {
+                    const insertAfter = document.getElementById('setupModuleSelection') || confirmField;
+                    insertAfter.insertAdjacentHTML('afterend', twoFAHTML);
+                }
             }
-            
+
+            applySetupModuleSelections() {
+                const moduleKeys = ['identity', 'gac', 'mental', 'chronic'];
+                let selectionsFound = false;
+
+                moduleKeys.forEach((module) => {
+                    const setupToggle = document.getElementById(`setup-module-${module}`);
+                    if (setupToggle) {
+                        selectionsFound = true;
+                        const isChecked = setupToggle.checked;
+                        this.modules[module] = isChecked;
+
+                        const settingsToggle = document.getElementById(`module-${module}`);
+                        if (settingsToggle) {
+                            settingsToggle.checked = isChecked;
+                        }
+                    }
+                });
+
+                if (selectionsFound) {
+                    this.updateModuleVisibility();
+                }
+            }
+
+            syncFieldInputs(fieldName) {
+                const inputs = Array.from(document.querySelectorAll(`.form-data[data-field="${fieldName}"]`));
+
+                if (inputs.length < 2) {
+                    return;
+                }
+
+                inputs.forEach((input) => {
+                    input.addEventListener('input', (event) => {
+                        const { value } = event.target;
+                        inputs.forEach((other) => {
+                            if (other !== event.target && other.value !== value) {
+                                other.value = value;
+                            }
+                        });
+                    });
+                });
+            }
+
             regenerateVaultName() {
                 this.vaultIdentity = this.generateVaultName();
                 document.getElementById('vaultName').innerHTML = `🔷 ${this.vaultIdentity}`;
@@ -3113,17 +3225,20 @@
                 const gacSection = document.getElementById('gac-section');
                 const mentalSection = document.getElementById('mental-section');
                 const chronicSection = document.getElementById('chronic-section');
-                
+                const corePronounRow = document.getElementById('corePronounRow');
+
                 identitySection.style.display = this.modules.identity ? 'block' : 'none';
                 gacSection.style.display = this.modules.gac ? 'block' : 'none';
                 mentalSection.style.display = this.modules.mental ? 'block' : 'none';
                 chronicSection.style.display = this.modules.chronic ? 'block' : 'none';
-                
+
+                if (corePronounRow) {
+                    corePronounRow.style.display = this.modules.gac ? 'flex' : 'none';
+                }
+
                 if (this.modules.identity || this.modules.gac) {
-                    const mainContent = document.getElementById('mainContent');
                     const emergencySection = document.getElementById('emergency-section');
-                    const coreSection = document.getElementById('core-section');
-                    
+
                     if (this.modules.identity && identitySection) {
                         emergencySection.after(identitySection);
                     }
@@ -3244,10 +3359,11 @@
                     alert('Password must be at least 8 characters');
                     return;
                 }
-                
+
                 this.sessionPassword = password;
+                this.applySetupModuleSelections();
                 this.closePasswordModal();
-                
+
                 if (enable2FA) {
                     this.requires2FA = true;
                     this.setupTOTP();
