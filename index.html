@@ -1508,6 +1508,164 @@
         .hidden {
             display: none !important;
         }
+
+        .app-toast-container {
+            position: fixed;
+            top: 80px;
+            right: 24px;
+            z-index: 5000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 340px;
+        }
+
+        .app-toast {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
+            padding: 14px 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            border-left: 4px solid #3b82f6;
+            animation: slideIn 0.25s ease;
+        }
+
+        .app-toast.success { border-left-color: #16a34a; }
+        .app-toast.error { border-left-color: #ef4444; }
+        .app-toast.warning { border-left-color: #f59e0b; }
+
+        .app-toast strong {
+            display: block;
+            font-size: 10pt;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .app-toast p {
+            margin: 0;
+            color: #475569;
+            font-size: 9pt;
+            line-height: 1.4;
+        }
+
+        .app-toast button {
+            border: none;
+            background: none;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 11pt;
+            padding: 0;
+            margin-left: auto;
+        }
+
+        .app-toast.fade-out {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .app-dialog-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 6000;
+            padding: 20px;
+        }
+
+        .app-dialog-overlay.active { display: flex; }
+
+        .app-dialog {
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 30px 60px rgba(15, 23, 42, 0.35);
+            max-width: 520px;
+            width: 100%;
+            overflow: hidden;
+            animation: popIn 0.25s ease;
+        }
+
+        .app-dialog-header {
+            padding: 20px 24px 0 24px;
+        }
+
+        .app-dialog-header h3 {
+            margin: 0;
+            color: #0f172a;
+            font-size: 18pt;
+        }
+
+        .app-dialog-body {
+            padding: 12px 24px 0 24px;
+            color: #475569;
+            font-size: 10pt;
+            line-height: 1.6;
+        }
+
+        .app-dialog-body p { margin-bottom: 12px; }
+
+        .app-dialog-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 20px 24px 24px 24px;
+        }
+
+        .app-dialog-actions .btn {
+            min-width: 120px;
+        }
+
+        .app-dialog.type-success .app-dialog-header { border-bottom: 3px solid #16a34a22; }
+        .app-dialog.type-error .app-dialog-header { border-bottom: 3px solid #ef444422; }
+        .app-dialog.type-warning .app-dialog-header { border-bottom: 3px solid #f59e0b22; }
+
+        @keyframes popIn {
+            from { transform: translateY(15px) scale(0.97); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        .text-button {
+            background: none;
+            border: none;
+            color: #3b82f6;
+            font-weight: 600;
+            margin-top: 12px;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .text-button:hover { color: #2563eb; }
+
+        .recovery-code-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px;
+            margin: 16px 0;
+        }
+
+        .recovery-code-card {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+            font-size: 10pt;
+            letter-spacing: 1px;
+            color: #0f172a;
+        }
+
+        .recovery-footnote {
+            font-size: 8.5pt;
+            color: #64748b;
+            margin-top: 6px;
+        }
     </style>
 </head>
 <body>
@@ -1520,10 +1678,22 @@
                 <input type="text" id="totp-code" placeholder="6-digit code" maxlength="6">
             </div>
             <button onclick="app.attemptUnlock()">Unlock Vault</button>
+            <button class="text-button" id="recoveryLink">Use a recovery code</button>
             <p style="margin-top: 15px; font-size: 9pt; color: #94a3b8;">
                 This HTML file contains your encrypted data.
                 Save it after making changes.
             </p>
+        </div>
+    </div>
+
+    <div class="app-toast-container" id="appToastContainer"></div>
+    <div class="app-dialog-overlay" id="appDialog">
+        <div class="app-dialog" id="appDialogCard">
+            <div class="app-dialog-header">
+                <h3 id="appDialogTitle"></h3>
+            </div>
+            <div class="app-dialog-body" id="appDialogBody"></div>
+            <div class="app-dialog-actions" id="appDialogActions"></div>
         </div>
     </div>
 
@@ -1627,7 +1797,22 @@
                             <!-- Status will be updated dynamically -->
                         </div>
                     </div>
-                    
+
+                    <div class="settings-section" id="recoverySettings">
+                        <h4>🛟 Account Recovery</h4>
+                        <p style="font-size: 9pt; color: #64748b; margin-bottom: 15px;">
+                            Recovery codes let you regain access if you forget your password.
+                        </p>
+                        <div id="recoveryStatus" style="padding: 15px; background: #f8fafc; border-radius: 6px; margin-bottom: 12px;">
+                            Recovery codes not generated yet.
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn btn-secondary" id="viewRecoveryCodesBtn">View Codes</button>
+                            <button class="btn btn-primary" id="regenerateRecoveryCodesBtn">Regenerate Codes</button>
+                        </div>
+                        <p style="font-size: 8.5pt; color: #94a3b8; margin-top: 10px;">After regenerating, save and replace your vault file so the new codes are stored.</p>
+                    </div>
+
                     <div class="settings-section">
                         <h4>Privacy Levels</h4>
                         <select id="privacyLevel" class="form-data" data-field="privacyLevel">
@@ -1673,6 +1858,32 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="app.cancelTOTP()">Cancel</button>
                 <button class="btn btn-primary" onclick="app.verifyTOTP()">Verify & Enable</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recovery Modal -->
+    <div class="modal" id="recoveryModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🛟 Recover Vault Access</h3>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 10pt; color: #475569;">Enter one of your saved recovery codes to retrieve your vault password.</p>
+                <div class="field">
+                    <label>Recovery Code</label>
+                    <input type="text" id="recoveryCodeInput" placeholder="HV-XXXX-XXXX-XXXX" style="text-transform: uppercase;">
+                </div>
+                <div class="warning-box" style="margin-top: 10px;">
+                    <strong>Tip:</strong> Recovery codes are case-insensitive. Each code can be used more than once to view your password, but anyone with the code can unlock your vault.
+                </div>
+                <div class="warning-box" style="margin-top: 10px; background: #fefce8; color: #854d0e;">
+                    After recovering your password, unlock the vault and download a fresh copy so the latest recovery codes are saved with it.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="app.closeRecoveryModal()">Cancel</button>
+                <button class="btn btn-primary" id="recoverySubmitBtn">Reveal Password</button>
             </div>
         </div>
     </div>
@@ -2668,6 +2879,9 @@
                 this.sessionPassword = null;
                 this.currentTOTPSecret = null;
                 this.requires2FA = false;
+                this.recoveryData = null;
+                this.pendingRecoveryCodes = null;
+                this.hasShownSaveInstructions = false;
                 this.isLocked = false;
                 this.modules = {
                     identity: false,
@@ -2707,6 +2921,7 @@
                         this.requires2FA = vaultData.requires2FA || false;
                         this.vaultIdentity = vaultData.vaultIdentity;
                         this.lastSaved = vaultData.savedDate;
+                        this.recoveryData = vaultData.recovery || null;
                         
                         // Update unlock screen with vault info
                         const unlockScreen = document.getElementById('unlockScreen');
@@ -2746,7 +2961,8 @@
             init() {
                 this.setupEventListeners();
                 this.updateSaveStatus();
-                
+                this.updateRecoveryStatus();
+
                 // Clear any cached data
                 localStorage.clear();
                 sessionStorage.clear();
@@ -2759,6 +2975,19 @@
                 document.getElementById('emergencyQRBtn').addEventListener('click', () => this.openQRGenerator());
                 document.getElementById('exportBtn').addEventListener('click', () => this.openExportOptions());
                 document.getElementById('lockBtn')?.addEventListener('click', () => this.toggleLock());
+                document.getElementById('recoveryLink').addEventListener('click', (event) => {
+                    event.preventDefault();
+                    this.openRecoveryModal();
+                });
+                document.getElementById('recoverySubmitBtn').addEventListener('click', () => this.recoverWithCode());
+                document.getElementById('viewRecoveryCodesBtn').addEventListener('click', () => this.viewRecoveryCodes());
+                document.getElementById('regenerateRecoveryCodesBtn').addEventListener('click', () => this.regenerateRecoveryCodes());
+                document.getElementById('recoveryCodeInput').addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        this.recoverWithCode();
+                    }
+                });
 
                 document.getElementById('printSummaryBtn')?.addEventListener('click', () => {
                     this.closeExportOptions();
@@ -2821,10 +3050,472 @@
                         e.preventDefault();
                         this.saveVault();
                     }
+                    if (e.key === 'Escape') {
+                        this.closeDialog();
+                        document.getElementById('recoveryModal')?.classList.remove('active');
+                    }
                 });
                 this.updatePatientSummaryDisplay();
             }
-            
+
+            showToast(message, type = 'info') {
+                const container = document.getElementById('appToastContainer');
+                if (!container) return;
+
+                const toast = document.createElement('div');
+                toast.className = `app-toast ${type}`;
+
+                const titles = {
+                    success: 'Success',
+                    error: 'Action needed',
+                    warning: 'Heads up',
+                    info: 'Notice'
+                };
+
+                const wrapper = document.createElement('div');
+                const titleEl = document.createElement('strong');
+                titleEl.textContent = titles[type] || titles.info;
+                const messageEl = document.createElement('p');
+                messageEl.textContent = message;
+                wrapper.appendChild(titleEl);
+                wrapper.appendChild(messageEl);
+
+                const closeBtn = document.createElement('button');
+                closeBtn.type = 'button';
+                closeBtn.setAttribute('aria-label', 'Dismiss notification');
+                closeBtn.textContent = '✕';
+
+                toast.appendChild(wrapper);
+                toast.appendChild(closeBtn);
+                container.appendChild(toast);
+
+                const dismiss = () => {
+                    toast.classList.add('fade-out');
+                    setTimeout(() => toast.remove(), 300);
+                };
+
+                closeBtn.addEventListener('click', dismiss);
+                setTimeout(dismiss, 6000);
+            }
+
+            showDialog({ title = 'Notice', message = '', type = 'info', actions = [] }) {
+                const overlay = document.getElementById('appDialog');
+                const card = document.getElementById('appDialogCard');
+                const titleEl = document.getElementById('appDialogTitle');
+                const bodyEl = document.getElementById('appDialogBody');
+                const actionsEl = document.getElementById('appDialogActions');
+
+                if (!overlay || !card || !titleEl || !bodyEl || !actionsEl) {
+                    console.warn('Dialog elements missing');
+                    return;
+                }
+
+                card.className = `app-dialog type-${type}`;
+                titleEl.textContent = title;
+                bodyEl.innerHTML = message;
+                actionsEl.innerHTML = '';
+
+                const finalActions = actions.length ? actions : [
+                    {
+                        label: 'Close',
+                        variant: 'primary',
+                        handler: () => this.closeDialog()
+                    }
+                ];
+
+                finalActions.forEach((action) => {
+                    const btn = document.createElement('button');
+                    let classes = 'btn btn-secondary';
+
+                    if (action.variant === 'primary') {
+                        classes = 'btn btn-primary';
+                    } else if (action.variant === 'danger') {
+                        classes = 'btn btn-lock';
+                    }
+
+                    btn.className = classes;
+                    btn.textContent = action.label || 'OK';
+                    btn.addEventListener('click', async () => {
+                        if (typeof action.handler === 'function') {
+                            await action.handler();
+                        }
+                        if (!action.preventClose) {
+                            this.closeDialog();
+                        }
+                    });
+                    actionsEl.appendChild(btn);
+                });
+
+                overlay.classList.add('active');
+                overlay.onclick = (event) => {
+                    if (event.target === overlay) {
+                        this.closeDialog();
+                    }
+                };
+            }
+
+            closeDialog() {
+                const overlay = document.getElementById('appDialog');
+                const bodyEl = document.getElementById('appDialogBody');
+                const actionsEl = document.getElementById('appDialogActions');
+
+                if (!overlay || !bodyEl || !actionsEl) return;
+
+                overlay.classList.remove('active');
+                overlay.onclick = null;
+                bodyEl.innerHTML = '';
+                actionsEl.innerHTML = '';
+            }
+
+            async copyToClipboard(text, successMessage = '') {
+                try {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        await navigator.clipboard.writeText(text);
+                    } else {
+                        const textarea = document.createElement('textarea');
+                        textarea.value = text;
+                        textarea.style.position = 'fixed';
+                        textarea.style.opacity = '0';
+                        document.body.appendChild(textarea);
+                        textarea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textarea);
+                    }
+
+                    if (successMessage) {
+                        this.showToast(successMessage, 'success');
+                    }
+                    return true;
+                } catch (error) {
+                    console.error('Clipboard copy failed', error);
+                    this.showToast('Unable to copy automatically. Please copy manually.', 'warning');
+                    return false;
+                }
+            }
+
+            escapeHTML(text = '') {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            showRecoveryCodesDialog(codes = [], options = {}) {
+                if (!codes || !codes.length) {
+                    this.showDialog({
+                        title: 'Recovery Codes Unavailable',
+                        message: '<p>No recovery codes are stored yet. Generate new codes to enable account recovery.</p>',
+                        type: 'warning'
+                    });
+                    return;
+                }
+
+                const { firstTime = false, twoFAEnabled = false, regenerated = false } = options;
+
+                let intro = firstTime
+                    ? 'Your vault is ready to use.'
+                    : 'Here are your active recovery codes.';
+
+                if (firstTime && twoFAEnabled) {
+                    intro += ' Two-factor authentication is enabled for this vault.';
+                } else if (regenerated) {
+                    intro = 'Your recovery codes have been refreshed.';
+                }
+
+                const message = `
+                    <p>${intro} Store these codes securely so you can regain access if you forget your password.</p>
+                    <div class="recovery-code-grid">
+                        ${codes.map(code => `<div class="recovery-code-card"><strong>${code.id}</strong><br>${code.code}</div>`).join('')}
+                    </div>
+                    <p class="recovery-footnote">Anyone with a recovery code can view your password. Keep them offline when possible.</p>
+                `;
+
+                const dialogType = firstTime || regenerated ? 'success' : 'info';
+
+                this.showDialog({
+                    title: firstTime ? 'Vault Ready!' : 'Recovery Codes',
+                    message,
+                    type: dialogType,
+                    actions: [
+                        {
+                            label: 'Copy Codes',
+                            variant: 'secondary',
+                            preventClose: true,
+                            handler: async () => {
+                                const plain = codes.map(code => `${code.id}: ${code.code}`).join('\n');
+                                await this.copyToClipboard(plain, 'Recovery codes copied to clipboard.');
+                            }
+                        },
+                        {
+                            label: 'Done',
+                            variant: 'primary'
+                        }
+                    ]
+                });
+            }
+
+            openRecoveryModal() {
+                if (!this.recoveryData || !Array.isArray(this.recoveryData.codes) || this.recoveryData.codes.length === 0) {
+                    this.showDialog({
+                        title: 'Recovery Not Configured',
+                        message: '<p>This vault does not yet include recovery codes. Unlock it and generate codes from the settings panel.</p>',
+                        type: 'warning'
+                    });
+                    return;
+                }
+
+                const modal = document.getElementById('recoveryModal');
+                const input = document.getElementById('recoveryCodeInput');
+                if (!modal || !input) return;
+
+                input.value = '';
+                modal.classList.add('active');
+                setTimeout(() => input.focus(), 100);
+            }
+
+            closeRecoveryModal() {
+                const modal = document.getElementById('recoveryModal');
+                if (modal) {
+                    modal.classList.remove('active');
+                }
+            }
+
+            createRecoveryCode() {
+                const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+                let raw = '';
+
+                for (let i = 0; i < 16; i++) {
+                    raw += alphabet[Math.floor(Math.random() * alphabet.length)];
+                }
+
+                const formatted = raw.match(/.{1,4}/g).join('-');
+                return {
+                    raw,
+                    formatted: `HV-${formatted}`
+                };
+            }
+
+            normalizeRecoveryCode(code) {
+                if (!code) return '';
+                const cleaned = code.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                return cleaned.startsWith('HV') ? cleaned.slice(2) : cleaned;
+            }
+
+            async generateRecoveryBundle(password) {
+                const entries = [];
+                const displayCodes = [];
+                const totalCodes = 6;
+
+                for (let i = 0; i < totalCodes; i++) {
+                    const id = `RC${String(i + 1).padStart(2, '0')}`;
+                    const { raw, formatted } = this.createRecoveryCode();
+                    const cipher = await this.crypto.encrypt({ password }, raw);
+                    entries.push({ id, cipher });
+                    displayCodes.push({ id, code: formatted });
+                }
+
+                const displayCipher = await this.crypto.encrypt({ codes: displayCodes }, password);
+
+                this.recoveryData = {
+                    generated: new Date().toISOString(),
+                    codes: entries,
+                    display: displayCipher,
+                    version: 1
+                };
+
+                this.updateRecoveryStatus();
+                return displayCodes;
+            }
+
+            async recoverWithCode() {
+                if (!this.recoveryData || !Array.isArray(this.recoveryData.codes) || this.recoveryData.codes.length === 0) {
+                    this.showToast('This vault does not contain recovery codes yet.', 'warning');
+                    return;
+                }
+
+                const input = document.getElementById('recoveryCodeInput');
+                const code = this.normalizeRecoveryCode(input?.value || '');
+
+                if (!code) {
+                    this.showToast('Enter a recovery code to continue.', 'warning');
+                    return;
+                }
+
+                let recoveredPassword = null;
+                for (const entry of this.recoveryData.codes) {
+                    const payload = entry.cipher || entry.payload || entry.data;
+                    if (!payload) {
+                        continue;
+                    }
+                    try {
+                        const decrypted = await this.crypto.decrypt(payload, code);
+                        if (decrypted && typeof decrypted.password === 'string') {
+                            recoveredPassword = decrypted.password;
+                            break;
+                        }
+                    } catch (error) {
+                        continue;
+                    }
+                }
+
+                if (!recoveredPassword) {
+                    this.showToast('Recovery code not recognized. Double-check your code and try again.', 'error');
+                    return;
+                }
+
+                this.closeRecoveryModal();
+                this.sessionPassword = recoveredPassword;
+                const unlockInput = document.getElementById('unlock-password');
+                if (unlockInput) {
+                    unlockInput.value = recoveredPassword;
+                }
+
+                const safePassword = this.escapeHTML(recoveredPassword);
+                this.showDialog({
+                    title: 'Password Recovered',
+                    message: `
+                        <p>We retrieved the password protecting this vault. It has been filled into the unlock form so you can access your records.</p>
+                        <div class="recovery-code-card" style="margin-top: 10px; text-align: center; font-size: 11pt;">${safePassword || '<em>(Empty password)</em>'}</div>
+                        <p class="recovery-footnote">After unlocking, download a fresh copy of the vault so your recovery codes remain in sync.</p>
+                    `,
+                    type: 'success',
+                    actions: [
+                        {
+                            label: 'Copy Password',
+                            variant: 'secondary',
+                            preventClose: true,
+                            handler: async () => {
+                                await this.copyToClipboard(recoveredPassword, 'Vault password copied to clipboard.');
+                            }
+                        },
+                        {
+                            label: 'Close',
+                            variant: 'primary'
+                        }
+                    ]
+                });
+            }
+
+            async viewRecoveryCodes() {
+                if (!this.sessionPassword) {
+                    this.showToast('Unlock the vault to view your recovery codes.', 'warning');
+                    return;
+                }
+
+                if (!this.recoveryData || !this.recoveryData.display) {
+                    this.showDialog({
+                        title: 'No Recovery Codes Saved',
+                        message: '<p>This vault does not currently store recovery codes. Generate new codes to enable password recovery.</p>',
+                        type: 'warning'
+                    });
+                    return;
+                }
+
+                try {
+                    const decrypted = await this.crypto.decrypt(this.recoveryData.display, this.sessionPassword);
+                    const codes = decrypted?.codes || [];
+                    if (!codes.length) {
+                        this.showDialog({
+                            title: 'No Recovery Codes Saved',
+                            message: '<p>This vault does not currently store recovery codes. Generate new codes to enable password recovery.</p>',
+                            type: 'warning'
+                        });
+                        return;
+                    }
+                    this.showRecoveryCodesDialog(codes);
+                } catch (error) {
+                    console.error('Unable to decrypt recovery codes', error);
+                    this.showDialog({
+                        title: 'Recovery Codes Locked',
+                        message: '<p>The stored recovery codes could not be decrypted with the current password. Generate new codes to replace them.</p>',
+                        type: 'error'
+                    });
+                }
+            }
+
+            async regenerateRecoveryCodes() {
+                if (!this.sessionPassword) {
+                    this.showToast('Unlock the vault before regenerating recovery codes.', 'warning');
+                    return;
+                }
+
+                const codes = await this.generateRecoveryBundle(this.sessionPassword);
+                this.pendingRecoveryCodes = null;
+                this.hasUnsavedChanges = true;
+                this.updateSaveStatus();
+                this.updateRecoveryStatus();
+                this.showRecoveryCodesDialog(codes, { regenerated: true });
+                this.showToast('Recovery codes refreshed. Download an updated vault to store them.', 'info');
+            }
+
+            updateRecoveryStatus() {
+                const statusEl = document.getElementById('recoveryStatus');
+                const viewBtn = document.getElementById('viewRecoveryCodesBtn');
+                const regenerateBtn = document.getElementById('regenerateRecoveryCodesBtn');
+
+                if (!statusEl || !viewBtn) {
+                    return;
+                }
+
+                if (this.recoveryData && Array.isArray(this.recoveryData.codes) && this.recoveryData.codes.length > 0) {
+                    const generated = this.recoveryData.generated
+                        ? new Date(this.recoveryData.generated).toLocaleString()
+                        : 'Unknown date';
+                    statusEl.innerHTML = `
+                        <strong style="color: #16a34a; display: block;">Active recovery codes</strong>
+                        <span style="font-size: 9pt; color: #64748b;">Generated ${generated}</span>
+                    `;
+                    viewBtn.disabled = !this.sessionPassword;
+                } else {
+                    statusEl.textContent = 'Recovery codes not generated yet.';
+                    viewBtn.disabled = true;
+                }
+
+                if (regenerateBtn) {
+                    regenerateBtn.disabled = !this.sessionPassword;
+                }
+            }
+
+            async finishInitialSetup({ twoFAEnabled = false, codes = null } = {}) {
+                document.getElementById('mainContent').style.display = 'block';
+                document.getElementById('navTabs').style.display = 'block';
+                document.getElementById('unlockScreen').style.display = 'none';
+                const lockBtn = document.getElementById('lockBtn');
+                if (lockBtn) {
+                    lockBtn.style.display = 'inline-block';
+                }
+
+                this.isInitialized = true;
+                this.hasUnsavedChanges = true;
+                this.updateSaveStatus();
+                this.updateRecoveryStatus();
+
+                let displayCodes = codes;
+
+                if ((!displayCodes || !displayCodes.length) && this.recoveryData?.display && this.sessionPassword) {
+                    try {
+                        const decrypted = await this.crypto.decrypt(this.recoveryData.display, this.sessionPassword);
+                        displayCodes = decrypted?.codes || [];
+                    } catch (error) {
+                        console.error('Unable to prepare recovery codes for display', error);
+                    }
+                }
+
+                if (displayCodes && displayCodes.length) {
+                    this.showRecoveryCodesDialog(displayCodes, { firstTime: true, twoFAEnabled });
+                } else {
+                    this.showDialog({
+                        title: 'Vault Ready',
+                        message: twoFAEnabled
+                            ? '<p>Your vault is ready and protected by both password and authenticator codes.</p>'
+                            : '<p>Your vault is ready and protected by your password.</p>',
+                        type: 'success'
+                    });
+                }
+
+                this.pendingRecoveryCodes = null;
+                this.showToast(twoFAEnabled ? 'Two-factor authentication enabled.' : 'Vault secured with password.', 'success');
+            }
+
             startSetup() {
                 const identityHTML = `
                     <div style="margin: 20px 0; padding: 20px; background: #eff6ff; border-radius: 8px; text-align: center;">
@@ -2876,46 +3567,55 @@
             attemptUnlock() {
                 const password = document.getElementById('unlock-password').value;
                 const totpCode = document.getElementById('totp-code')?.value;
-                
+
                 if (!password) {
-                    alert('Please enter your password');
+                    this.showToast('Enter your vault password to continue.', 'warning');
                     return;
                 }
-                
+
                 if (this.requires2FA && !totpCode) {
-                    alert('Please enter your 6-digit authentication code');
+                    this.showToast('Enter the 6-digit code from your authenticator app to unlock.', 'warning');
                     return;
                 }
-                
+
                 this.crypto.decrypt(this.encryptedData, password).then(async (decrypted) => {
                     if (this.requires2FA && decrypted.totpSecret) {
                         const isValidTOTP = await TOTP.verifyTOTP(decrypted.totpSecret, totpCode);
-                        
+
                         if (!isValidTOTP) {
-                            alert('Invalid authentication code. Please check your authenticator app for the current code.');
+                            this.showToast('Invalid authentication code. Verify the current code in your authenticator app.', 'error');
                             return;
                         }
                     }
-                    
+
                     this.sessionPassword = password;
                     this.totpSecret = decrypted.totpSecret;
                     this.loadFormData(decrypted);
                     this.modules = this.savedModules || this.modules;
-                    
+
                     this.updateModuleVisibility();
                     document.getElementById('unlockScreen').style.display = 'none';
                     document.getElementById('mainContent').style.display = 'block';
                     document.getElementById('navTabs').style.display = 'block';
                     document.getElementById('lockBtn').style.display = 'inline-block';
-                    
+
                     this.hasUnsavedChanges = false;
                     this.updateSaveStatus();
-                    
+                    this.updateRecoveryStatus();
+
+                    if (!this.recoveryData || !this.recoveryData.codes?.length) {
+                        this.showToast('Recovery codes are not configured. Generate them from Settings for password backup.', 'warning');
+                    }
+
                 }).catch(error => {
                     if (this.requires2FA) {
-                        alert('Invalid password or authentication code.\n\nMake sure you are using the current 6-digit code from your authenticator app.');
+                        this.showDialog({
+                            title: 'Unlock Failed',
+                            message: '<p>The password or authentication code was not accepted. Confirm both are correct and try again.</p>',
+                            type: 'error'
+                        });
                     } else {
-                        alert('Incorrect password');
+                        this.showToast('Incorrect password. Please try again.', 'error');
                     }
                 });
             }
@@ -3057,41 +3757,33 @@
                 const password = document.getElementById('modalPassword').value;
                 const confirmPassword = document.getElementById('modalConfirmPassword').value;
                 const enable2FA = document.getElementById('enable2FA')?.checked;
-                
+
                 if (!password) {
-                    alert('Please enter a password');
+                    this.showToast('Enter a password to protect your vault.', 'warning');
                     return;
                 }
-                
+
                 if (password !== confirmPassword) {
-                    alert('Passwords do not match');
+                    this.showToast('Passwords do not match. Please try again.', 'error');
                     return;
                 }
-                
+
                 if (password.length < 8) {
-                    alert('Password must be at least 8 characters');
+                    this.showToast('Use at least 8 characters for a strong password.', 'warning');
                     return;
                 }
-                
+
                 this.sessionPassword = password;
                 this.closePasswordModal();
-                
+                const recoveryCodes = await this.generateRecoveryBundle(password);
+                this.pendingRecoveryCodes = recoveryCodes;
+
                 if (enable2FA) {
                     this.requires2FA = true;
                     this.setupTOTP();
                 } else {
-                    document.getElementById('mainContent').style.display = 'block';
-                    document.getElementById('navTabs').style.display = 'block';
-                    
-                    this.isInitialized = true;
-                    this.hasUnsavedChanges = true;
-                    this.updateSaveStatus();
-                    
-                    alert(`✅ Vault created!\n\n` +
-                          `Your vault "${this.vaultIdentity}" is ready to use.\n\n` +
-                          `• Enter your medical information\n` +
-                          `• Click "Download Encrypted Vault" when ready to save\n` +
-                          `• Keep your password safe - there's no recovery without it`);
+                    this.requires2FA = false;
+                    await this.finishInitialSetup({ twoFAEnabled: false, codes: recoveryCodes });
                 }
             }
             
@@ -3115,12 +3807,13 @@
                 dataScript.textContent = JSON.stringify({
                     initialized: true,
                     encrypted: true,
-                    version: '2.0',
+                    version: '2.1',
                     savedDate: new Date().toISOString(),
                     data: encrypted,
                     modules: this.modules,
                     requires2FA: this.requires2FA,
-                    vaultIdentity: this.vaultIdentity
+                    vaultIdentity: this.vaultIdentity,
+                    recovery: this.recoveryData
                 }, null, 2);
                 
                 const htmlString = '<!DOCTYPE html>\n' + htmlDoc.outerHTML;
@@ -3141,21 +3834,25 @@
                 
                 const isFirstSave = !this.hasShownSaveInstructions;
                 this.hasShownSaveInstructions = true;
-                
+
                 if (isFirstSave) {
-                    alert('✅ Your health vault has been saved!\n\n' +
-                          '📁 IMPORTANT INSTRUCTIONS:\n' +
-                          '1. The downloaded HTML file contains all your encrypted data\n' +
-                          '2. Store this file in a safe location\n' +
-                          '3. Make backups on different devices or cloud storage\n' +
-                          '4. You can open this file in any web browser\n\n' +
-                          '🔐 Remember:\n' +
-                          '• Your password is NOT recoverable if lost\n' +
-                          '• Each save creates a new file - replace the old one\n' +
-                          '• The file works completely offline');
+                    const instructions = `
+                        <p>Your encrypted vault has been downloaded.</p>
+                        <ol style="margin: 0 0 16px 18px; color: #475569;">
+                            <li>Store the file in a safe location you control.</li>
+                            <li>Replace older copies with this version.</li>
+                            <li>Create backups on another device or secure cloud storage.</li>
+                            <li>Keep your recovery codes separate from this file.</li>
+                        </ol>
+                        <p class="recovery-footnote">You can open the downloaded HTML offline in any modern browser.</p>
+                    `;
+                    this.showDialog({
+                        title: 'Vault Downloaded',
+                        message: instructions,
+                        type: 'success'
+                    });
                 } else {
-                    alert('✅ Vault updated and downloaded!\n\n' +
-                          'Replace your previous vault file with this new version.');
+                    this.showToast('Vault updated and downloaded. Replace your previous copy with this version.', 'success');
                 }
             }
             
@@ -3302,6 +3999,8 @@
                         </p>
                     `;
                 }
+
+                this.updateRecoveryStatus();
             }
             
             closeSettings() {
@@ -3358,57 +4057,37 @@
             }
             
             async verifyTOTP() {
-                const code = document.getElementById('verifyTOTP').value;
-                
+                const code = document.getElementById('verifyTOTP').value.trim();
+
                 if (code.length !== 6 || !/^\d{6}$/.test(code)) {
-                    alert('Please enter a 6-digit code from your authenticator app');
+                    this.showToast('Enter the 6-digit code from your authenticator app.', 'warning');
                     return;
                 }
-                
+
                 const isValid = await TOTP.verifyTOTP(this.currentTOTPSecret, code);
-                
+
                 if (!isValid) {
-                    alert('Invalid code. Please make sure you\'ve added the secret to your authenticator app and try the current code shown.');
+                    this.showToast('Invalid authenticator code. Make sure you are using the current code from your app.', 'error');
                     return;
                 }
-                
+
                 this.totpSecret = this.currentTOTPSecret;
-                
+
                 document.getElementById('totpModal').classList.remove('active');
-                document.getElementById('mainContent').style.display = 'block';
-                document.getElementById('navTabs').style.display = 'block';
-                
-                this.isInitialized = true;
-                this.hasUnsavedChanges = true;
-                this.updateSaveStatus();
-                
-                alert(`✅ Two-factor authentication enabled!\n\n` +
-                      `Your vault "${this.vaultIdentity}" is ready to use.\n\n` +
-                      `• Enter your medical information\n` +
-                      `• Click "Download Encrypted Vault" when ready to save\n` +
-                      `• You'll need both password AND authenticator code to unlock`);
-                
+                await this.finishInitialSetup({ twoFAEnabled: true, codes: this.pendingRecoveryCodes });
+
                 this.currentTOTPSecret = null;
             }
-            
-            cancelTOTP() {
+
+            async cancelTOTP() {
                 this.currentTOTPSecret = null;
                 document.getElementById('totpModal').classList.remove('active');
-                
+
                 if (!this.isInitialized) {
                     this.requires2FA = false;
-                    document.getElementById('mainContent').style.display = 'block';
-                    document.getElementById('navTabs').style.display = 'block';
-                    
-                    this.isInitialized = true;
-                    this.hasUnsavedChanges = true;
-                    this.updateSaveStatus();
-                    
-                    alert(`✅ Vault created without 2FA!\n\n` +
-                          `Your vault "${this.vaultIdentity}" is ready to use.\n\n` +
-                          `• Enter your medical information\n` +
-                          `• Click "Download Encrypted Vault" when ready to save\n` +
-                          `• Keep your password safe - there's no recovery without it`);
+                    await this.finishInitialSetup({ twoFAEnabled: false, codes: this.pendingRecoveryCodes });
+                } else {
+                    this.showToast('Two-factor setup canceled.', 'info');
                 }
             }
             
@@ -3603,7 +4282,7 @@
                 const container = document.getElementById('qr-canvas');
                 const img = container.querySelector('img');
                 if (!img) {
-                    alert('Please generate a QR code first');
+                    this.showToast('Generate a QR code before downloading.', 'warning');
                     return;
                 }
                 
