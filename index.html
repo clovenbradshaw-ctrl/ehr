@@ -3530,21 +3530,30 @@
             async performSave(password) {
                 const formData = this.collectFormData();
                 const timestamp = new Date().toLocaleString();
-                
+
                 document.getElementById('lastUpdatedHeader').textContent = `Last Updated: ${timestamp}`;
                 formData.lastUpdated = timestamp;
-                
+
                 const encrypted = await this.crypto.encrypt(formData, password);
-                
+
                 const htmlDoc = document.documentElement.cloneNode(true);
-                
-                const existingData = htmlDoc.querySelector('#embedded-vault-data');
-                if (existingData) {
-                    existingData.textContent = '';
+
+                let dataScript = htmlDoc.querySelector('#embedded-vault-data');
+                if (!dataScript) {
+                    dataScript = document.createElement('script');
+                    dataScript.id = 'embedded-vault-data';
+                    dataScript.type = 'application/json';
+                    const bodyEl = htmlDoc.querySelector('body');
+                    if (bodyEl) {
+                        bodyEl.appendChild(dataScript);
+                    } else {
+                        htmlDoc.appendChild(dataScript);
+                    }
                 }
-                
-                const dataScript = htmlDoc.querySelector('#embedded-vault-data');
-                dataScript.textContent = JSON.stringify({
+
+                dataScript.textContent = '';
+
+                const payload = {
                     initialized: true,
                     encrypted: true,
                     version: '2.0',
@@ -3553,27 +3562,25 @@
                     modules: this.modules,
                     requires2FA: this.requires2FA,
                     vaultIdentity: this.vaultIdentity
-                }, null, 2);
-                
+                };
+
+                const serialized = JSON.stringify(payload, null, 2)
+                    .replace(/<\/script/gi, '<\\/script');
+
+                dataScript.textContent = serialized;
+
                 const htmlString = '<!DOCTYPE html>\n' + htmlDoc.outerHTML;
-                
-                const blob = new Blob([htmlString], { type: 'text/html' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `health_vault_${this.vaultIdentity}_${new Date().toISOString().split('T')[0]}.html`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                
+                const filename = `health_vault_${this.vaultIdentity}_${new Date().toISOString().split('T')[0]}.html`;
+
+                this.downloadContent(htmlString, filename);
+
                 this.hasUnsavedChanges = false;
                 this.isInitialized = true;
                 this.updateSaveStatus();
-                
+
                 const isFirstSave = !this.hasShownSaveInstructions;
                 this.hasShownSaveInstructions = true;
-                
+
                 if (isFirstSave) {
                     alert('✅ Your health vault has been saved!\n\n' +
                           '📁 IMPORTANT INSTRUCTIONS:\n' +
