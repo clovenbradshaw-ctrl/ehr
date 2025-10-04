@@ -2862,6 +2862,16 @@
             }
             
             setupEventListeners() {
+                // Remove deprecated Emergency QR functionality if it exists
+                const emergencyQRBtn = document.getElementById('emergencyQRBtn');
+                if (emergencyQRBtn) {
+                    emergencyQRBtn.remove();
+                }
+                // Remove any other Emergency QR elements that might be embedded in legacy files
+                document.querySelectorAll('[id^="emergencyQR"]').forEach((element) => {
+                    element.remove();
+                });
+
                 // Main buttons
                 document.getElementById('saveBtn').addEventListener('click', () => this.saveVault());
                 document.getElementById('settingsBtn').addEventListener('click', () => this.openSettings());
