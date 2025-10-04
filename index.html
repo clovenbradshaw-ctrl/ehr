@@ -2482,33 +2482,49 @@
         
         // QR Code wrapper for emergency medical data
         const QRGenerator = {
-            generate: function(data, container, size = { width: 256, height: 256 }) {
-                // Clear any existing content
-                container.innerHTML = '';
+            _renderIntoContainer(tempContainer, target) {
+                const qrElement = tempContainer.querySelector('canvas, img, table');
 
-                // Create QR code with text data and specified size
-                new QRCode(container, {
+                target.innerHTML = '';
+                target.removeAttribute('title');
+
+                if (qrElement) {
+                    qrElement.removeAttribute('title');
+                    target.appendChild(qrElement);
+                }
+            },
+
+            generate: function(data, container, size = { width: 256, height: 256 }) {
+                if (!container) return;
+
+                const tempContainer = document.createElement('div');
+
+                new QRCode(tempContainer, {
                     text: typeof data === 'object' ? JSON.stringify(data) : data,
                     width: size.width,
                     height: size.height,
                     correctLevel: QRCode.CorrectLevel.L
                 });
+
+                this._renderIntoContainer(tempContainer, container);
             },
-            
+
             generateOTPAuth: function(secret, label, issuer, container) {
+                if (!container) return;
+
                 const uri = `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(label)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}`;
-                
-                // Clear container
-                container.innerHTML = '';
-                
-                // Generate QR code
+
                 try {
-                    new QRCode(container, {
+                    const tempContainer = document.createElement('div');
+
+                    new QRCode(tempContainer, {
                         text: uri,
                         width: 256,
                         height: 256,
                         correctLevel: QRCode.CorrectLevel.M
                     });
+
+                    this._renderIntoContainer(tempContainer, container);
                 } catch (e) {
                     console.error('TOTP QR generation failed:', e);
                 }
