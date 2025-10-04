@@ -959,6 +959,193 @@
             justify-content: center;
             margin-top: 15px;
         }
+
+        @media (max-width: 900px) {
+            body {
+                padding: 15px;
+                padding-top: 150px;
+                font-size: 10.5pt;
+            }
+
+            .unlock-container {
+                padding: 28px 24px;
+                max-width: 320px;
+            }
+
+            .welcome-screen {
+                margin: 30px auto;
+                padding: 0 10px;
+            }
+
+            .welcome-screen h1 {
+                font-size: 22pt;
+            }
+
+            .welcome-actions {
+                flex-direction: column;
+                width: 100%;
+                gap: 12px;
+            }
+
+            .welcome-actions button {
+                width: 100%;
+            }
+
+            .security-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+                padding: 10px 12px;
+            }
+
+            .security-status,
+            .action-buttons {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .action-buttons {
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+
+            .save-status {
+                width: 100%;
+                justify-content: center;
+                margin: 0;
+            }
+
+            .action-buttons .btn {
+                flex: 1 1 45%;
+                min-width: 140px;
+            }
+
+            .nav-tabs {
+                top: 68px;
+                padding: 0 12px;
+            }
+
+            .tab {
+                padding: 10px 14px;
+                font-size: 9pt;
+            }
+
+            .chart-header-top {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+            }
+
+            .chart-header-top h1 {
+                font-size: 16pt;
+            }
+
+            .patient-demographics {
+                padding: 12px 16px;
+            }
+
+            .demo-row {
+                flex-direction: column;
+                margin-bottom: 12px;
+            }
+
+            .demo-field {
+                margin-right: 0;
+                width: 100%;
+            }
+
+            .qr-generator {
+                grid-template-columns: 1fr;
+            }
+
+            .qr-actions {
+                flex-direction: column;
+            }
+
+            .qr-actions .btn {
+                min-width: unset;
+                width: 100%;
+            }
+
+            .modal-content {
+                margin: 40px 16px;
+                padding: 20px;
+                width: calc(100% - 32px);
+            }
+
+            .modal-actions {
+                flex-direction: column;
+            }
+
+            .modal-actions button {
+                width: 100%;
+            }
+
+            .settings-columns {
+                grid-template-columns: 1fr;
+            }
+
+            .module-toggle {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+                padding-top: 170px;
+            }
+
+            .unlock-container {
+                width: 100%;
+            }
+
+            .security-bar {
+                gap: 12px;
+            }
+
+            .security-status {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+
+            .action-buttons {
+                gap: 8px;
+            }
+
+            .action-buttons .btn {
+                flex: 1 1 100%;
+                min-width: 0;
+            }
+
+            .main-content {
+                margin-top: 10px;
+            }
+
+            .vitals-grid {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }
+
+            .qr-section {
+                padding: 16px;
+            }
+
+            .qr-preview,
+            .qr-config {
+                padding: 12px;
+            }
+
+            .modal-header h2 {
+                font-size: 16pt;
+            }
+
+            .modal {
+                align-items: flex-start;
+            }
+        }
         
         .totp-setup {
             text-align: center;
