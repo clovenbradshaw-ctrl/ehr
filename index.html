@@ -1758,6 +1758,7 @@
                 <p class="settings-version">
                     <strong>Version:</strong>
                     <span id="appVersion">2024.03.29.1700</span>
+                    <span>Schema: <span id="schemaVersionDisplay">v2.0.0</span></span>
                     <span>(Last updated: <span id="appLastUpdated">Mar 29, 2024 17:00 UTC</span>)</span>
                 </p>
                 <!-- Update the version number and timestamp above to reflect the latest deployment each time changes are pushed. -->
@@ -2917,6 +2918,262 @@
         // Application metadata
         const APP_VERSION = '2024.03.29.1700';
         const APP_LAST_UPDATED = '2024-03-29T17:00:00Z';
+        const DEFAULT_SCHEMA_VERSION = '1.0.0';
+
+        class SchemaManager {
+            constructor(currentVersion, migrations = []) {
+                this.currentVersion = this.normalizeVersion(currentVersion);
+                this.migrations = Array.isArray(migrations) ? migrations.slice() : [];
+            }
+
+            normalizeVersion(version) {
+                if (!version && version !== 0) {
+                    return DEFAULT_SCHEMA_VERSION;
+                }
+
+                const raw = String(version).trim();
+                if (!raw) {
+                    return DEFAULT_SCHEMA_VERSION;
+                }
+
+                const parts = raw.split('.').map(part => {
+                    const parsed = parseInt(part, 10);
+                    return Number.isNaN(parsed) ? 0 : parsed;
+                });
+
+                while (parts.length < 3) {
+                    parts.push(0);
+                }
+
+                return parts.slice(0, 3).join('.');
+            }
+
+            compareVersions(a, b) {
+                const aParts = this.normalizeVersion(a).split('.').map(num => parseInt(num, 10));
+                const bParts = this.normalizeVersion(b).split('.').map(num => parseInt(num, 10));
+
+                for (let i = 0; i < Math.max(aParts.length, bParts.length); i += 1) {
+                    const aVal = aParts[i] ?? 0;
+                    const bVal = bParts[i] ?? 0;
+
+                    if (aVal > bVal) {
+                        return 1;
+                    }
+
+                    if (aVal < bVal) {
+                        return -1;
+                    }
+                }
+
+                return 0;
+            }
+
+            migrate(data = {}, startingVersion) {
+                const initialVersion = this.normalizeVersion(startingVersion || data.schemaVersion || data.__schemaVersion);
+                let workingData = { ...data };
+                let versionPointer = initialVersion;
+                const appliedMigrations = [];
+                const visited = new Set();
+
+                if (this.compareVersions(versionPointer, this.currentVersion) > 0) {
+                    return {
+                        data: workingData,
+                        version: versionPointer,
+                        appliedMigrations,
+                        needsResave: false,
+                        newerThanApp: true
+                    };
+                }
+
+                while (this.compareVersions(versionPointer, this.currentVersion) < 0) {
+                    if (visited.has(versionPointer)) {
+                        break;
+                    }
+
+                    const migration = this.migrations.find(step => this.normalizeVersion(step.from) === versionPointer);
+
+                    if (!migration) {
+                        break;
+                    }
+
+                    visited.add(versionPointer);
+                    const migrated = typeof migration.migrate === 'function'
+                        ? migration.migrate({ ...workingData })
+                        : workingData;
+
+                    workingData = { ...migrated };
+                    const targetVersion = this.normalizeVersion(migration.to || this.currentVersion);
+
+                    appliedMigrations.push({
+                        from: versionPointer,
+                        to: targetVersion,
+                        description: migration.description || ''
+                    });
+
+                    versionPointer = targetVersion;
+                }
+
+                const isCurrent = this.compareVersions(versionPointer, this.currentVersion) === 0;
+                const needsResave = appliedMigrations.length > 0 || !isCurrent;
+                const resolvedVersion = isCurrent ? this.currentVersion : versionPointer;
+
+                workingData.schemaVersion = resolvedVersion;
+
+                return {
+                    data: workingData,
+                    version: resolvedVersion,
+                    appliedMigrations,
+                    needsResave,
+                    newerThanApp: false
+                };
+            }
+        }
+
+        const schemaManager = new SchemaManager('2.0.0', [
+            {
+                from: '1.0.0',
+                to: '2.0.0',
+                description: 'Normalize chosen name and pronoun fields.',
+                migrate(payload) {
+                    const next = { ...payload };
+
+                    if (next.preferredName && !next.chosenName) {
+                        next.chosenName = next.preferredName;
+                    }
+
+                    if (next.preferredPronouns && !next.pronouns) {
+                        next.pronouns = next.preferredPronouns;
+                    }
+
+                    return next;
+                }
+            }
+        ]);
+
+        class FieldRegistry {
+            constructor(definitions = []) {
+                this.definitions = new Map();
+                this.aliasIndex = new Map();
+
+                definitions.forEach(definition => this.register(definition));
+            }
+
+            register(definition) {
+                if (!definition || !definition.key) {
+                    return;
+                }
+
+                const canonical = definition.key;
+                const aliases = Array.isArray(definition.aliases) ? definition.aliases : [];
+
+                this.definitions.set(canonical, {
+                    key: canonical,
+                    label: definition.label || '',
+                    type: definition.type || 'text',
+                    aliases: Array.from(new Set(aliases))
+                });
+
+                this.aliasIndex.set(canonical, canonical);
+                aliases.forEach(alias => this.aliasIndex.set(alias, canonical));
+            }
+
+            resolve(field) {
+                if (!field) {
+                    return field;
+                }
+
+                return this.aliasIndex.get(field) || field;
+            }
+
+            getAllKeys(field) {
+                const canonical = this.resolve(field);
+                const definition = this.definitions.get(canonical);
+
+                if (!definition) {
+                    return [field];
+                }
+
+                return [canonical, ...definition.aliases];
+            }
+
+            assignValue(target, field, value) {
+                if (!target || !field) {
+                    return;
+                }
+
+                const canonical = this.resolve(field);
+                target[canonical] = value;
+            }
+
+            getValue(source, field) {
+                if (!source || typeof source !== 'object' || !field) {
+                    return undefined;
+                }
+
+                if (Object.prototype.hasOwnProperty.call(source, field)) {
+                    return source[field];
+                }
+
+                const canonical = this.resolve(field);
+
+                if (Object.prototype.hasOwnProperty.call(source, canonical)) {
+                    return source[canonical];
+                }
+
+                const definition = this.definitions.get(canonical);
+
+                if (!definition) {
+                    return undefined;
+                }
+
+                for (const alias of definition.aliases) {
+                    if (Object.prototype.hasOwnProperty.call(source, alias)) {
+                        return source[alias];
+                    }
+                }
+
+                return undefined;
+            }
+
+            normalizeIncomingData(source) {
+                if (!source || typeof source !== 'object') {
+                    return {};
+                }
+
+                const normalized = { ...source };
+
+                for (const [alias, canonical] of this.aliasIndex.entries()) {
+                    if (alias === canonical) {
+                        continue;
+                    }
+
+                    if (Object.prototype.hasOwnProperty.call(source, alias)
+                        && !Object.prototype.hasOwnProperty.call(normalized, canonical)) {
+                        normalized[canonical] = source[alias];
+                    }
+                }
+
+                return normalized;
+            }
+        }
+
+        const fieldRegistry = new FieldRegistry([
+            { key: 'firstName', label: 'First Name', aliases: ['givenName'] },
+            { key: 'lastName', label: 'Last Name', aliases: ['surname'] },
+            { key: 'middleInitial', label: 'Middle Initial', aliases: ['middleNameInitial'] },
+            { key: 'chosenName', label: 'Chosen Name', aliases: ['preferredName'] },
+            { key: 'pronouns', label: 'Pronouns', aliases: ['preferredPronouns'] },
+            { key: 'mrn', label: 'Medical Record Number' },
+            { key: 'biologicalSex', label: 'Biological Sex', aliases: ['sexAtBirth'] },
+            { key: 'dateOfBirth', label: 'Date of Birth', aliases: ['dob'] },
+            { key: 'bloodType', label: 'Blood Type' },
+            { key: 'criticalAllergies', label: 'Critical Allergies' },
+            { key: 'criticalConditions', label: 'Critical Conditions' },
+            { key: 'advanceDirective', label: 'Advance Directive' },
+            { key: 'medicationContraindications', label: 'Medication Contraindications' },
+            { key: 'emergencyAccessEnabled', label: 'Emergency Access Enabled', aliases: ['enableEmergencyAccess'] }
+        ]);
+
         // NOTE: Update APP_VERSION and APP_LAST_UPDATED to match the latest deployment timestamp whenever changes are pushed.
 
         // Main Application Class
@@ -2970,6 +3227,8 @@
                 this.noteTags = [];
                 this.sectionLocks = {};
                 this.emergencyAccessConfig = null;
+                this.schemaVersion = schemaManager.currentVersion;
+                this.pendingSchemaNotice = null;
 
                 // Application version metadata
                 this.version = APP_VERSION;
@@ -3018,6 +3277,14 @@
                         this.vaultIdentity = vaultData.vaultIdentity;
                         this.lastSaved = vaultData.savedDate;
                         this.emergencyAccessConfig = vaultData.emergencyAccess || null;
+                        this.version = vaultData.appVersion || this.version || APP_VERSION;
+
+                        const embeddedSchemaVersion = vaultData.schemaVersion || vaultData.version;
+                        if (embeddedSchemaVersion) {
+                            this.schemaVersion = schemaManager.normalizeVersion(embeddedSchemaVersion);
+                        }
+
+                        this.applyVersionMetadata();
 
                         // Update unlock screen with vault info
                         const unlockScreen = document.getElementById('unlockScreen');
@@ -3065,6 +3332,9 @@
                     document.getElementById('unlockScreen').style.display = 'none';
                     document.getElementById('navTabs').style.display = 'none';
                     this.emergencyAccessConfig = null;
+                    this.version = APP_VERSION;
+                    this.schemaVersion = schemaManager.currentVersion;
+                    this.applyVersionMetadata();
                 }
             }
 
@@ -3201,6 +3471,12 @@
                     versionEl.textContent = this.version;
                 }
 
+                const schemaEl = document.getElementById('schemaVersionDisplay');
+                if (schemaEl) {
+                    const displayVersion = this.schemaVersion || schemaManager.currentVersion;
+                    schemaEl.textContent = `v${schemaManager.normalizeVersion(displayVersion)}`;
+                }
+
                 const updatedEl = document.getElementById('appLastUpdated');
                 if (!updatedEl) {
                     return;
@@ -3298,21 +3574,28 @@
                 document.getElementById('providers-container')?.addEventListener('input', () => this.refreshProviderOptions());
 
                 // Track changes
-                const identityFields = new Set(['firstName', 'lastName', 'middleInitial', 'mrn', 'biologicalSex', 'dateOfBirth']);
+                const identityFields = new Set(
+                    ['firstName', 'lastName', 'middleInitial', 'mrn', 'biologicalSex', 'dateOfBirth']
+                        .map(key => fieldRegistry.resolve(key))
+                );
 
                 document.addEventListener('input', (e) => {
                     if (e.target.classList.contains('form-data')) {
                         this.markAsChanged();
 
-                        if (identityFields.has(e.target.dataset.field)) {
+                        const fieldName = fieldRegistry.resolve(e.target.dataset.field);
+                        if (identityFields.has(fieldName)) {
                             this.updatePatientSummaryDisplay();
                         }
                     }
                 });
 
                 document.addEventListener('change', (e) => {
-                    if (e.target.classList.contains('form-data') && identityFields.has(e.target.dataset.field)) {
-                        this.updatePatientSummaryDisplay();
+                    if (e.target.classList.contains('form-data')) {
+                        const fieldName = fieldRegistry.resolve(e.target.dataset.field);
+                        if (identityFields.has(fieldName)) {
+                            this.updatePatientSummaryDisplay();
+                        }
                     }
                 });
                 
@@ -3462,7 +3745,17 @@
             }
 
             syncFieldInputs(fieldName) {
-                const inputs = Array.from(document.querySelectorAll(`.form-data[data-field="${fieldName}"]`));
+                const canonical = fieldRegistry.resolve(fieldName);
+                const keys = Array.from(new Set(fieldRegistry.getAllKeys(canonical)));
+                const selector = keys
+                    .map(key => `.form-data[data-field="${key}"]`)
+                    .join(',');
+
+                if (!selector) {
+                    return;
+                }
+
+                const inputs = Array.from(document.querySelectorAll(selector));
 
                 if (inputs.length < 2) {
                     return;
@@ -3500,18 +3793,30 @@
                 }
                 
                 this.crypto.decrypt(this.encryptedData, password).then(async (decrypted) => {
-                    if (this.requires2FA && decrypted.totpSecret) {
-                        const isValidTOTP = await TOTP.verifyTOTP(decrypted.totpSecret, totpCode);
-                        
+                    const decryptedPayload = { ...decrypted };
+
+                    if (this.requires2FA && decryptedPayload.totpSecret) {
+                        const isValidTOTP = await TOTP.verifyTOTP(decryptedPayload.totpSecret, totpCode);
+
                         if (!isValidTOTP) {
                             alert('Invalid authentication code. Please check your authenticator app for the current code.');
                             return;
                         }
                     }
-                    
+
+                    const incomingSchemaVersion = decryptedPayload.schemaVersion
+                        || decryptedPayload.__schemaVersion
+                        || this.schemaVersion;
+
+                    const migrationResult = schemaManager.migrate(decryptedPayload, incomingSchemaVersion);
+                    const normalizedData = fieldRegistry.normalizeIncomingData(migrationResult.data);
+
                     this.sessionPassword = password;
-                    this.totpSecret = decrypted.totpSecret;
-                    this.loadFormData(decrypted);
+                    this.totpSecret = normalizedData.totpSecret;
+                    this.schemaVersion = migrationResult.version;
+                    this.pendingSchemaNotice = migrationResult;
+
+                    this.loadFormData(normalizedData);
                     this.modules = this.savedModules || this.modules;
 
                     this.updateModuleVisibility();
@@ -3523,10 +3828,46 @@
                     document.getElementById('mainContent').style.display = 'block';
                     document.getElementById('navTabs').style.display = 'block';
                     document.getElementById('lockBtn').style.display = 'inline-block';
-                    
-                    this.hasUnsavedChanges = false;
-                    this.updateSaveStatus();
-                    
+
+                    this.applyVersionMetadata();
+
+                    const needsResave = Boolean(migrationResult?.needsResave);
+                    const isNewerSchema = Boolean(migrationResult?.newerThanApp);
+
+                    if (needsResave) {
+                        this.hasUnsavedChanges = true;
+                        this.updateSaveStatus();
+
+                        const migrationLines = (migrationResult.appliedMigrations || []).map(step => {
+                            if (step.description) {
+                                return `• ${step.description} (${step.from} → ${step.to})`;
+                            }
+                            return `• Schema upgraded from ${step.from} to ${step.to}`;
+                        });
+
+                        const noticeLines = [
+                            '🔄 Your vault data was upgraded to the latest schema.',
+                            'Please download a new encrypted vault file to capture these changes.'
+                        ];
+
+                        if (migrationLines.length > 0) {
+                            noticeLines.push('', ...migrationLines);
+                        }
+
+                        alert(noticeLines.join('\n'));
+                    } else {
+                        this.hasUnsavedChanges = false;
+                        this.updateSaveStatus();
+                        this.pendingSchemaNotice = null;
+                    }
+
+                    if (isNewerSchema) {
+                        alert(
+                            '⚠️ This vault was created with a newer schema than this release can fully interpret.\n\n'
+                            + 'Review the data carefully and consider updating the application when possible.'
+                        );
+                    }
+
                 }).catch(error => {
                     if (this.requires2FA) {
                         alert('Invalid password or authentication code.\n\nMake sure you are using the current 6-digit code from your authenticator app.');
@@ -3716,6 +4057,10 @@
             }
             
             async performSave(password) {
+                this.version = APP_VERSION;
+                this.schemaVersion = schemaManager.currentVersion;
+                this.applyVersionMetadata();
+
                 const formData = this.collectFormData();
                 const emergencyAccess = this.collectEmergencyData(formData);
                 const timestamp = new Date().toLocaleString();
@@ -3736,7 +4081,9 @@
                 dataScript.textContent = JSON.stringify({
                     initialized: true,
                     encrypted: true,
-                    version: '2.0',
+                    version: schemaManager.currentVersion,
+                    schemaVersion: schemaManager.currentVersion,
+                    appVersion: APP_VERSION,
                     savedDate: new Date().toISOString(),
                     data: encrypted,
                     modules: this.modules,
@@ -3762,7 +4109,8 @@
                 this.hasUnsavedChanges = false;
                 this.isInitialized = true;
                 this.updateSaveStatus();
-                
+                this.pendingSchemaNotice = null;
+
                 const isFirstSave = !this.hasShownSaveInstructions;
                 this.hasShownSaveInstructions = true;
                 
@@ -3783,22 +4131,61 @@
                 }
             }
             
+            getFieldValue(fieldName, options = {}) {
+                const { trim = false, includeEmpty = false } = options;
+                const keys = Array.from(new Set(fieldRegistry.getAllKeys(fieldName)));
+
+                for (const key of keys) {
+                    const element = document.querySelector(`.form-data[data-field="${key}"]`);
+                    if (!element) {
+                        continue;
+                    }
+
+                    if (element.type === 'checkbox') {
+                        return element.checked;
+                    }
+
+                    let value = element.value;
+                    if (typeof value === 'string' && trim) {
+                        value = value.trim();
+                    }
+
+                    if (!includeEmpty && typeof value === 'string' && value === '') {
+                        continue;
+                    }
+
+                    if (value !== undefined && value !== null) {
+                        return value;
+                    }
+                }
+
+                if (trim || includeEmpty) {
+                    return '';
+                }
+
+                return undefined;
+            }
+
             collectFormData() {
                 const formData = {};
                 const inputs = document.querySelectorAll('.form-data');
 
                 inputs.forEach(input => {
                     const field = input.dataset.field;
-                    if (input.type === 'checkbox') {
-                        formData[field] = input.checked;
-                    } else {
-                        formData[field] = input.value;
+                    if (!field) {
+                        return;
                     }
+
+                    const value = input.type === 'checkbox' ? input.checked : input.value;
+                    fieldRegistry.assignValue(formData, field, value);
                 });
 
                 if (this.requires2FA && this.totpSecret) {
                     formData.totpSecret = this.totpSecret;
                 }
+
+                formData.schemaVersion = schemaManager.currentVersion;
+                formData.appVersion = APP_VERSION;
 
                 return formData;
             }
@@ -3865,22 +4252,27 @@
             }
 
             loadFormData(data) {
+                const normalizedData = fieldRegistry.normalizeIncomingData(data);
                 const inputs = document.querySelectorAll('.form-data');
 
                 inputs.forEach(input => {
                     const field = input.dataset.field;
-                    if (data.hasOwnProperty(field)) {
-                        if (input.type === 'checkbox') {
-                            input.checked = data[field];
-                        } else {
-                            input.value = data[field];
-                        }
+                    const value = fieldRegistry.getValue(normalizedData, field);
+
+                    if (value === undefined) {
+                        return;
+                    }
+
+                    if (input.type === 'checkbox') {
+                        input.checked = Boolean(value);
+                    } else {
+                        input.value = value;
                     }
                 });
 
                 this.updateEmergencySettingsVisibility();
 
-                document.getElementById('lastUpdatedHeader').textContent = `Last Updated: ${data.lastUpdated || 'Never'}`;
+                document.getElementById('lastUpdatedHeader').textContent = `Last Updated: ${normalizedData.lastUpdated || 'Never'}`;
                 this.updatePatientSummaryDisplay();
                 this.restoreNoteTagsFromStorage();
                 this.initializeExistingNotes();
@@ -3916,12 +4308,12 @@
                     return;
                 }
 
-                const firstName = document.querySelector('[data-field="firstName"]')?.value.trim() || '';
-                const lastName = document.querySelector('[data-field="lastName"]')?.value.trim() || '';
-                const middleInitial = document.querySelector('[data-field="middleInitial"]')?.value.trim() || '';
-                const mrn = document.querySelector('[data-field="mrn"]')?.value.trim() || '';
-                const dob = document.querySelector('[data-field="dateOfBirth"]')?.value || '';
-                const sex = document.querySelector('[data-field="biologicalSex"]')?.value || '';
+                const firstName = this.getFieldValue('firstName', { trim: true }) || '';
+                const lastName = this.getFieldValue('lastName', { trim: true }) || '';
+                const middleInitial = this.getFieldValue('middleInitial', { trim: true }) || '';
+                const mrn = this.getFieldValue('mrn', { trim: true }) || '';
+                const dob = this.getFieldValue('dateOfBirth', { trim: true }) || '';
+                const sex = this.getFieldValue('biologicalSex', { trim: true, includeEmpty: true }) || '';
 
                 const displayNameParts = [];
                 if (firstName) displayNameParts.push(firstName);
