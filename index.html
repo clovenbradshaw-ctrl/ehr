@@ -1561,9 +1561,11 @@
             <button class="btn btn-secondary" id="settingsBtn">⚙️ Settings</button>
             <button class="btn btn-secondary" id="emergencyQRBtn">🚨 Emergency QR</button>
             <button class="btn btn-lock" id="lockBtn" style="display: none;">🔓 Lock</button>
+            <button class="btn btn-secondary" id="importBtn">📥 Import Version</button>
             <button class="btn btn-secondary" id="exportBtn">Export/Print</button>
             <button class="btn btn-save" id="saveBtn">Create Encrypted Vault</button>
         </div>
+        <input type="file" id="importInput" accept=".html,.htm" style="display: none;" />
     </div>
 
     <div class="nav-tabs no-print" id="navTabs" style="display: none;">
@@ -2697,6 +2699,7 @@
                     chronic: false
                 };
                 this.sectionLocks = {};
+                this.fieldHistory = {};
 
                 // Emergency QR helpers
                 this.QR_BYTE_LIMIT = 1500;
@@ -2780,6 +2783,27 @@
                 document.getElementById('emergencyQRBtn').addEventListener('click', () => this.openQRGenerator());
                 document.getElementById('exportBtn').addEventListener('click', () => this.openExportOptions());
                 document.getElementById('lockBtn')?.addEventListener('click', () => this.toggleLock());
+                const importBtn = document.getElementById('importBtn');
+                const importInput = document.getElementById('importInput');
+
+                if (importBtn && importInput) {
+                    importBtn.addEventListener('click', () => {
+                        if (!this.sessionPassword) {
+                            alert('Unlock your vault before importing another version.');
+                            return;
+                        }
+
+                        importInput.value = '';
+                        importInput.click();
+                    });
+
+                    importInput.addEventListener('change', (event) => {
+                        const file = event.target?.files?.[0];
+                        if (file) {
+                            this.importVaultVersion(file);
+                        }
+                    });
+                }
 
                 const actionButtons = document.getElementById('securityActions');
                 const actionMenuToggle = document.getElementById('actionMenuToggle');
@@ -2860,8 +2884,12 @@
                 });
 
                 document.addEventListener('change', (e) => {
-                    if (e.target.classList.contains('form-data') && identityFields.has(e.target.dataset.field)) {
-                        this.updatePatientSummaryDisplay();
+                    if (e.target.classList.contains('form-data')) {
+                        this.recordFieldChange(e.target, 'Manual Update');
+
+                        if (identityFields.has(e.target.dataset.field)) {
+                            this.updatePatientSummaryDisplay();
+                        }
                     }
                 });
                 
@@ -3106,7 +3134,163 @@
                 document.getElementById('modalPassword').value = '';
                 document.getElementById('modalConfirmPassword').value = '';
             }
-            
+
+            async importVaultVersion(file) {
+                try {
+                    const fileText = await file.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(fileText, 'text/html');
+                    const embedded = doc.getElementById('embedded-vault-data');
+                    const rawContent = embedded?.textContent?.trim();
+
+                    if (!rawContent) {
+                        alert('The selected file does not contain any vault data to import.');
+                        return;
+                    }
+
+                    let vaultPayload;
+                    try {
+                        vaultPayload = JSON.parse(rawContent);
+                    } catch (parseError) {
+                        alert('Unable to read the encrypted data from the selected file.');
+                        return;
+                    }
+
+                    if (!vaultPayload?.vaultIdentity) {
+                        alert('The selected file is not a compatible vault export.');
+                        return;
+                    }
+
+                    if (vaultPayload.vaultIdentity !== this.vaultIdentity) {
+                        alert(`Record mismatch. Expected "${this.vaultIdentity}" but found "${vaultPayload.vaultIdentity}".`);
+                        return;
+                    }
+
+                    if (!vaultPayload.data) {
+                        alert('The selected file does not include encrypted content to merge.');
+                        return;
+                    }
+
+                    let importedData;
+                    try {
+                        importedData = await this.crypto.decrypt(vaultPayload.data, this.sessionPassword);
+                    } catch (error) {
+                        alert('Unable to decrypt the imported vault. Confirm it uses the same password (and authenticator code, if enabled).');
+                        return;
+                    }
+
+                    const currentData = this.collectFormData();
+                    const mergeResult = this.mergeRecords(currentData, importedData, {
+                        importFileName: file.name,
+                        importSavedDate: vaultPayload.savedDate,
+                        currentTimestamp: new Date().toISOString()
+                    });
+
+                    const mergedValues = { ...mergeResult.values, __history: mergeResult.history };
+
+                    this.ensureFieldsExist(Object.keys(mergedValues));
+                    this.fieldHistory = mergeResult.history;
+                    this.loadFormData(mergedValues);
+
+                    if (mergeResult.values.totpSecret) {
+                        this.totpSecret = mergeResult.values.totpSecret;
+                    }
+
+                    if (vaultPayload.modules) {
+                        this.modules = this.mergeModules(this.modules, vaultPayload.modules);
+                        this.updateModuleVisibility();
+                    }
+
+                    this.markAsChanged();
+
+                    alert(`✅ Import complete! Data from "${file.name}" has been merged into this record.`);
+                } catch (error) {
+                    console.error('Import error:', error);
+                    alert('Unable to import the selected file. Please verify it is a valid Health Vault export.');
+                }
+            }
+
+            mergeRecords(currentData = {}, importedData = {}, options = {}) {
+                const {
+                    importFileName = 'Imported Version',
+                    importSavedDate,
+                    currentTimestamp = new Date().toISOString()
+                } = options;
+
+                const currentHistory = this.normalizeHistory(currentData, {
+                    sourceLabel: 'Current Vault',
+                    fallbackTimestamp: currentTimestamp
+                });
+                const importedHistory = this.normalizeHistory(importedData, {
+                    sourceLabel: `Imported ${importFileName || 'Version'}`,
+                    fallbackTimestamp: importSavedDate || currentTimestamp
+                });
+
+                const resultHistory = {};
+                const resultValues = {};
+                const metaFields = new Set(['__history', 'lastUpdated']);
+                const allFields = new Set([
+                    ...Object.keys(currentHistory || {}),
+                    ...Object.keys(importedHistory || {}),
+                    ...Object.keys(currentData || {}),
+                    ...Object.keys(importedData || {})
+                ]);
+
+                let latestTimestamp = currentTimestamp;
+
+                allFields.forEach(field => {
+                    if (metaFields.has(field) || field === 'totpSecret') {
+                        return;
+                    }
+
+                    const combinedEntries = [
+                        ...(currentHistory[field] || []),
+                        ...(importedHistory[field] || [])
+                    ];
+
+                    if (combinedEntries.length === 0) {
+                        if (Object.prototype.hasOwnProperty.call(currentData, field)) {
+                            resultValues[field] = currentData[field];
+                        } else if (Object.prototype.hasOwnProperty.call(importedData, field)) {
+                            resultValues[field] = importedData[field];
+                        }
+                        return;
+                    }
+
+                    const compacted = this.compactHistory(combinedEntries);
+                    resultHistory[field] = compacted;
+
+                    const lastEntry = compacted[compacted.length - 1];
+                    if (lastEntry) {
+                        resultValues[field] = lastEntry.value;
+                        if (lastEntry.timestamp && new Date(lastEntry.timestamp) > new Date(latestTimestamp)) {
+                            latestTimestamp = lastEntry.timestamp;
+                        }
+                    }
+                });
+
+                if (currentData?.totpSecret || importedData?.totpSecret) {
+                    resultValues.totpSecret = currentData?.totpSecret || importedData?.totpSecret;
+                }
+
+                const readableTimestamp = new Date(latestTimestamp).toLocaleString();
+                resultValues.lastUpdated = readableTimestamp;
+
+                return {
+                    values: resultValues,
+                    history: resultHistory,
+                    latestTimestamp
+                };
+            }
+
+            mergeModules(currentModules = {}, incomingModules = {}) {
+                const merged = { ...currentModules };
+                Object.entries(incomingModules || {}).forEach(([key, value]) => {
+                    merged[key] = Boolean(merged[key] || value);
+                });
+                return merged;
+            }
+
             async handlePasswordSubmit() {
                 const password = document.getElementById('modalPassword').value;
                 const confirmPassword = document.getElementById('modalConfirmPassword').value;
@@ -3229,11 +3413,21 @@
                 if (this.requires2FA && this.totpSecret) {
                     formData.totpSecret = this.totpSecret;
                 }
-                
+
+                formData.__history = this.cloneHistory(this.fieldHistory);
+
                 return formData;
             }
             
             loadFormData(data) {
+                const historySnapshot = this.normalizeHistory(data, {
+                    sourceLabel: 'Vault Snapshot',
+                    fallbackTimestamp: data?.lastUpdated || this.lastSaved
+                });
+                this.fieldHistory = historySnapshot;
+
+                this.ensureFieldsExist(Object.keys(data || {}));
+
                 const inputs = document.querySelectorAll('.form-data');
 
                 inputs.forEach(input => {
@@ -3249,6 +3443,257 @@
 
                 document.getElementById('lastUpdatedHeader').textContent = `Last Updated: ${data.lastUpdated || 'Never'}`;
                 this.updatePatientSummaryDisplay();
+                this.updateAllFieldTooltips();
+            }
+
+            recordFieldChange(element, source = 'Manual Update') {
+                if (!element || !element.dataset?.field) {
+                    return;
+                }
+
+                const field = element.dataset.field;
+                const value = element.type === 'checkbox' ? element.checked : element.value;
+                const timestamp = new Date().toISOString();
+
+                if (!this.fieldHistory[field]) {
+                    this.fieldHistory[field] = [];
+                }
+
+                const history = this.fieldHistory[field];
+                const lastEntry = history[history.length - 1];
+
+                if (lastEntry && this.valuesEqual(lastEntry.value, value)) {
+                    return;
+                }
+
+                history.push({
+                    timestamp,
+                    value,
+                    source
+                });
+
+                this.updateFieldTooltip(element);
+            }
+
+            updateFieldTooltip(element) {
+                if (!element || !element.dataset?.field) {
+                    return;
+                }
+
+                const field = element.dataset.field;
+                const history = this.fieldHistory?.[field];
+
+                if (!history || history.length === 0) {
+                    element.removeAttribute('title');
+                    return;
+                }
+
+                const lines = history.map(entry => {
+                    const when = this.formatHistoryTimestamp(entry.timestamp);
+                    const valueText = this.formatHistoryValue(entry.value);
+                    const sourceText = entry.source ? ` (${entry.source})` : '';
+                    return `${when} • ${valueText}${sourceText}`;
+                });
+
+                element.setAttribute('title', lines.join('\n'));
+            }
+
+            updateAllFieldTooltips() {
+                document.querySelectorAll('.form-data').forEach(input => this.updateFieldTooltip(input));
+            }
+
+            formatHistoryValue(value) {
+                if (value === undefined) {
+                    return '[not set]';
+                }
+
+                if (value === null) {
+                    return '[cleared]';
+                }
+
+                if (typeof value === 'boolean') {
+                    return value ? 'Yes' : 'No';
+                }
+
+                if (value === '') {
+                    return '[empty]';
+                }
+
+                return String(value).replace(/\s+/g, ' ').trim();
+            }
+
+            formatHistoryTimestamp(timestamp) {
+                if (!timestamp) {
+                    return 'Unknown time';
+                }
+
+                const date = new Date(timestamp);
+                if (Number.isNaN(date.getTime())) {
+                    return timestamp;
+                }
+
+                return date.toLocaleString();
+            }
+
+            cloneHistory(history) {
+                try {
+                    return JSON.parse(JSON.stringify(history || {}));
+                } catch (error) {
+                    return {};
+                }
+            }
+
+            toISODate(value) {
+                if (!value) {
+                    return new Date().toISOString();
+                }
+
+                if (value instanceof Date) {
+                    return Number.isNaN(value.getTime()) ? new Date().toISOString() : value.toISOString();
+                }
+
+                const parsed = new Date(value);
+                if (Number.isNaN(parsed.getTime())) {
+                    return new Date().toISOString();
+                }
+
+                return parsed.toISOString();
+            }
+
+            valuesEqual(a, b) {
+                return a === b;
+            }
+
+            compactHistory(entries = []) {
+                if (!Array.isArray(entries)) {
+                    return [];
+                }
+
+                const sorted = entries
+                    .map(entry => ({
+                        timestamp: this.toISODate(entry.timestamp),
+                        value: entry.value,
+                        source: entry.source
+                    }))
+                    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+                return sorted.reduce((acc, entry) => {
+                    const last = acc[acc.length - 1];
+                    if (last && last.timestamp === entry.timestamp && this.valuesEqual(last.value, entry.value)) {
+                        if (!last.source && entry.source) {
+                            last.source = entry.source;
+                        }
+                        return acc;
+                    }
+
+                    acc.push(entry);
+                    return acc;
+                }, []);
+            }
+
+            normalizeHistory(data = {}, options = {}) {
+                const { sourceLabel = 'Snapshot', fallbackTimestamp } = options;
+                const normalized = {};
+                const baseHistory = this.cloneHistory(data.__history);
+                const metaFields = new Set(['__history', 'lastUpdated', 'totpSecret']);
+                const fallbackISO = this.toISODate(fallbackTimestamp || data.lastUpdated || new Date());
+
+                Object.entries(baseHistory).forEach(([field, entries]) => {
+                    if (!entries) return;
+                    normalized[field] = this.compactHistory(entries.map(entry => ({
+                        timestamp: entry.timestamp || fallbackISO,
+                        value: entry.value,
+                        source: entry.source || sourceLabel
+                    })));
+                });
+
+                Object.keys(data).forEach(field => {
+                    if (metaFields.has(field)) {
+                        return;
+                    }
+
+                    const value = data[field];
+                    const historyEntries = normalized[field] || [];
+
+                    if (historyEntries.length === 0) {
+                        if (value !== undefined) {
+                            historyEntries.push({
+                                timestamp: fallbackISO,
+                                value,
+                                source: sourceLabel
+                            });
+                        }
+                    } else {
+                        const last = historyEntries[historyEntries.length - 1];
+                        if (value !== undefined && !this.valuesEqual(last.value, value)) {
+                            historyEntries.push({
+                                timestamp: fallbackISO,
+                                value,
+                                source: sourceLabel
+                            });
+                        }
+                    }
+
+                    if (historyEntries.length > 0) {
+                        normalized[field] = this.compactHistory(historyEntries);
+                    }
+                });
+
+                return normalized;
+            }
+
+            ensureFieldsExist(fieldKeys = []) {
+                if (!Array.isArray(fieldKeys)) {
+                    fieldKeys = Object.keys(fieldKeys || {});
+                }
+
+                const createdIds = new Set();
+                const genericConfig = {
+                    condition: { container: 'conditions-container', placeholder: 'Enter condition (e.g., Type 2 Diabetes - 2023)' },
+                    surgery: { container: 'surgeries-container', placeholder: 'Enter surgery (e.g., Appendectomy - 2020)' },
+                    provider: { container: 'providers-container', placeholder: 'Enter provider (Name, Specialty, Phone)' },
+                    note: { container: 'notes-container', placeholder: 'Enter health note' },
+                    covid: { container: 'covid-vaccines-container', placeholder: 'Enter vaccine (e.g., Pfizer Booster - 10/2024)' },
+                    vaccine: { container: 'vaccines-container', placeholder: 'Enter vaccine (e.g., Shingles - 05/2024)' }
+                };
+
+                fieldKeys.forEach(field => {
+                    if (typeof field !== 'string' || !field.includes('_')) {
+                        return;
+                    }
+
+                    if (document.querySelector(`[data-field="${field}"]`)) {
+                        return;
+                    }
+
+                    const id = field.substring(0, field.lastIndexOf('_'));
+                    if (!id || createdIds.has(id)) {
+                        return;
+                    }
+
+                    createdIds.add(id);
+                    const prefix = id.split('_')[0];
+
+                    switch (prefix) {
+                        case 'med':
+                            this.addMedication(id);
+                            break;
+                        case 'contact':
+                            this.addEmergencyContact(id);
+                            break;
+                        case 'vital':
+                            this.addVitalSign(id);
+                            break;
+                        case 'lab':
+                            this.addLabResult(id);
+                            break;
+                        default:
+                            if (genericConfig[prefix]) {
+                                const config = genericConfig[prefix];
+                                this.addGenericItem(config.container, prefix, config.placeholder, id);
+                            }
+                    }
+                });
             }
 
             calculateAge(dobString) {
@@ -3729,10 +4174,14 @@
             }
             
             // Enhanced medication addition with search
-            addMedication() {
+            addMedication(presetId) {
                 const container = document.getElementById('medications-container');
-                const id = `med_${Date.now()}`;
-                
+                const id = presetId || `med_${Date.now()}`;
+
+                if (document.querySelector(`[data-item-id="${id}"]`)) {
+                    return;
+                }
+
                 const html = `
                     <div class="list-item" data-item-id="${id}">
                         <button class="delete-btn no-print" onclick="app.removeItem('${id}')">Remove</button>
@@ -3792,7 +4241,7 @@
                 
                 container.insertAdjacentHTML('beforeend', html);
                 this.markAsChanged();
-                
+
                 // Set up medication search
                 const searchInput = document.getElementById(`search_${id}`);
                 const dropdown = document.getElementById(`dropdown_${id}`);
@@ -3834,10 +4283,14 @@
             }
             
             // Other add methods
-            addEmergencyContact() {
+            addEmergencyContact(presetId) {
                 const container = document.getElementById('emergency-contacts-container');
-                const id = `contact_${Date.now()}`;
-                
+                const id = presetId || `contact_${Date.now()}`;
+
+                if (document.querySelector(`[data-item-id="${id}"]`)) {
+                    return;
+                }
+
                 const html = `
                     <div class="list-item" data-item-id="${id}">
                         <button class="delete-btn no-print" onclick="app.removeItem('${id}')">Remove</button>
@@ -3868,10 +4321,14 @@
                 this.markAsChanged();
             }
             
-            addVitalSign() {
+            addVitalSign(presetId) {
                 const container = document.getElementById('vitals-history-container');
-                const id = `vital_${Date.now()}`;
-                
+                const id = presetId || `vital_${Date.now()}`;
+
+                if (document.querySelector(`[data-item-id="${id}"]`)) {
+                    return;
+                }
+
                 const html = `
                     <div class="list-item" data-item-id="${id}">
                         <button class="delete-btn no-print" onclick="app.removeItem('${id}')">Remove</button>
@@ -3910,10 +4367,14 @@
                 this.markAsChanged();
             }
             
-            addLabResult() {
+            addLabResult(presetId) {
                 const container = document.getElementById('labs-container');
-                const id = `lab_${Date.now()}`;
-                
+                const id = presetId || `lab_${Date.now()}`;
+
+                if (document.querySelector(`[data-item-id="${id}"]`)) {
+                    return;
+                }
+
                 const html = `
                     <div class="list-item" data-item-id="${id}">
                         <button class="delete-btn no-print" onclick="app.removeItem('${id}')">Remove</button>
@@ -3937,33 +4398,38 @@
                         </div>
                     </div>
                 `;
-                
+
                 container.insertAdjacentHTML('beforeend', html);
                 this.markAsChanged();
             }
-            
-            addCondition() { this.addGenericItem('conditions-container', 'condition', 'Enter condition (e.g., Type 2 Diabetes - 2023)'); }
-            addSurgery() { this.addGenericItem('surgeries-container', 'surgery', 'Enter surgery (e.g., Appendectomy - 2020)'); }
-            addProvider() { this.addGenericItem('providers-container', 'provider', 'Enter provider (Name, Specialty, Phone)'); }
-            addNote() { this.addGenericItem('notes-container', 'note', 'Enter health note'); }
-            addCovidVaccine() { this.addGenericItem('covid-vaccines-container', 'covid', 'Enter vaccine (e.g., Pfizer Booster - 10/2024)'); }
-            addVaccine() { this.addGenericItem('vaccines-container', 'vaccine', 'Enter vaccine (e.g., Shingles - 05/2024)'); }
-            
-            addGenericItem(containerId, prefix, placeholder) {
+
+            addCondition(presetId) { this.addGenericItem('conditions-container', 'condition', 'Enter condition (e.g., Type 2 Diabetes - 2023)', presetId); }
+            addSurgery(presetId) { this.addGenericItem('surgeries-container', 'surgery', 'Enter surgery (e.g., Appendectomy - 2020)', presetId); }
+            addProvider(presetId) { this.addGenericItem('providers-container', 'provider', 'Enter provider (Name, Specialty, Phone)', presetId); }
+            addNote(presetId) { this.addGenericItem('notes-container', 'note', 'Enter health note', presetId); }
+            addCovidVaccine(presetId) { this.addGenericItem('covid-vaccines-container', 'covid', 'Enter vaccine (e.g., Pfizer Booster - 10/2024)', presetId); }
+            addVaccine(presetId) { this.addGenericItem('vaccines-container', 'vaccine', 'Enter vaccine (e.g., Shingles - 05/2024)', presetId); }
+
+            addGenericItem(containerId, prefix, placeholder, presetId) {
                 const container = document.getElementById(containerId);
                 if (!container) return;
-                
-                const id = `${prefix}_${Date.now()}`;
+
+                const id = presetId || `${prefix}_${Date.now()}`;
+
+                if (document.querySelector(`[data-item-id="${id}"]`)) {
+                    return;
+                }
+
                 const html = `
                     <div class="list-item" data-item-id="${id}">
                         <button class="delete-btn no-print" onclick="app.removeItem('${id}')">Remove</button>
                         <div class="field">
-                            <input type="text" class="form-data" data-field="${id}_value" 
+                            <input type="text" class="form-data" data-field="${id}_value"
                                    placeholder="${placeholder || 'Enter ' + prefix + ' information'}" />
                         </div>
                     </div>
                 `;
-                
+
                 container.insertAdjacentHTML('beforeend', html);
                 this.markAsChanged();
             }
