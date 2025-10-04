@@ -88,6 +88,64 @@
         .unlock-container button:hover {
             background: #2563eb;
         }
+
+        .emergency-access-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3001;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .emergency-banner-content {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .emergency-banner-content h2 {
+            color: #dc2626;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 24pt;
+        }
+
+        .emergency-data-display {
+            margin: 20px 0;
+        }
+
+        .emergency-data-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #fef2f2;
+            border-left: 4px solid #dc2626;
+            border-radius: 4px;
+        }
+
+        .emergency-data-item strong {
+            display: block;
+            color: #991b1b;
+            margin-bottom: 5px;
+            font-size: 11pt;
+        }
+
+        .emergency-contact-card {
+            background: white;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border: 1px solid #fca5a5;
+        }
         
         .welcome-screen {
             max-width: 600px;
@@ -1527,7 +1585,8 @@
             .nav-tabs,
             .no-print,
             .unlock-screen,
-            .modal {
+            .modal,
+            #emergencyAccessBanner {
                 display: none !important;
             }
 
@@ -1596,6 +1655,16 @@
                 This HTML file contains your encrypted data.
                 Save it after making changes.
             </p>
+        </div>
+    </div>
+
+    <div id="emergencyAccessBanner" class="emergency-access-banner" style="display: none;">
+        <div class="emergency-banner-content">
+            <h2>🚨 EMERGENCY MEDICAL INFORMATION</h2>
+            <div class="emergency-data-display" id="emergencyDataDisplay"></div>
+            <button class="btn btn-primary" onclick="app.proceedToUnlock()">
+                Access Full Medical Record (Password Required)
+            </button>
         </div>
     </div>
 
@@ -1700,7 +1769,53 @@
                             <!-- Status will be updated dynamically -->
                         </div>
                     </div>
-                    
+
+                    <div class="settings-section">
+                        <h4>Emergency Access (No Password Required)</h4>
+                        <p style="font-size: 9pt; color: #64748b; margin-bottom: 15px;">
+                            Select information visible to anyone who opens this file, even without the password.
+                            Useful for first responders or emergency situations.
+                        </p>
+
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="emergency-enabled" class="form-data" data-field="emergencyAccessEnabled">
+                            <label for="emergency-enabled"><strong>Enable Emergency Access</strong></label>
+                        </div>
+
+                        <div id="emergencyOptions" style="margin-left: 20px; margin-top: 10px; display: none;">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="emergency-blood" class="form-data" data-field="showBloodType">
+                                <label for="emergency-blood">Blood Type</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="emergency-allergies" class="form-data" data-field="showCriticalAllergies">
+                                <label for="emergency-allergies">Critical Allergies</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="emergency-contacts" class="form-data" data-field="showEmergencyContacts">
+                                <label for="emergency-contacts">Emergency Contacts</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="emergency-conditions" class="form-data" data-field="showCriticalConditions">
+                                <label for="emergency-conditions">Critical Medical Conditions</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="emergency-directive" class="form-data" data-field="showAdvanceDirective">
+                                <label for="emergency-directive">Advance Directive Status</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="emergency-medications" class="form-data" data-field="showCriticalMedications">
+                                <label for="emergency-medications">Critical Medications</label>
+                            </div>
+                        </div>
+
+                        <div class="warning-box" style="margin-top: 15px;">
+                            <strong>Privacy Notice:</strong> Emergency access data is stored in plain text (NOT encrypted)
+                            so it can be read without a password. Only enable this if you're comfortable with anyone
+                            who has this file seeing the selected information.
+                        </div>
+                    </div>
+
                     <div class="settings-section">
                         <h4>Privacy Levels</h4>
                         <select id="privacyLevel" class="form-data" data-field="privacyLevel">
@@ -2790,7 +2905,13 @@
                 };
                 this.noteTags = [];
                 this.sectionLocks = {};
-                this.fieldHistory = {};
+                this.emergencyAccessConfig = null;
+
+                // Emergency QR helpers
+                this.QR_BYTE_LIMIT = 1500;
+                this.QR_TEXT_LIMIT = 900;
+                this.truncationNotice = '\n\n⚠️ Additional emergency details omitted. See vault for full record.';
+                this._textEncoder = new TextEncoder();
 
                 // Initialize
                 this.init();
@@ -2806,7 +2927,18 @@
             checkInitialization() {
                 const embeddedData = document.getElementById('embedded-vault-data');
                 const dataContent = embeddedData?.textContent?.trim();
-                
+
+                const emergencyBanner = document.getElementById('emergencyAccessBanner');
+                const emergencyDisplay = document.getElementById('emergencyDataDisplay');
+
+                if (emergencyBanner) {
+                    emergencyBanner.style.display = 'none';
+                }
+
+                if (emergencyDisplay) {
+                    emergencyDisplay.innerHTML = '';
+                }
+
                 if (dataContent && dataContent !== '') {
                     try {
                         const vaultData = JSON.parse(dataContent);
@@ -2816,29 +2948,42 @@
                         this.requires2FA = vaultData.requires2FA || false;
                         this.vaultIdentity = vaultData.vaultIdentity;
                         this.lastSaved = vaultData.savedDate;
-                        
+                        this.emergencyAccessConfig = vaultData.emergencyAccess || null;
+
                         // Update unlock screen with vault info
                         const unlockScreen = document.getElementById('unlockScreen');
                         const unlockContainer = unlockScreen.querySelector('.unlock-container');
-                        
+
                         const vaultInfoHTML = `
-                            <div style="margin-bottom: 20px; padding: 15px; background: #f0f9ff; border-radius: 8px;">
+                            <div class="vault-identity-block" style="margin-bottom: 20px; padding: 15px; background: #f0f9ff; border-radius: 8px;">
                                 <h3 style="margin: 0; color: #3b82f6; font-size: 16pt;">🔷 ${this.vaultIdentity}</h3>
                                 <p style="margin: 5px 0 0 0; color: #64748b; font-size: 9pt;">
-                                    Last saved: ${new Date(this.lastSaved).toLocaleString()}
+                                    Last saved: ${this.lastSaved ? new Date(this.lastSaved).toLocaleString() : 'Unknown'}
                                 </p>
                             </div>
                         `;
-                        
-                        unlockContainer.querySelector('h2').insertAdjacentHTML('afterend', vaultInfoHTML);
-                        
+
+                        const existingVaultInfo = unlockContainer.querySelector('.vault-identity-block');
+                        if (existingVaultInfo) {
+                            existingVaultInfo.outerHTML = vaultInfoHTML;
+                        } else {
+                            unlockContainer.querySelector('h2').insertAdjacentHTML('afterend', vaultInfoHTML);
+                        }
+
                         // Show unlock screen
                         document.getElementById('welcomeScreen').style.display = 'none';
                         document.getElementById('mainContent').style.display = 'none';
+                        document.getElementById('navTabs').style.display = 'none';
                         unlockScreen.style.display = 'flex';
-                        
+
                         if (this.requires2FA) {
                             document.getElementById('totpField').style.display = 'block';
+                        } else {
+                            document.getElementById('totpField').style.display = 'none';
+                        }
+
+                        if (this.emergencyAccessConfig && this.emergencyAccessConfig.enabled) {
+                            this.showEmergencyAccess(this.emergencyAccessConfig.data || {});
                         }
                     } catch (e) {
                         this.isInitialized = false;
@@ -2849,7 +2994,127 @@
                     document.getElementById('welcomeScreen').style.display = 'block';
                     document.getElementById('mainContent').style.display = 'none';
                     document.getElementById('unlockScreen').style.display = 'none';
+                    document.getElementById('navTabs').style.display = 'none';
+                    this.emergencyAccessConfig = null;
                 }
+            }
+
+            showEmergencyAccess(emergencyData = {}) {
+                const banner = document.getElementById('emergencyAccessBanner');
+                const display = document.getElementById('emergencyDataDisplay');
+                const unlockScreen = document.getElementById('unlockScreen');
+                const welcomeScreen = document.getElementById('welcomeScreen');
+                const navTabs = document.getElementById('navTabs');
+
+                if (!banner || !display) {
+                    return;
+                }
+
+                let html = '';
+                const formatMultiline = (value) => this.escapeHTML(value).replace(/\r?\n/g, '<br>');
+
+                if (emergencyData.bloodType) {
+                    html += `
+                        <div class="emergency-data-item">
+                            <strong>BLOOD TYPE</strong>
+                            <div style="font-size: 20pt; font-weight: bold;">${this.escapeHTML(emergencyData.bloodType)}</div>
+                        </div>
+                    `;
+                }
+
+                if (emergencyData.criticalAllergies) {
+                    html += `
+                        <div class="emergency-data-item">
+                            <strong>CRITICAL ALLERGIES</strong>
+                            <div>${formatMultiline(emergencyData.criticalAllergies)}</div>
+                        </div>
+                    `;
+                }
+
+                if (emergencyData.criticalConditions) {
+                    html += `
+                        <div class="emergency-data-item">
+                            <strong>CRITICAL CONDITIONS</strong>
+                            <div>${formatMultiline(emergencyData.criticalConditions)}</div>
+                        </div>
+                    `;
+                }
+
+                if (emergencyData.advanceDirective) {
+                    html += `
+                        <div class="emergency-data-item">
+                            <strong>ADVANCE DIRECTIVE</strong>
+                            <div>${formatMultiline(emergencyData.advanceDirective)}</div>
+                        </div>
+                    `;
+                }
+
+                if (emergencyData.medications) {
+                    html += `
+                        <div class="emergency-data-item">
+                            <strong>CRITICAL MEDICATIONS</strong>
+                            <div>${formatMultiline(emergencyData.medications)}</div>
+                        </div>
+                    `;
+                }
+
+                if (emergencyData.contacts && emergencyData.contacts.length > 0) {
+                    html += '<div class="emergency-data-item"><strong>EMERGENCY CONTACTS</strong>';
+                    emergencyData.contacts.forEach(contact => {
+                        html += `
+                            <div class="emergency-contact-card">
+                                <div style="font-weight: bold;">${this.escapeHTML(contact.name)}</div>
+                                ${contact.relationship ? `<div>${this.escapeHTML(contact.relationship)}</div>` : ''}
+                                <div style="font-size: 14pt; color: #dc2626; margin-top: 5px;">
+                                    ${this.escapeHTML(contact.phone)}
+                                </div>
+                                ${contact.altPhone ? `<div>${this.escapeHTML(contact.altPhone)}</div>` : ''}
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+
+                display.innerHTML = html || '<p>No emergency information configured.</p>';
+                banner.style.display = 'flex';
+
+                if (unlockScreen) {
+                    unlockScreen.style.display = 'none';
+                }
+
+                if (welcomeScreen) {
+                    welcomeScreen.style.display = 'none';
+                }
+
+                if (navTabs) {
+                    navTabs.style.display = 'none';
+                }
+            }
+
+            proceedToUnlock() {
+                const banner = document.getElementById('emergencyAccessBanner');
+                const unlockScreen = document.getElementById('unlockScreen');
+
+                if (banner) {
+                    banner.style.display = 'none';
+                }
+
+                if (unlockScreen) {
+                    unlockScreen.style.display = 'flex';
+                }
+
+                const navTabs = document.getElementById('navTabs');
+                if (navTabs) {
+                    navTabs.style.display = 'none';
+                }
+
+                if (this.requires2FA) {
+                    document.getElementById('totpField').style.display = 'block';
+                } else {
+                    document.getElementById('totpField').style.display = 'none';
+                }
+
+                document.getElementById('unlock-password')?.focus();
             }
             
             init() {
@@ -2916,7 +3181,12 @@
                         toggle.addEventListener('change', () => this.toggleModule(module));
                     }
                 });
-                
+
+                const emergencyEnabledToggle = document.getElementById('emergency-enabled');
+                if (emergencyEnabledToggle) {
+                    emergencyEnabledToggle.addEventListener('change', () => this.updateEmergencySettingsVisibility());
+                }
+
                 // Add buttons
                 document.getElementById('addEmergencyBtn')?.addEventListener('click', () => this.addEmergencyContact());
                 document.getElementById('addMedicationBtn')?.addEventListener('click', () => this.addMedication());
@@ -2991,6 +3261,7 @@
 
                 this.syncFieldInputs('pronouns');
                 this.syncFieldInputs('chosenName');
+                this.updateEmergencySettingsVisibility();
                 this.updatePatientSummaryDisplay();
                 this.initializeExistingNotes();
                 this.restoreNoteTagsFromStorage();
@@ -3173,8 +3444,12 @@
                     this.totpSecret = decrypted.totpSecret;
                     this.loadFormData(decrypted);
                     this.modules = this.savedModules || this.modules;
-                    
+
                     this.updateModuleVisibility();
+                    const emergencyBanner = document.getElementById('emergencyAccessBanner');
+                    if (emergencyBanner) {
+                        emergencyBanner.style.display = 'none';
+                    }
                     document.getElementById('unlockScreen').style.display = 'none';
                     document.getElementById('mainContent').style.display = 'block';
                     document.getElementById('navTabs').style.display = 'block';
@@ -3529,15 +3804,16 @@
             
             async performSave(password) {
                 const formData = this.collectFormData();
+                const emergencyAccess = this.collectEmergencyData(formData);
                 const timestamp = new Date().toLocaleString();
-                
+
                 document.getElementById('lastUpdatedHeader').textContent = `Last Updated: ${timestamp}`;
                 formData.lastUpdated = timestamp;
-                
+
                 const encrypted = await this.crypto.encrypt(formData, password);
-                
+
                 const htmlDoc = document.documentElement.cloneNode(true);
-                
+
                 const existingData = htmlDoc.querySelector('#embedded-vault-data');
                 if (existingData) {
                     existingData.textContent = '';
@@ -3552,9 +3828,12 @@
                     data: encrypted,
                     modules: this.modules,
                     requires2FA: this.requires2FA,
-                    vaultIdentity: this.vaultIdentity
+                    vaultIdentity: this.vaultIdentity,
+                    emergencyAccess: emergencyAccess
                 }, null, 2);
-                
+
+                this.emergencyAccessConfig = emergencyAccess;
+
                 const htmlString = '<!DOCTYPE html>\n' + htmlDoc.outerHTML;
                 
                 const blob = new Blob([htmlString], { type: 'text/html' });
@@ -3594,7 +3873,7 @@
             collectFormData() {
                 const formData = {};
                 const inputs = document.querySelectorAll('.form-data');
-                
+
                 inputs.forEach(input => {
                     const field = input.dataset.field;
                     if (input.type === 'checkbox') {
@@ -3603,16 +3882,75 @@
                         formData[field] = input.value;
                     }
                 });
-                
+
                 if (this.requires2FA && this.totpSecret) {
                     formData.totpSecret = this.totpSecret;
                 }
 
-                formData.__history = this.cloneHistory(this.fieldHistory);
-
                 return formData;
             }
-            
+
+            collectEmergencyData(formData) {
+                if (!formData || !formData.emergencyAccessEnabled) {
+                    return null;
+                }
+
+                const emergencyData = {};
+                const trimValue = (value) => typeof value === 'string' ? value.trim() : value;
+
+                if (formData.showBloodType) {
+                    const bloodType = trimValue(formData.bloodType);
+                    if (bloodType) {
+                        emergencyData.bloodType = bloodType;
+                    }
+                }
+
+                if (formData.showCriticalAllergies) {
+                    const allergies = trimValue(formData.criticalAllergies);
+                    if (allergies) {
+                        emergencyData.criticalAllergies = allergies;
+                    }
+                }
+
+                if (formData.showCriticalConditions) {
+                    const conditions = trimValue(formData.criticalConditions);
+                    if (conditions) {
+                        emergencyData.criticalConditions = conditions;
+                    }
+                }
+
+                if (formData.showAdvanceDirective) {
+                    const directive = trimValue(formData.advanceDirective);
+                    if (directive) {
+                        emergencyData.advanceDirective = directive;
+                    }
+                }
+
+                if (formData.showCriticalMedications) {
+                    const medications = trimValue(formData.medicationContraindications);
+                    if (medications) {
+                        emergencyData.medications = medications;
+                    }
+                }
+
+                if (formData.showEmergencyContacts) {
+                    const contacts = this.collectListData('emergency-contacts-container')
+                        .map(contact => ({
+                            name: trimValue(contact.name || ''),
+                            relationship: trimValue(contact.relationship || ''),
+                            phone: trimValue(contact.phone || ''),
+                            altPhone: trimValue(contact.altPhone || '')
+                        }))
+                        .filter(contact => contact.name && contact.phone);
+
+                    if (contacts.length > 0) {
+                        emergencyData.contacts = contacts;
+                    }
+                }
+
+                return { enabled: true, data: emergencyData };
+            }
+
             loadFormData(data) {
                 const historySnapshot = this.normalizeHistory(data, {
                     sourceLabel: 'Vault Snapshot',
@@ -3634,6 +3972,8 @@
                         }
                     }
                 });
+
+                this.updateEmergencySettingsVisibility();
 
                 document.getElementById('lastUpdatedHeader').textContent = `Last Updated: ${data.lastUpdated || 'Never'}`;
                 this.updatePatientSummaryDisplay();
@@ -3709,11 +4049,22 @@
 
                 metaEl.textContent = metaParts.length ? metaParts.join(' • ') : 'Add DOB, sex, and MRN for quick reference.';
             }
-            
+
+            updateEmergencySettingsVisibility() {
+                const emergencyOptions = document.getElementById('emergencyOptions');
+                const emergencyToggle = document.getElementById('emergency-enabled');
+
+                if (!emergencyOptions || !emergencyToggle) {
+                    return;
+                }
+
+                emergencyOptions.style.display = emergencyToggle.checked ? 'block' : 'none';
+            }
+
             openSettings() {
                 const modal = document.getElementById('settingsModal');
                 modal.classList.add('active');
-                
+
                 document.getElementById('module-identity').checked = this.modules.identity;
                 document.getElementById('module-gac').checked = this.modules.gac;
                 document.getElementById('module-mental').checked = this.modules.mental;
@@ -3748,6 +4099,8 @@
                         </p>
                     `;
                 }
+
+                this.updateEmergencySettingsVisibility();
             }
             
             closeSettings() {
@@ -5712,9 +6065,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
                 this.isLocked = true;
                 document.getElementById('lockBtn').innerHTML = '🔒 Unlock';
                 document.getElementById('mainContent').style.display = 'none';
+                document.getElementById('navTabs').style.display = 'none';
                 document.getElementById('unlockScreen').style.display = 'flex';
+
+                if (this.emergencyAccessConfig && this.emergencyAccessConfig.enabled) {
+                    this.showEmergencyAccess(this.emergencyAccessConfig.data || {});
+                } else {
+                    if (this.requires2FA) {
+                        document.getElementById('totpField').style.display = 'block';
+                    } else {
+                        document.getElementById('totpField').style.display = 'none';
+                    }
+                }
             }
-            
+
             unlock() {
                 this.isLocked = false;
                 document.getElementById('lockBtn').innerHTML = '🔓 Lock';
