@@ -146,11 +146,11 @@
             justify-content: space-between;
             z-index: 1000;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             gap: 8px;
             min-height: 48px;
         }
-        
+
         .save-status {
             padding: 4px 12px;
             border-radius: 4px;
@@ -159,8 +159,10 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            white-space: nowrap;
-            flex-shrink: 0;
+            white-space: normal;
+            text-align: center;
+            justify-content: center;
+            flex: 0 1 340px;
             margin: 0 10px;
         }
         
@@ -1140,6 +1142,8 @@
                 width: 100%;
                 justify-content: center;
                 margin: 0;
+                flex: 1 1 100%;
+                max-width: none;
             }
 
             .action-buttons .btn {
