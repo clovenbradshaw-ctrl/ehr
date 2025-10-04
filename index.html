@@ -1147,81 +1147,6 @@
             transform: translateX(24px);
         }
         
-        .qr-section {
-            border: 2px solid #dc2626;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-            background: #fef2f2;
-        }
-        
-        .qr-generator {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 15px;
-        }
-        
-        .qr-config {
-            padding: 15px;
-            background: white;
-            border-radius: 6px;
-        }
-        
-        .qr-preview {
-            text-align: center;
-            padding: 15px;
-            background: white;
-            border-radius: 6px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        #qr-canvas {
-            margin: 15px auto;
-            border: 1px solid #e2e8f0;
-            padding: 10px;
-            background: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 200px;
-        }
-
-        .qr-preview-text {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 10px;
-            font-family: monospace;
-            font-size: 9pt;
-            text-align: left;
-            white-space: pre-wrap;
-            word-break: break-word;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .qr-warning {
-            color: #dc2626;
-            font-size: 9pt;
-            text-align: left;
-        }
-        
-        #qr-canvas canvas,
-        #qr-canvas img,
-        #qr-canvas table {
-            margin: 0 auto;
-        }
-        
-        .qr-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 15px;
-        }
-
         @media (max-width: 900px) {
             body {
                 padding: 15px;
@@ -1318,19 +1243,6 @@
                 width: 100%;
             }
 
-            .qr-generator {
-                grid-template-columns: 1fr;
-            }
-
-            .qr-actions {
-                flex-direction: column;
-            }
-
-            .qr-actions .btn {
-                min-width: unset;
-                width: 100%;
-            }
-
             .modal-content {
                 margin: 40px 16px;
                 padding: 20px;
@@ -1391,15 +1303,6 @@
 
             .vitals-grid {
                 grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            }
-
-            .qr-section {
-                padding: 16px;
-            }
-
-            .qr-preview,
-            .qr-config {
-                padding: 12px;
             }
 
             .modal-header h2 {
@@ -1611,6 +1514,68 @@
             line-height: 1.4;
         }
 
+        .share-secret {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            background: #f8fafc;
+            border: 1px dashed #94a3b8;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-family: 'SFMono-Regular', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 12pt;
+            letter-spacing: 0.08em;
+        }
+
+        .share-meta {
+            display: grid;
+            gap: 8px;
+            margin: 16px 0;
+            font-size: 9.5pt;
+            color: #475569;
+        }
+
+        .share-meta strong {
+            color: #1e293b;
+        }
+
+        .share-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 9.5pt;
+            line-height: 1.5;
+        }
+
+        .share-status {
+            margin-top: 12px;
+            font-size: 9pt;
+            color: #2563eb;
+        }
+
+        #shareTotpQR {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 11pt;
+            background: #ffffff;
+            color: #1e293b;
+        }
+
         @media print {
             body {
                 padding: 0;
@@ -1642,8 +1607,7 @@
         
         @media (max-width: 768px) {
             .grid-2,
-            .grid-3,
-            .qr-generator {
+            .grid-3 {
                 grid-template-columns: 1fr;
             }
             
@@ -1715,11 +1679,12 @@
         </div>
         <div class="action-buttons">
             <button class="btn btn-secondary" id="settingsBtn">⚙️ Settings</button>
-            <button class="btn btn-secondary" id="emergencyQRBtn">🚨 Emergency QR</button>
             <button class="btn btn-lock" id="lockBtn" style="display: none;">🔓 Lock</button>
+            <button class="btn btn-secondary" id="importBtn">📥 Import Version</button>
             <button class="btn btn-secondary" id="exportBtn">Export/Print</button>
             <button class="btn btn-save" id="saveBtn">Create Encrypted Vault</button>
         </div>
+        <input type="file" id="importInput" accept=".html,.htm" style="display: none;" />
     </div>
 
     <div class="nav-tabs no-print" id="navTabs" style="display: none;">
@@ -1933,40 +1898,6 @@
         </div>
     </div>
 
-    <!-- Emergency QR Modal -->
-    <div class="modal" id="qrModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>🆘 Emergency QR Code Generator</h3>
-            </div>
-            <div class="modal-body">
-                <div class="qr-generator">
-                    <div class="qr-config">
-                        <h4>Emergency Contact Details</h4>
-                        <p style="font-size: 10pt; color: #64748b; margin: 10px 0 0;">
-                            The QR code now includes only the names, relationships, and phone numbers from your emergency contacts.
-                            Any blank fields are automatically skipped.
-                        </p>
-                        <button class="btn btn-primary" onclick="app.generateQR()" style="margin-top: 20px;">Generate QR</button>
-                    </div>
-                    <div class="qr-preview">
-                        <div id="qr-canvas"></div>
-                        <pre class="qr-preview-text" id="qrPreviewText"></pre>
-                        <div class="qr-warning" id="qrWarning"></div>
-                        <div class="qr-actions">
-                            <button class="btn btn-secondary" onclick="app.downloadQR('wallet')">Wallet Card</button>
-                            <button class="btn btn-secondary" onclick="app.downloadQR('bracelet')">Bracelet</button>
-                            <button class="btn btn-secondary" onclick="app.downloadQR('sticker')">Sticker</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="app.closeQRModal()">Close</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Export Modal -->
     <div class="modal" id="exportModal">
         <div class="modal-content">
@@ -1977,6 +1908,7 @@
                 <p>Select how you'd like to share or archive this record.</p>
                 <div class="export-options">
                     <button class="btn btn-primary" id="printSummaryBtn">🖨️ Printable Care Summary</button>
+                    <button class="btn btn-secondary" id="shareBtn">🔐 TOTP-Protected Share Package</button>
                 </div>
                 <p class="export-note">
                     The printable summary reformats your record into an easy-to-read care handoff that can be printed or saved as a PDF for sharing.
@@ -1984,6 +1916,48 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" id="exportCloseBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div class="modal" id="shareModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔐 Create TOTP-Protected Share</h3>
+            </div>
+            <div class="modal-body">
+                <p>Create a time-limited, read-only copy that unlocks with a six-digit authenticator code.</p>
+                <div class="share-meta">
+                    <label for="shareDuration"><strong>Access duration</strong></label>
+                    <select id="shareDuration" class="form-control">
+                        <option value="900000">15 minutes</option>
+                        <option value="3600000">1 hour</option>
+                        <option value="86400000" selected>24 hours</option>
+                        <option value="259200000">3 days</option>
+                        <option value="604800000">7 days (maximum)</option>
+                    </select>
+                    <div id="shareExpiryNotice">Access will expire automatically.</div>
+                </div>
+                <div class="share-secret">
+                    <span id="shareTotpSecret">•••• •••• •••• ••••</span>
+                    <button class="btn btn-secondary" type="button" id="shareRegenerateSecretBtn">Refresh Secret</button>
+                </div>
+                <p class="export-note" style="margin-top: 16px;">Add this secret to an authenticator app or share it securely with the recipient. The QR code encodes the same secret.</p>
+                <div id="shareTotpQR"></div>
+                <div class="share-warning" style="margin-top: 16px;">
+                    <strong>Important:</strong>
+                    <ul style="margin: 8px 0 0 20px;">
+                        <li>The downloaded HTML file contains encrypted data that can only be opened with a current TOTP code.</li>
+                        <li>Once the expiration time passes, the share will refuse all unlock attempts.</li>
+                        <li>Keep the authenticator secret safe—anyone with the secret can generate codes during the active window.</li>
+                    </ul>
+                </div>
+                <div class="share-status" id="shareStatus"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" id="shareCancelBtn">Cancel</button>
+                <button class="btn btn-primary" type="button" id="shareGenerateBtn">Download Share Package</button>
             </div>
         </div>
     </div>
@@ -2661,16 +2635,19 @@
                 return hex;
             }
             
-            static async generateTOTP(secret, timeStep = 30) {
+            static async generateTOTP(secret, timeStep = 30, offset = 0) {
+                const counter = Math.floor(Date.now() / 1000 / timeStep) + offset;
+                return TOTP.generateTOTPForCounter(secret, counter, timeStep);
+            }
+
+            static async generateTOTPForCounter(secret, counter, timeStep = 30) {
+                const normalizedCounter = Math.max(counter, 0);
                 const hexSecret = TOTP.base32ToHex(secret);
-                const counter = Math.floor(Date.now() / 1000 / timeStep);
-                const counterHex = counter.toString(16).padStart(16, '0');
-                
-                // Convert hex to bytes
+                const counterHex = normalizedCounter.toString(16).padStart(16, '0');
+
                 const secretBytes = new Uint8Array(hexSecret.match(/.{2}/g).map(byte => parseInt(byte, 16)));
                 const counterBytes = new Uint8Array(counterHex.match(/.{2}/g).map(byte => parseInt(byte, 16)));
-                
-                // Import key for HMAC
+
                 const key = await crypto.subtle.importKey(
                     'raw',
                     secretBytes,
@@ -2678,12 +2655,10 @@
                     false,
                     ['sign']
                 );
-                
-                // Generate HMAC
+
                 const signature = await crypto.subtle.sign('HMAC', key, counterBytes);
                 const signatureArray = new Uint8Array(signature);
-                
-                // Dynamic truncation
+
                 const offset = signatureArray[signatureArray.length - 1] & 0xf;
                 const code = (
                     ((signatureArray[offset] & 0x7f) << 24) |
@@ -2691,26 +2666,25 @@
                     ((signatureArray[offset + 2] & 0xff) << 8) |
                     (signatureArray[offset + 3] & 0xff)
                 ) % 1000000;
-                
+
                 return code.toString().padStart(6, '0');
             }
-            
-            static async verifyTOTP(secret, code, window = 1) {
-                const currentCode = await TOTP.generateTOTP(secret);
-                if(currentCode === code) return true;
-                
-                // Check previous and next time windows
-                for(let i = 1; i <= window; i++) {
-                    const prevCode = await TOTP.generateTOTP(secret, 30, -i);
-                    const nextCode = await TOTP.generateTOTP(secret, 30, i);
-                    if(prevCode === code || nextCode === code) return true;
+
+            static async verifyTOTP(secret, code, window = 1, timeStep = 30) {
+                const currentCounter = Math.floor(Date.now() / 1000 / timeStep);
+
+                for (let i = -window; i <= window; i++) {
+                    const candidate = await TOTP.generateTOTPForCounter(secret, currentCounter + i, timeStep);
+                    if (candidate === code) {
+                        return true;
+                    }
                 }
-                
+
                 return false;
             }
         }
         
-        // QR Code wrapper for emergency medical data
+        // QR Code helper utilities
         const QRGenerator = {
             _renderIntoContainer(tempContainer, target) {
                 const qrElement = tempContainer.querySelector('canvas, img, table');
@@ -2722,21 +2696,6 @@
                     qrElement.removeAttribute('title');
                     target.appendChild(qrElement);
                 }
-            },
-
-            generate: function(data, container, size = { width: 256, height: 256 }) {
-                if (!container) return;
-
-                const tempContainer = document.createElement('div');
-
-                new QRCode(tempContainer, {
-                    text: typeof data === 'object' ? JSON.stringify(data) : data,
-                    width: size.width,
-                    height: size.height,
-                    correctLevel: QRCode.CorrectLevel.L
-                });
-
-                this._renderIntoContainer(tempContainer, container);
             },
 
             generateOTPAuth: function(secret, label, issuer, container) {
@@ -2936,6 +2895,8 @@
                 this.currentTOTPSecret = null;
                 this.requires2FA = false;
                 this.isLocked = false;
+                this.shareExportSecret = null;
+                this.shareDurationMs = 86400000;
                 this.modules = {
                     identity: false,
                     gac: false,
@@ -3169,9 +3130,29 @@
                 // Main buttons
                 document.getElementById('saveBtn').addEventListener('click', () => this.saveVault());
                 document.getElementById('settingsBtn').addEventListener('click', () => this.openSettings());
-                document.getElementById('emergencyQRBtn').addEventListener('click', () => this.openQRGenerator());
                 document.getElementById('exportBtn').addEventListener('click', () => this.openExportOptions());
                 document.getElementById('lockBtn')?.addEventListener('click', () => this.toggleLock());
+                const importBtn = document.getElementById('importBtn');
+                const importInput = document.getElementById('importInput');
+
+                if (importBtn && importInput) {
+                    importBtn.addEventListener('click', () => {
+                        if (!this.sessionPassword) {
+                            alert('Unlock your vault before importing another version.');
+                            return;
+                        }
+
+                        importInput.value = '';
+                        importInput.click();
+                    });
+
+                    importInput.addEventListener('change', (event) => {
+                        const file = event.target?.files?.[0];
+                        if (file) {
+                            this.importVaultVersion(file);
+                        }
+                    });
+                }
 
                 document.getElementById('printSummaryBtn')?.addEventListener('click', () => {
                     this.closeExportOptions();
@@ -3179,7 +3160,15 @@
                 });
 
                 document.getElementById('exportCloseBtn')?.addEventListener('click', () => this.closeExportOptions());
-                
+                document.getElementById('shareBtn')?.addEventListener('click', () => {
+                    this.closeExportOptions();
+                    this.openShareModal();
+                });
+                document.getElementById('shareCancelBtn')?.addEventListener('click', () => this.closeShareModal());
+                document.getElementById('shareGenerateBtn')?.addEventListener('click', () => this.generateSharePackage());
+                document.getElementById('shareDuration')?.addEventListener('change', () => this.updateShareExpirationNotice());
+                document.getElementById('shareRegenerateSecretBtn')?.addEventListener('click', () => this.refreshShareSecret());
+
                 // Navigation
                 document.querySelectorAll('.tab').forEach(tab => {
                     tab.addEventListener('click', (e) => this.navigateToSection(e));
@@ -3249,8 +3238,12 @@
                 });
 
                 document.addEventListener('change', (e) => {
-                    if (e.target.classList.contains('form-data') && identityFields.has(e.target.dataset.field)) {
-                        this.updatePatientSummaryDisplay();
+                    if (e.target.classList.contains('form-data')) {
+                        this.recordFieldChange(e.target, 'Manual Update');
+
+                        if (identityFields.has(e.target.dataset.field)) {
+                            this.updatePatientSummaryDisplay();
+                        }
                     }
                 });
                 
@@ -3609,7 +3602,163 @@
                 document.getElementById('modalPassword').value = '';
                 document.getElementById('modalConfirmPassword').value = '';
             }
-            
+
+            async importVaultVersion(file) {
+                try {
+                    const fileText = await file.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(fileText, 'text/html');
+                    const embedded = doc.getElementById('embedded-vault-data');
+                    const rawContent = embedded?.textContent?.trim();
+
+                    if (!rawContent) {
+                        alert('The selected file does not contain any vault data to import.');
+                        return;
+                    }
+
+                    let vaultPayload;
+                    try {
+                        vaultPayload = JSON.parse(rawContent);
+                    } catch (parseError) {
+                        alert('Unable to read the encrypted data from the selected file.');
+                        return;
+                    }
+
+                    if (!vaultPayload?.vaultIdentity) {
+                        alert('The selected file is not a compatible vault export.');
+                        return;
+                    }
+
+                    if (vaultPayload.vaultIdentity !== this.vaultIdentity) {
+                        alert(`Record mismatch. Expected "${this.vaultIdentity}" but found "${vaultPayload.vaultIdentity}".`);
+                        return;
+                    }
+
+                    if (!vaultPayload.data) {
+                        alert('The selected file does not include encrypted content to merge.');
+                        return;
+                    }
+
+                    let importedData;
+                    try {
+                        importedData = await this.crypto.decrypt(vaultPayload.data, this.sessionPassword);
+                    } catch (error) {
+                        alert('Unable to decrypt the imported vault. Confirm it uses the same password (and authenticator code, if enabled).');
+                        return;
+                    }
+
+                    const currentData = this.collectFormData();
+                    const mergeResult = this.mergeRecords(currentData, importedData, {
+                        importFileName: file.name,
+                        importSavedDate: vaultPayload.savedDate,
+                        currentTimestamp: new Date().toISOString()
+                    });
+
+                    const mergedValues = { ...mergeResult.values, __history: mergeResult.history };
+
+                    this.ensureFieldsExist(Object.keys(mergedValues));
+                    this.fieldHistory = mergeResult.history;
+                    this.loadFormData(mergedValues);
+
+                    if (mergeResult.values.totpSecret) {
+                        this.totpSecret = mergeResult.values.totpSecret;
+                    }
+
+                    if (vaultPayload.modules) {
+                        this.modules = this.mergeModules(this.modules, vaultPayload.modules);
+                        this.updateModuleVisibility();
+                    }
+
+                    this.markAsChanged();
+
+                    alert(`✅ Import complete! Data from "${file.name}" has been merged into this record.`);
+                } catch (error) {
+                    console.error('Import error:', error);
+                    alert('Unable to import the selected file. Please verify it is a valid Health Vault export.');
+                }
+            }
+
+            mergeRecords(currentData = {}, importedData = {}, options = {}) {
+                const {
+                    importFileName = 'Imported Version',
+                    importSavedDate,
+                    currentTimestamp = new Date().toISOString()
+                } = options;
+
+                const currentHistory = this.normalizeHistory(currentData, {
+                    sourceLabel: 'Current Vault',
+                    fallbackTimestamp: currentTimestamp
+                });
+                const importedHistory = this.normalizeHistory(importedData, {
+                    sourceLabel: `Imported ${importFileName || 'Version'}`,
+                    fallbackTimestamp: importSavedDate || currentTimestamp
+                });
+
+                const resultHistory = {};
+                const resultValues = {};
+                const metaFields = new Set(['__history', 'lastUpdated']);
+                const allFields = new Set([
+                    ...Object.keys(currentHistory || {}),
+                    ...Object.keys(importedHistory || {}),
+                    ...Object.keys(currentData || {}),
+                    ...Object.keys(importedData || {})
+                ]);
+
+                let latestTimestamp = currentTimestamp;
+
+                allFields.forEach(field => {
+                    if (metaFields.has(field) || field === 'totpSecret') {
+                        return;
+                    }
+
+                    const combinedEntries = [
+                        ...(currentHistory[field] || []),
+                        ...(importedHistory[field] || [])
+                    ];
+
+                    if (combinedEntries.length === 0) {
+                        if (Object.prototype.hasOwnProperty.call(currentData, field)) {
+                            resultValues[field] = currentData[field];
+                        } else if (Object.prototype.hasOwnProperty.call(importedData, field)) {
+                            resultValues[field] = importedData[field];
+                        }
+                        return;
+                    }
+
+                    const compacted = this.compactHistory(combinedEntries);
+                    resultHistory[field] = compacted;
+
+                    const lastEntry = compacted[compacted.length - 1];
+                    if (lastEntry) {
+                        resultValues[field] = lastEntry.value;
+                        if (lastEntry.timestamp && new Date(lastEntry.timestamp) > new Date(latestTimestamp)) {
+                            latestTimestamp = lastEntry.timestamp;
+                        }
+                    }
+                });
+
+                if (currentData?.totpSecret || importedData?.totpSecret) {
+                    resultValues.totpSecret = currentData?.totpSecret || importedData?.totpSecret;
+                }
+
+                const readableTimestamp = new Date(latestTimestamp).toLocaleString();
+                resultValues.lastUpdated = readableTimestamp;
+
+                return {
+                    values: resultValues,
+                    history: resultHistory,
+                    latestTimestamp
+                };
+            }
+
+            mergeModules(currentModules = {}, incomingModules = {}) {
+                const merged = { ...currentModules };
+                Object.entries(incomingModules || {}).forEach(([key, value]) => {
+                    merged[key] = Boolean(merged[key] || value);
+                });
+                return merged;
+            }
+
             async handlePasswordSubmit() {
                 const password = document.getElementById('modalPassword').value;
                 const confirmPassword = document.getElementById('modalConfirmPassword').value;
@@ -3803,6 +3952,14 @@
             }
 
             loadFormData(data) {
+                const historySnapshot = this.normalizeHistory(data, {
+                    sourceLabel: 'Vault Snapshot',
+                    fallbackTimestamp: data?.lastUpdated || this.lastSaved
+                });
+                this.fieldHistory = historySnapshot;
+
+                this.ensureFieldsExist(Object.keys(data || {}));
+
                 const inputs = document.querySelectorAll('.form-data');
 
                 inputs.forEach(input => {
@@ -4054,135 +4211,6 @@
                 }
             }
             
-            openQRGenerator() {
-                document.getElementById('qrModal').classList.add('active');
-            }
-
-            generateQR() {
-                const container = document.getElementById('qr-canvas');
-                const previewEl = document.getElementById('qrPreviewText');
-                const warningEl = document.getElementById('qrWarning');
-
-                container.innerHTML = '';
-                if (previewEl) previewEl.textContent = '';
-                if (warningEl) warningEl.textContent = '';
-
-                const { text: summaryText, hasDetails } = this.buildEmergencySummary();
-                let maxTextBytes = this.QR_TEXT_LIMIT;
-                let { text: qrText, truncated } = this.fitTextForQR(summaryText, maxTextBytes);
-                let dataUrl = this.buildEmergencyDataUrl(qrText);
-                let encodedLength = this._textEncoder.encode(dataUrl).length;
-
-                while (encodedLength > this.QR_BYTE_LIMIT && maxTextBytes > 200) {
-                    maxTextBytes = Math.floor(maxTextBytes * 0.85);
-                    ({ text: qrText, truncated } = this.fitTextForQR(summaryText, maxTextBytes));
-                    dataUrl = this.buildEmergencyDataUrl(qrText);
-                    encodedLength = this._textEncoder.encode(dataUrl).length;
-                    truncated = true;
-                }
-
-                if (encodedLength > this.QR_BYTE_LIMIT) {
-                    qrText = 'EMERGENCY MEDICAL INFO\nSummary exceeds QR capacity. Access vault for full record.';
-                    dataUrl = this.buildEmergencyDataUrl(qrText);
-                    encodedLength = this._textEncoder.encode(dataUrl).length;
-                    truncated = true;
-                }
-
-                if (previewEl) {
-                    previewEl.textContent = qrText;
-                    previewEl.scrollTop = 0;
-                }
-
-                if (warningEl) {
-                    if (!hasDetails) {
-                        warningEl.textContent = 'Add emergency details to include more information in the QR code.';
-                    } else {
-                        const messages = ['Scan with your phone to open this summary in a browser window.'];
-                        if (truncated) {
-                            messages.push('Emergency summary shortened to fit inside the QR code. Review the preview for omitted details.');
-                        }
-                        warningEl.textContent = messages.join(' ');
-                    }
-                }
-
-                try {
-                    QRGenerator.generate(dataUrl, container, { width: 200, height: 200 });
-                    console.log('QR generated with data URL:', dataUrl);
-                } catch (e) {
-                    console.error('QR generation failed:', e);
-                    this.createFallbackDisplay(container, qrText);
-                    if (warningEl) {
-                        warningEl.textContent = 'Unable to render QR code. Emergency summary shown below for quick reference.';
-                    }
-                }
-            }
-
-            buildEmergencyHtml(text) {
-                const escaped = text
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;');
-
-                return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Emergency Medical Info</title><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#0f172a;color:#f8fafc;margin:0;padding:24px;}main{max-width:600px;margin:0 auto;background:#1e293b;padding:24px;border-radius:12px;box-shadow:0 20px 60px rgba(15,23,42,0.45);}h1{margin-top:0;font-size:20pt;color:#38bdf8;text-align:center;}p.notice{color:#e2e8f0;font-size:10pt;text-align:center;margin-bottom:20px;}pre{background:#0f172a;border-radius:8px;padding:16px;white-space:pre-wrap;word-break:break-word;font-size:11pt;line-height:1.5;color:#f8fafc;border:1px solid rgba(148,163,184,0.3);}</style></head><body><main><h1>Emergency Medical Info</h1><p class="notice">Provided from your Personal Health Vault QR code.</p><pre>${escaped}</pre></main></body></html>`;
-            }
-
-            buildEmergencyDataUrl(text) {
-                const html = this.buildEmergencyHtml(text);
-                return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
-            }
-
-            buildEmergencySummary() {
-                const lines = [
-                    'EMERGENCY CONTACTS',
-                    `Generated: ${new Date().toLocaleDateString()}`,
-                    '═══════════════════'
-                ];
-
-                let hasDetails = false;
-
-                const contacts = Array.from(document.querySelectorAll('#emergency-contacts-container .list-item'));
-
-                contacts.forEach(container => {
-                    const name = container.querySelector('[data-field$="_name"]')?.value.trim() || '';
-                    const relationship = container.querySelector('[data-field$="_relationship"]')?.value.trim() || '';
-                    const phone = container.querySelector('[data-field$="_phone"]')?.value.trim() || '';
-                    const altPhone = container.querySelector('[data-field$="_altPhone"]')?.value.trim() || '';
-
-                    const entryLines = [];
-
-                    if (name && relationship) {
-                        entryLines.push(`${name} (${relationship})`);
-                    } else if (name) {
-                        entryLines.push(name);
-                    } else if (relationship) {
-                        entryLines.push(relationship);
-                    }
-
-                    if (phone) {
-                        entryLines.push(`Primary: ${phone}`);
-                    }
-
-                    if (altPhone) {
-                        entryLines.push(`Alternate: ${altPhone}`);
-                    }
-
-                    if (entryLines.length > 0) {
-                        if (lines[lines.length - 1] !== '') {
-                            lines.push('');
-                        }
-                        lines.push(...entryLines);
-                        hasDetails = true;
-                    }
-                });
-
-                while (lines.length > 0 && lines[lines.length - 1] === '') {
-                    lines.pop();
-                }
-
-                const text = lines.join('\n');
-                return { text, hasDetails };
-            }
-
             prepareListFromValue(value) {
                 if (!value) return [];
                 const trimmed = value.trim();
@@ -4193,134 +4221,15 @@
                 return trimmed.split(/[,;]+/).map(item => item.trim()).filter(Boolean);
             }
 
-            fitTextForQR(text, maxBytes = this.QR_BYTE_LIMIT) {
-                const encoder = this._textEncoder;
-                const bytes = encoder.encode(text);
+            // Enhanced medication addition with search
+            addMedication(presetId) {
+                const container = document.getElementById('medications-container');
+                const id = presetId || `med_${Date.now()}`;
 
-                if (bytes.length <= maxBytes) {
-                    return { text, truncated: false };
-                }
-
-                const noticeBytes = encoder.encode(this.truncationNotice).length;
-                const allowance = Math.max(0, maxBytes - noticeBytes);
-
-                let truncatedText = '';
-                let used = 0;
-
-                for (const char of text) {
-                    const charBytes = encoder.encode(char);
-                    if (used + charBytes.length > allowance) break;
-                    truncatedText += char;
-                    used += charBytes.length;
-                }
-
-                truncatedText = truncatedText.trimEnd();
-                const lastBreak = truncatedText.lastIndexOf('\n');
-                if (lastBreak > 0 && truncatedText.length - lastBreak < 10) {
-                    truncatedText = truncatedText.slice(0, lastBreak).trimEnd();
-                }
-
-                if (!truncatedText) {
-                    truncatedText = text.slice(0, Math.max(0, allowance));
-                }
-
-                const finalText = `${truncatedText}${this.truncationNotice}`;
-                return { text: finalText, truncated: true };
-            }
-            
-            createFallbackDisplay(container, text) {
-                container.innerHTML = `
-                    <div style="border: 2px solid #dc2626; padding: 15px; background: white; max-width: 300px; margin: 0 auto;">
-                        <h4 style="color: #dc2626; margin: 0 0 10px 0;">⚠️ QR Generation Issue</h4>
-                        <p style="font-size: 10pt; color: #64748b;">Unable to generate QR code. Emergency data shown below:</p>
-                        <pre style="font-size: 8pt; white-space: pre-wrap; word-wrap: break-word; max-height: 200px; overflow-y: auto; background: #f8fafc; padding: 10px; border-radius: 4px; margin-top: 10px;">${text}</pre>
-                        <p style="font-size: 9pt; color: #3b82f6; margin-top: 10px;">
-                            You can copy this text or take a photo of it for emergency use.
-                        </p>
-                    </div>
-                `;
-            }
-            
-            downloadQR(format) {
-                const container = document.getElementById('qr-canvas');
-                const img = container.querySelector('img');
-                if (!img) {
-                    alert('Please generate a QR code first');
+                if (document.querySelector(`[data-item-id="${id}"]`)) {
                     return;
                 }
-                
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                
-                // Set proper aspect ratios for different formats
-                let width = 400;
-                let height = 250; // Better wallet card ratio
-                
-                if (format === 'wallet') {
-                    width = 400;
-                    height = 250; // Credit card aspect ratio
-                } else if (format === 'bracelet') {
-                    width = 600;
-                    height = 150; // Thin bracelet ratio
-                } else if (format === 'sticker') {
-                    width = 300;
-                    height = 300; // Square sticker
-                }
-                
-                canvas.width = width;
-                canvas.height = height;
-                
-                ctx.fillStyle = 'white';
-                ctx.fillRect(0, 0, width, height);
-                
-                // Emergency header
-                ctx.fillStyle = '#dc2626';
-                ctx.fillRect(0, 0, width, 30);
-                
-                ctx.fillStyle = 'white';
-                ctx.font = 'bold 16px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('🚨 EMERGENCY MEDICAL INFO 🚨', width / 2, 20);
-                
-                const qrImg = new Image();
-                qrImg.onload = function() {
-                    // Calculate QR position for proper aspect ratio
-                    const qrSize = Math.min(width - 40, height - 50);
-                    const qrX = (width - qrSize) / 2;
-                    const qrY = format === 'bracelet' ? 35 : 40;
-                    
-                    ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
-                    
-                    // Add footer text
-                    ctx.fillStyle = '#1e293b';
-                    ctx.font = '10px Arial';
-                    ctx.textAlign = 'center';
-                    
-                    if (format === 'wallet') {
-                        ctx.fillText('Scan for medical information', width / 2, height - 10);
-                    }
-                    
-                    canvas.toBlob(function(blob) {
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `emergency_medical_qr_${format}.png`;
-                        a.click();
-                        URL.revokeObjectURL(url);
-                    });
-                };
-                qrImg.src = img.src;
-            }
-            
-            closeQRModal() {
-                document.getElementById('qrModal').classList.remove('active');
-            }
-            
-            // Enhanced medication addition with search
-            addMedication() {
-                const container = document.getElementById('medications-container');
-                const id = `med_${Date.now()}`;
-                
+
                 const html = `
                     <div class="list-item" data-item-id="${id}">
                         <button class="delete-btn no-print" onclick="app.removeItem('${id}')">Remove</button>
@@ -4380,7 +4289,7 @@
                 
                 container.insertAdjacentHTML('beforeend', html);
                 this.markAsChanged();
-                
+
                 // Set up medication search
                 const searchInput = document.getElementById(`search_${id}`);
                 const dropdown = document.getElementById(`dropdown_${id}`);
@@ -4422,10 +4331,14 @@
             }
             
             // Other add methods
-            addEmergencyContact() {
+            addEmergencyContact(presetId) {
                 const container = document.getElementById('emergency-contacts-container');
-                const id = `contact_${Date.now()}`;
-                
+                const id = presetId || `contact_${Date.now()}`;
+
+                if (document.querySelector(`[data-item-id="${id}"]`)) {
+                    return;
+                }
+
                 const html = `
                     <div class="list-item" data-item-id="${id}">
                         <button class="delete-btn no-print" onclick="app.removeItem('${id}')">Remove</button>
@@ -4456,10 +4369,14 @@
                 this.markAsChanged();
             }
             
-            addVitalSign() {
+            addVitalSign(presetId) {
                 const container = document.getElementById('vitals-history-container');
-                const id = `vital_${Date.now()}`;
-                
+                const id = presetId || `vital_${Date.now()}`;
+
+                if (document.querySelector(`[data-item-id="${id}"]`)) {
+                    return;
+                }
+
                 const html = `
                     <div class="list-item" data-item-id="${id}">
                         <button class="delete-btn no-print" onclick="app.removeItem('${id}')">Remove</button>
@@ -4498,10 +4415,14 @@
                 this.markAsChanged();
             }
             
-            addLabResult() {
+            addLabResult(presetId) {
                 const container = document.getElementById('labs-container');
-                const id = `lab_${Date.now()}`;
-                
+                const id = presetId || `lab_${Date.now()}`;
+
+                if (document.querySelector(`[data-item-id="${id}"]`)) {
+                    return;
+                }
+
                 const html = `
                     <div class="list-item" data-item-id="${id}">
                         <button class="delete-btn no-print" onclick="app.removeItem('${id}')">Remove</button>
@@ -4525,7 +4446,7 @@
                         </div>
                     </div>
                 `;
-                
+
                 container.insertAdjacentHTML('beforeend', html);
                 this.markAsChanged();
             }
@@ -4895,6 +4816,470 @@
 
             closeExportOptions() {
                 document.getElementById('exportModal')?.classList.remove('active');
+            }
+
+            openShareModal() {
+                if (!this.isInitialized) {
+                    alert('Initialize and save your vault before creating a share package.');
+                    return;
+                }
+
+                const statusEl = document.getElementById('shareStatus');
+                if (statusEl) {
+                    statusEl.textContent = '';
+                    statusEl.style.color = '#2563eb';
+                }
+
+                this.refreshShareSecret();
+                this.updateShareExpirationNotice();
+                document.getElementById('shareModal')?.classList.add('active');
+            }
+
+            closeShareModal() {
+                document.getElementById('shareModal')?.classList.remove('active');
+                const qrContainer = document.getElementById('shareTotpQR');
+                if (qrContainer) {
+                    qrContainer.innerHTML = '';
+                }
+                const statusEl = document.getElementById('shareStatus');
+                if (statusEl) {
+                    statusEl.textContent = '';
+                    statusEl.style.color = '#2563eb';
+                }
+                this.shareExportSecret = null;
+            }
+
+            refreshShareSecret() {
+                this.shareExportSecret = this.generateTOTPSecret();
+                const secretEl = document.getElementById('shareTotpSecret');
+                if (secretEl) {
+                    secretEl.textContent = this.formatSecret(this.shareExportSecret);
+                }
+
+                const qrContainer = document.getElementById('shareTotpQR');
+                if (qrContainer) {
+                    qrContainer.innerHTML = '';
+                    const label = `${this.vaultIdentity} Share`;
+                    QRGenerator.generateOTPAuth(this.shareExportSecret, label, 'HealthVault Share', qrContainer);
+                }
+            }
+
+            updateShareExpirationNotice() {
+                const selectEl = document.getElementById('shareDuration');
+                if (!selectEl) {
+                    return;
+                }
+
+                const selected = parseInt(selectEl.value, 10);
+                const maxDuration = 604800000; // 7 days
+                this.shareDurationMs = Number.isFinite(selected) ? Math.min(Math.max(selected, 60000), maxDuration) : 86400000;
+
+                const expiresAt = new Date(Date.now() + this.shareDurationMs);
+                const noticeEl = document.getElementById('shareExpiryNotice');
+                if (noticeEl) {
+                    noticeEl.textContent = `Access will expire on ${expiresAt.toLocaleString()}.`;
+                }
+            }
+
+            async generateSharePackage() {
+                if (!this.shareExportSecret) {
+                    this.refreshShareSecret();
+                }
+
+                const statusEl = document.getElementById('shareStatus');
+                if (statusEl) {
+                    statusEl.style.color = '#2563eb';
+                }
+
+                try {
+                    const expiresAtMs = Date.now() + this.shareDurationMs;
+                    const formData = this.collectFormData();
+                    delete formData.totpSecret;
+
+                    const listData = {
+                        emergencyContacts: this.collectListData('emergency-contacts-container'),
+                        medications: this.collectListData('medications-container'),
+                        vitals: this.collectListData('vitals-history-container'),
+                        labs: this.collectListData('labs-container'),
+                        conditions: this.collectListData('conditions-container'),
+                        surgeries: this.collectListData('surgeries-container'),
+                        providers: this.collectListData('providers-container'),
+                        notes: this.collectListData('notes-container'),
+                        covidVaccines: this.collectListData('covid-vaccines-container'),
+                        otherVaccines: this.collectListData('vaccines-container')
+                    };
+
+                    const lastUpdatedText = document.getElementById('lastUpdatedHeader')?.textContent?.replace('Last Updated: ', '') || 'Never';
+                    const summaryHTML = this.buildShareSummaryHTML(formData, listData, lastUpdatedText);
+
+                    const payload = {
+                        version: '1.0',
+                        generatedAt: new Date().toISOString(),
+                        expiresAt: expiresAtMs,
+                        vaultIdentity: this.vaultIdentity,
+                        lastUpdated: lastUpdatedText,
+                        summaryHTML,
+                        form: formData,
+                        lists: listData
+                    };
+
+                    const shareKey = this.generateShareKey();
+                    const encryptedPayload = await this.crypto.encrypt(payload, shareKey);
+
+                    const stepSeconds = 30;
+                    const nowCounter = Math.floor(Date.now() / 1000 / stepSeconds);
+                    const endCounter = Math.floor(expiresAtMs / 1000 / stepSeconds);
+                    const encryptedKeys = {};
+
+                    for (let counter = nowCounter - 1; counter <= endCounter + 1; counter++) {
+                        if (counter < 0) continue;
+
+                        const code = await TOTP.generateTOTPForCounter(this.shareExportSecret, counter, stepSeconds);
+                        const salt = crypto.getRandomValues(new Uint8Array(16));
+                        const iv = crypto.getRandomValues(new Uint8Array(12));
+                        const key = await this.crypto.deriveKey(code, salt);
+                        const encryptedKey = await crypto.subtle.encrypt(
+                            { name: 'AES-GCM', iv },
+                            key,
+                            this._textEncoder.encode(shareKey)
+                        );
+
+                        encryptedKeys[counter] = {
+                            salt: Array.from(salt),
+                            iv: Array.from(iv),
+                            data: Array.from(new Uint8Array(encryptedKey))
+                        };
+                    }
+
+                    const bundle = {
+                        vaultIdentity: this.vaultIdentity,
+                        createdAt: new Date().toISOString(),
+                        expiresAt: expiresAtMs,
+                        timeStep: stepSeconds,
+                        encryptedPayload,
+                        encryptedKeys
+                    };
+
+                    const fileName = `${(this.vaultIdentity || 'vault').replace(/[^a-z0-9_-]/gi, '_')}_share_${this.formatFileTimestamp()}.html`;
+                    const shareDocument = this.buildShareDocument(bundle);
+
+                    this.downloadContent(shareDocument, fileName);
+
+                    if (statusEl) {
+                        statusEl.textContent = `✅ Share package downloaded. Access valid until ${new Date(expiresAtMs).toLocaleString()}.`;
+                    }
+                } catch (error) {
+                    console.error('Failed to generate share package', error);
+                    if (statusEl) {
+                        statusEl.textContent = '⚠️ Unable to generate share package. See console for details.';
+                        statusEl.style.color = '#dc2626';
+                    }
+                }
+            }
+
+            buildShareSummaryHTML(formData, lists, lastUpdatedText) {
+                const clone = (value) => JSON.parse(JSON.stringify(value ?? null));
+                const tempContainer = document.createElement('div');
+                const originalCollectFormData = this.collectFormData;
+                const originalCollectListData = this.collectListData;
+                const headerEl = document.getElementById('lastUpdatedHeader');
+                const originalHeaderText = headerEl ? headerEl.textContent : null;
+
+                this.collectFormData = () => clone(formData) || {};
+                this.collectListData = (containerId) => {
+                    switch (containerId) {
+                        case 'emergency-contacts-container':
+                            return clone(lists.emergencyContacts) || [];
+                        case 'medications-container':
+                            return clone(lists.medications) || [];
+                        case 'vitals-history-container':
+                            return clone(lists.vitals) || [];
+                        case 'labs-container':
+                            return clone(lists.labs) || [];
+                        case 'conditions-container':
+                            return clone(lists.conditions) || [];
+                        case 'surgeries-container':
+                            return clone(lists.surgeries) || [];
+                        case 'providers-container':
+                            return clone(lists.providers) || [];
+                        case 'notes-container':
+                            return clone(lists.notes) || [];
+                        case 'covid-vaccines-container':
+                            return clone(lists.covidVaccines) || [];
+                        case 'vaccines-container':
+                            return clone(lists.otherVaccines) || [];
+                        default:
+                            return originalCollectListData.call(this, containerId);
+                    }
+                };
+
+                if (headerEl) {
+                    headerEl.textContent = `Last Updated: ${lastUpdatedText}`;
+                }
+
+                try {
+                    this.buildPrintSummary(tempContainer);
+                    return tempContainer.innerHTML;
+                } finally {
+                    this.collectFormData = originalCollectFormData;
+                    this.collectListData = originalCollectListData;
+                    if (headerEl && originalHeaderText !== null) {
+                        headerEl.textContent = originalHeaderText;
+                    }
+                }
+            }
+
+            generateShareKey() {
+                const bytes = crypto.getRandomValues(new Uint8Array(32));
+                return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+            }
+
+            formatFileTimestamp(date = new Date()) {
+                const pad = (value) => value.toString().padStart(2, '0');
+                return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}_${pad(date.getHours())}${pad(date.getMinutes())}`;
+            }
+
+            buildShareDocument(bundle) {
+                const styles = `:root { color-scheme: light; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; margin: 0; background: #f1f5f9; color: #0f172a; }
+.share-container { max-width: 960px; margin: 0 auto; padding: 40px 20px; }
+.share-header { margin-bottom: 24px; }
+.share-header h1 { margin: 0; font-size: 26px; color: #2563eb; }
+.share-header p { margin: 4px 0; color: #475569; }
+.share-card { background: #ffffff; border-radius: 12px; box-shadow: 0 15px 45px rgba(15, 23, 42, 0.12); padding: 28px; margin-bottom: 24px; }
+.share-card h2 { margin-top: 0; font-size: 20px; color: #1e293b; }
+.share-input { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+.share-input input { flex: 1 0 200px; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 18px; letter-spacing: 0.3em; text-align: center; }
+.primary-btn { background: #2563eb; color: #ffffff; border: none; padding: 12px 24px; border-radius: 8px; font-size: 15px; cursor: pointer; }
+.primary-btn:hover { background: #1d4ed8; }
+.secondary-btn { background: #e2e8f0; color: #1e293b; border: none; padding: 10px 18px; border-radius: 8px; font-size: 14px; cursor: pointer; }
+.secondary-btn:hover { background: #cbd5e1; }
+.share-status-msg { margin-top: 16px; color: #dc2626; }
+.meta-grid { display: grid; gap: 8px; font-size: 14px; color: #475569; margin-top: 12px; }
+.countdown { font-size: 14px; color: #2563eb; margin-top: 12px; }
+.summary-shell { overflow: auto; }
+.summary-shell .care-summary { box-shadow: none; }
+.expired-card { text-align: center; }
+@media (max-width: 640px) { .share-card { padding: 20px; } .share-input { flex-direction: column; } }
+`;
+
+                const bundleJSON = JSON.stringify(bundle);
+                const title = this.escapeHTML(`${this.vaultIdentity} Share Access`);
+
+                return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+    <style>${styles}</style>
+</head>
+<body>
+    <div class="share-container">
+        <header class="share-header">
+            <h1>🔐 ${this.escapeHTML(this.vaultIdentity)} – Shared Record</h1>
+            <p>This read-only package unlocks with an authenticator code.</p>
+            <p id="countdown" class="countdown"></p>
+        </header>
+        <section class="share-card" id="unlockCard">
+            <h2>Enter the 6-digit TOTP code</h2>
+            <p>The code changes every 30 seconds in the authenticator that stores this share's secret.</p>
+            <div class="share-input">
+                <input type="text" id="shareCode" inputmode="numeric" autocomplete="one-time-code" placeholder="000000" maxlength="6">
+                <button class="primary-btn" id="unlockBtn">Unlock</button>
+            </div>
+            <div class="share-status-msg" id="unlockStatus"></div>
+        </section>
+        <section class="share-card expired-card" id="expiredCard" style="display: none;">
+            <h2>⏱️ Access Expired</h2>
+            <p>The permitted time window for this share has passed. Request a new share from the owner.</p>
+        </section>
+        <section class="share-card" id="recordCard" style="display: none;">
+            <h2>Access Granted</h2>
+            <div class="meta-grid" id="metadata"></div>
+            <div class="summary-shell" id="summaryContainer"></div>
+            <div style="margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap;">
+                <button class="secondary-btn" id="downloadJsonBtn">Download JSON Snapshot</button>
+                <button class="secondary-btn" id="printBtn">Print Summary</button>
+            </div>
+        </section>
+    </div>
+    <script>
+    const sharePackage = ${bundleJSON};
+    const escapeHTML = (value) => String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    const shareCrypto = {
+        encoder: new TextEncoder(),
+        decoder: new TextDecoder(),
+        async deriveKey(password, saltArray) {
+            const keyMaterial = await crypto.subtle.importKey('raw', this.encoder.encode(password), 'PBKDF2', false, ['deriveBits', 'deriveKey']);
+            return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: new Uint8Array(saltArray), iterations: 100000, hash: 'SHA-256' }, keyMaterial, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+        },
+        async unlockShareKey(code, entry) {
+            const key = await this.deriveKey(code, entry.salt);
+            const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: new Uint8Array(entry.iv) }, key, new Uint8Array(entry.data));
+            return this.decoder.decode(decrypted);
+        },
+        async decryptPayload(payload, password) {
+            const key = await this.deriveKey(password, payload.salt);
+            const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: new Uint8Array(payload.iv) }, key, new Uint8Array(payload.data));
+            return JSON.parse(this.decoder.decode(decrypted));
+        }
+    };
+
+    const unlockCard = document.getElementById('unlockCard');
+    const expiredCard = document.getElementById('expiredCard');
+    const recordCard = document.getElementById('recordCard');
+    const codeInput = document.getElementById('shareCode');
+    const unlockStatus = document.getElementById('unlockStatus');
+    const summaryContainer = document.getElementById('summaryContainer');
+    const metadata = document.getElementById('metadata');
+    const countdownEl = document.getElementById('countdown');
+    const downloadJsonBtn = document.getElementById('downloadJsonBtn');
+    const printBtn = document.getElementById('printBtn');
+
+    const isExpired = () => Date.now() > sharePackage.expiresAt;
+
+    function updateCountdown() {
+        if (!countdownEl) return;
+        const remaining = sharePackage.expiresAt - Date.now();
+        if (remaining <= 0) {
+            countdownEl.textContent = 'This share has expired.';
+            showExpired();
+            return;
+        }
+        const totalSeconds = Math.floor(remaining / 1000);
+        const days = Math.floor(totalSeconds / 86400);
+        const hours = Math.floor((totalSeconds % 86400) / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        const parts = [];
+        if (days) parts.push(days + 'd');
+        if (days || hours) parts.push(hours + 'h');
+        parts.push(minutes + 'm');
+        parts.push(seconds + 's');
+        countdownEl.textContent = 'Access expires in ' + parts.join(' ');
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    async function unlock() {
+        if (isExpired()) {
+            showExpired();
+            return;
+        }
+
+        unlockStatus.textContent = '';
+        const code = codeInput.value.trim();
+        if (!/^\d{6}$/.test(code)) {
+            unlockStatus.textContent = 'Enter the six-digit code from your authenticator app.';
+            return;
+        }
+
+        const currentCounter = Math.floor(Date.now() / 1000 / sharePackage.timeStep);
+        const candidates = [currentCounter, currentCounter - 1, currentCounter + 1];
+
+        for (const counter of candidates) {
+            const entry = sharePackage.encryptedKeys[counter];
+            if (!entry) continue;
+            try {
+                const shareKey = await shareCrypto.unlockShareKey(code, entry);
+                const payload = await shareCrypto.decryptPayload(sharePackage.encryptedPayload, shareKey);
+                if (isExpired()) {
+                    showExpired();
+                    return;
+                }
+                showSummary(payload);
+                codeInput.value = '';
+                return;
+            } catch (err) {
+                // Try next candidate window
+            }
+        }
+
+        unlockStatus.textContent = 'Invalid code or timing window. Ensure the authenticator clock is accurate.';
+    }
+
+    function showExpired() {
+        unlockCard.style.display = 'none';
+        recordCard.style.display = 'none';
+        expiredCard.style.display = 'block';
+    }
+
+    function showSummary(payload) {
+        unlockCard.style.display = 'none';
+        expiredCard.style.display = 'none';
+        recordCard.style.display = 'block';
+        unlockStatus.textContent = '';
+
+        metadata.innerHTML = `
+            <div><strong>Vault:</strong> ${escapeHTML(payload.vaultIdentity ? payload.vaultIdentity : 'Shared Record')}</div>
+            <div><strong>Record updated:</strong> ${escapeHTML(payload.lastUpdated)}</div>
+            <div><strong>Share generated:</strong> ${escapeHTML(new Date(payload.generatedAt).toLocaleString())}</div>
+            <div><strong>Share expires:</strong> ${escapeHTML(new Date(sharePackage.expiresAt).toLocaleString())}</div>
+        `;
+
+        summaryContainer.innerHTML = payload.summaryHTML || '<p>No summary available.</p>';
+
+        if (downloadJsonBtn) {
+            downloadJsonBtn.onclick = () => downloadJSON(payload);
+        }
+
+        if (printBtn) {
+            printBtn.onclick = () => {
+                const printWindow = window.open('', '_blank');
+                if (!printWindow) return;
+                printWindow.document.write('<!DOCTYPE html><html><head><title>Shared Record Summary</title></head><body>' + (payload.summaryHTML || '') + '</body></html>');
+                printWindow.document.close();
+                printWindow.focus();
+                printWindow.print();
+            };
+        }
+    }
+
+    function downloadJSON(payload) {
+        const clone = { ...payload };
+        const blob = new Blob([JSON.stringify(clone, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'shared_record.json';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    document.getElementById('unlockBtn').addEventListener('click', unlock);
+    codeInput.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            unlock();
+        }
+    });
+
+    if (isExpired()) {
+        showExpired();
+    }
+    </script>
+</body>
+</html>`;
+            }
+
+            downloadContent(content, filename, mimeType = 'text/html') {
+                const blob = new Blob([content], { type: mimeType });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
             }
 
             printSummary() {
