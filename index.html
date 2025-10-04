@@ -1119,6 +1119,7 @@
             <button class="btn btn-secondary" id="emergencyQRBtn">🚨 Emergency QR</button>
             <button class="btn btn-lock" id="lockBtn" style="display: none;">🔓 Lock</button>
             <button class="btn btn-secondary" id="exportBtn">Export/Print</button>
+            <button class="btn btn-secondary" id="shareBtn">📤 Share</button>
             <button class="btn btn-save" id="saveBtn">Create Encrypted Vault</button>
         </div>
     </div>
@@ -2251,9 +2252,10 @@
                 
                 // Check for embedded data
                 this.checkInitialization();
-                
+
                 // Initialize state
                 this.hasUnsavedChanges = false;
+                this.hasShownSaveInstructions = false;
                 this.sessionPassword = null;
                 this.currentTOTPSecret = null;
                 this.requires2FA = false;
@@ -2341,6 +2343,7 @@
                 document.getElementById('settingsBtn').addEventListener('click', () => this.openSettings());
                 document.getElementById('emergencyQRBtn').addEventListener('click', () => this.openQRGenerator());
                 document.getElementById('exportBtn').addEventListener('click', () => this.exportPDF());
+                document.getElementById('shareBtn').addEventListener('click', () => this.shareVault());
                 document.getElementById('lockBtn')?.addEventListener('click', () => this.toggleLock());
                 
                 // Navigation
@@ -2659,56 +2662,73 @@
             }
             
             async performSave(password) {
+                const fileData = await this.createVaultFile(password);
+                this.triggerFileDownload(fileData.blob, fileData.filename);
+                this.finalizeVaultSave('download');
+            }
+
+            async createVaultFile(password) {
                 const formData = this.collectFormData();
                 const timestamp = new Date().toLocaleString();
-                
+
                 document.getElementById('lastUpdatedHeader').textContent = `Last Updated: ${timestamp}`;
                 formData.lastUpdated = timestamp;
-                
+
                 const encrypted = await this.crypto.encrypt(formData, password);
-                
+
                 const htmlDoc = document.documentElement.cloneNode(true);
-                
+
                 const existingData = htmlDoc.querySelector('#embedded-vault-data');
                 if (existingData) {
                     existingData.textContent = '';
                 }
-                
+
                 const dataScript = htmlDoc.querySelector('#embedded-vault-data');
-                dataScript.textContent = JSON.stringify({
-                    initialized: true,
-                    encrypted: true,
-                    version: '2.0',
-                    savedDate: new Date().toISOString(),
-                    data: encrypted,
-                    modules: this.modules,
-                    requires2FA: this.requires2FA,
-                    vaultIdentity: this.vaultIdentity
-                }, null, 2);
-                
+                if (dataScript) {
+                    dataScript.textContent = JSON.stringify({
+                        initialized: true,
+                        encrypted: true,
+                        version: '2.0',
+                        savedDate: new Date().toISOString(),
+                        data: encrypted,
+                        modules: this.modules,
+                        requires2FA: this.requires2FA,
+                        vaultIdentity: this.vaultIdentity
+                    }, null, 2);
+                }
+
                 const htmlString = '<!DOCTYPE html>\n' + htmlDoc.outerHTML;
-                
                 const blob = new Blob([htmlString], { type: 'text/html' });
+                const filename = `health_vault_${this.vaultIdentity}_${new Date().toISOString().split('T')[0]}.html`;
+
+                return { blob, filename };
+            }
+
+            triggerFileDownload(blob, filename) {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `health_vault_${this.vaultIdentity}_${new Date().toISOString().split('T')[0]}.html`;
+                a.download = filename;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                
+            }
+
+            finalizeVaultSave(mode = 'download') {
                 this.hasUnsavedChanges = false;
                 this.isInitialized = true;
                 this.updateSaveStatus();
-                
+
                 const isFirstSave = !this.hasShownSaveInstructions;
                 this.hasShownSaveInstructions = true;
-                
+
                 if (isFirstSave) {
-                    alert('✅ Your health vault has been saved!\n\n' +
+                    const actionVerb = mode === 'share' ? 'shared' : 'saved';
+                    const adjective = mode === 'share' ? 'shared' : 'downloaded';
+                    alert('✅ Your health vault has been ' + actionVerb + '!\n\n' +
                           '📁 IMPORTANT INSTRUCTIONS:\n' +
-                          '1. The downloaded HTML file contains all your encrypted data\n' +
+                          `1. The ${adjective} HTML file contains all your encrypted data\n` +
                           '2. Store this file in a safe location\n' +
                           '3. Make backups on different devices or cloud storage\n' +
                           '4. You can open this file in any web browser\n\n' +
@@ -2716,12 +2736,87 @@
                           '• Your password is NOT recoverable if lost\n' +
                           '• Each save creates a new file - replace the old one\n' +
                           '• The file works completely offline');
-                } else {
+                } else if (mode === 'download') {
                     alert('✅ Vault updated and downloaded!\n\n' +
                           'Replace your previous vault file with this new version.');
+                } else if (mode === 'share') {
+                    alert('✅ Vault packaged and shared!\n\n' +
+                          'Only share this encrypted file with trusted recipients and provide the password securely.');
                 }
             }
-            
+
+            async shareVault() {
+                if (!this.sessionPassword) {
+                    alert('Unlock or initialize your vault before sharing.');
+                    this.showPasswordModal();
+                    return;
+                }
+
+                let fileData = null;
+
+                try {
+                    fileData = await this.createVaultFile(this.sessionPassword);
+
+                    if (typeof File !== 'function') {
+                        alert('File sharing is not supported in this environment. The encrypted vault will be downloaded instead.');
+                        this.triggerFileDownload(fileData.blob, fileData.filename);
+                        this.finalizeVaultSave('download');
+                        return;
+                    }
+
+                    const shareFile = new File([fileData.blob], fileData.filename, { type: 'text/html' });
+                    const canUseShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+                    let canShareFiles = false;
+                    let shareCapabilityKnown = false;
+
+                    if (canUseShare && typeof navigator.canShare === 'function') {
+                        shareCapabilityKnown = true;
+                        try {
+                            canShareFiles = navigator.canShare({ files: [shareFile] });
+                        } catch (err) {
+                            canShareFiles = false;
+                        }
+                    }
+
+                    const shouldAttemptShare = canUseShare && (!shareCapabilityKnown || canShareFiles);
+
+                    if (shouldAttemptShare) {
+                        try {
+                            await navigator.share({
+                                files: [shareFile],
+                                title: `Encrypted Health Vault - ${this.vaultIdentity}`,
+                                text: 'Encrypted personal health vault. Open in a browser and unlock with the shared password.'
+                            });
+                            this.finalizeVaultSave('share');
+                            return;
+                        } catch (error) {
+                            if (error && error.name === 'AbortError') {
+                                return;
+                            }
+                            throw error;
+                        }
+                    }
+
+                    alert('Sharing is not available on this device. The encrypted vault will be downloaded so you can share it manually.');
+                    this.triggerFileDownload(fileData.blob, fileData.filename);
+                    this.finalizeVaultSave('download');
+                } catch (error) {
+                    if (error && error.name === 'AbortError') {
+                        return;
+                    }
+
+                    console.error('Error sharing vault:', error);
+                    alert('Sharing failed. The encrypted vault will be downloaded instead.');
+
+                    if (!fileData) {
+                        fileData = await this.createVaultFile(this.sessionPassword);
+                    }
+
+                    this.triggerFileDownload(fileData.blob, fileData.filename);
+                    this.finalizeVaultSave('download');
+                }
+            }
+
             collectFormData() {
                 const formData = {};
                 const inputs = document.querySelectorAll('.form-data');
