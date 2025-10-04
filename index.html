@@ -2736,12 +2736,12 @@
                           '• Your password is NOT recoverable if lost\n' +
                           '• Each save creates a new file - replace the old one\n' +
                           '• The file works completely offline');
-                } else if (mode === 'download') {
-                    alert('✅ Vault updated and downloaded!\n\n' +
-                          'Replace your previous vault file with this new version.');
                 } else if (mode === 'share') {
                     alert('✅ Vault packaged and shared!\n\n' +
                           'Only share this encrypted file with trusted recipients and provide the password securely.');
+                } else {
+                    alert('✅ Vault updated and downloaded!\n\n' +
+                          'Replace your previous vault file with this new version.');
                 }
             }
 
@@ -2752,71 +2752,64 @@
                     return;
                 }
 
-                let fileData = null;
+                const headerEl = document.getElementById('lastUpdatedHeader');
+                const previousHeader = headerEl ? headerEl.textContent : '';
+                let fileData;
 
                 try {
                     fileData = await this.createVaultFile(this.sessionPassword);
-
-                    if (typeof File !== 'function') {
-                        alert('File sharing is not supported in this environment. The encrypted vault will be downloaded instead.');
-                        this.triggerFileDownload(fileData.blob, fileData.filename);
-                        this.finalizeVaultSave('download');
-                        return;
-                    }
-
-                    const shareFile = new File([fileData.blob], fileData.filename, { type: 'text/html' });
-                    const canUseShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
-                    let canShareFiles = false;
-                    let shareCapabilityKnown = false;
-
-                    if (canUseShare && typeof navigator.canShare === 'function') {
-                        shareCapabilityKnown = true;
-                        try {
-                            canShareFiles = navigator.canShare({ files: [shareFile] });
-                        } catch (err) {
-                            canShareFiles = false;
-                        }
-                    }
-
-                    const shouldAttemptShare = canUseShare && (!shareCapabilityKnown || canShareFiles);
-
-                    if (shouldAttemptShare) {
-                        try {
-                            await navigator.share({
-                                files: [shareFile],
-                                title: `Encrypted Health Vault - ${this.vaultIdentity}`,
-                                text: 'Encrypted personal health vault. Open in a browser and unlock with the shared password.'
-                            });
-                            this.finalizeVaultSave('share');
-                            return;
-                        } catch (error) {
-                            if (error && error.name === 'AbortError') {
-                                return;
-                            }
-                            throw error;
-                        }
-                    }
-
-                    alert('Sharing is not available on this device. The encrypted vault will be downloaded so you can share it manually.');
-                    this.triggerFileDownload(fileData.blob, fileData.filename);
-                    this.finalizeVaultSave('download');
                 } catch (error) {
-                    if (error && error.name === 'AbortError') {
-                        return;
+                    console.error('Error preparing vault for sharing:', error);
+                    alert('Unable to prepare the encrypted vault for sharing.');
+                    if (headerEl) {
+                        headerEl.textContent = previousHeader;
                     }
+                    return;
+                }
 
-                    console.error('Error sharing vault:', error);
-                    alert('Sharing failed. The encrypted vault will be downloaded instead.');
-
-                    if (!fileData) {
-                        fileData = await this.createVaultFile(this.sessionPassword);
-                    }
-
+                if (typeof File === 'undefined') {
+                    alert('Sharing is not supported on this device. The encrypted vault will be downloaded instead.');
                     this.triggerFileDownload(fileData.blob, fileData.filename);
                     this.finalizeVaultSave('download');
+                    return;
                 }
-            }
 
+                const shareFile = new File([fileData.blob], fileData.filename, { type: 'text/html' });
+                const canUseShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+                let canShareFiles = true;
+
+                if (canUseShare && typeof navigator.canShare === 'function') {
+                    try {
+                        canShareFiles = navigator.canShare({ files: [shareFile] });
+                    } catch (err) {
+                        canShareFiles = false;
+                    }
+                }
+
+                if (canUseShare && canShareFiles) {
+                    try {
+                        await navigator.share({
+                            files: [shareFile],
+                            title: `Encrypted Health Vault - ${this.vaultIdentity}`,
+                            text: 'Encrypted personal health vault. Open in a browser and unlock with the shared password.'
+                        });
+                        this.finalizeVaultSave('share');
+                        return;
+                    } catch (error) {
+                        if (error && error.name === 'AbortError') {
+                            if (headerEl) {
+                                headerEl.textContent = previousHeader;
+                            }
+                            return;
+                        }
+                        console.error('Error sharing via Web Share API:', error);
+                    }
+                }
+
+                alert('Sharing is not available on this device. The encrypted vault will be downloaded so you can share it manually.');
+                this.triggerFileDownload(fileData.blob, fileData.filename);
+                this.finalizeVaultSave('download');
+            }
             collectFormData() {
                 const formData = {};
                 const inputs = document.querySelectorAll('.form-data');
