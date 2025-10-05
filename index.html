@@ -3309,6 +3309,22 @@
                 this.pendingSchemaNotice = null;
                 this.instanceMedicalRecordId = null;
 
+                this.SESSION_TIMEOUT_MS = 45 * 60 * 1000;
+                this._sessionTimerId = null;
+                this._sessionIntervalId = null;
+                this._sessionExpiration = null;
+                this._sessionGuardsActive = false;
+                this._boundSessionActivityHandler = null;
+                this._sessionActivityTargets = [
+                    { target: document, type: 'click', options: { passive: true } },
+                    { target: document, type: 'keydown', options: false },
+                    { target: document, type: 'input', options: false },
+                    { target: document, type: 'mousemove', options: { passive: true } },
+                    { target: document, type: 'scroll', options: { passive: true } },
+                    { target: document, type: 'touchstart', options: { passive: true } },
+                    { target: window, type: 'focus', options: false }
+                ];
+
                 // Application version metadata
                 this.version = APP_VERSION;
                 this.lastUpdated = APP_LAST_UPDATED;
@@ -3952,81 +3968,107 @@
                 }
                 
                 this.crypto.decrypt(this.encryptedData, password).then(async (decrypted) => {
-                    const decryptedPayload = { ...decrypted };
+                    let decryptedPayload = { ...decrypted };
+                    let normalizedData = null;
+                    let migrationDataRef = null;
 
-                    if (this.requires2FA && decryptedPayload.totpSecret) {
-                        const isValidTOTP = await TOTP.verifyTOTP(decryptedPayload.totpSecret, totpCode);
+                    try {
+                        if (this.requires2FA && decryptedPayload.totpSecret) {
+                            const isValidTOTP = await TOTP.verifyTOTP(decryptedPayload.totpSecret, totpCode);
 
-                        if (!isValidTOTP) {
-                            alert('Invalid authentication code. Please check your authenticator app for the current code.');
-                            return;
-                        }
-                    }
-
-                    const incomingSchemaVersion = decryptedPayload.schemaVersion
-                        || decryptedPayload.__schemaVersion
-                        || this.schemaVersion;
-
-                    const migrationResult = schemaManager.migrate(decryptedPayload, incomingSchemaVersion);
-                    const normalizedData = fieldRegistry.normalizeIncomingData(migrationResult.data);
-
-                    this.sessionPassword = password;
-                    this.totpSecret = normalizedData.totpSecret;
-                    this.schemaVersion = migrationResult.version;
-                    this.pendingSchemaNotice = migrationResult;
-
-                    this.loadFormData(normalizedData);
-                    this.modules = this.savedModules || this.modules;
-
-                    this.updateModuleVisibility();
-                    const emergencyBanner = document.getElementById('emergencyAccessBanner');
-                    if (emergencyBanner) {
-                        emergencyBanner.style.display = 'none';
-                    }
-                    document.getElementById('unlockScreen').style.display = 'none';
-                    document.getElementById('mainContent').style.display = 'block';
-                    document.getElementById('navTabs').style.display = 'block';
-                    document.getElementById('lockBtn').style.display = 'inline-block';
-
-                    this.applyVersionMetadata();
-
-                    const needsResave = Boolean(migrationResult?.needsResave);
-                    const isNewerSchema = Boolean(migrationResult?.newerThanApp);
-
-                    if (needsResave) {
-                        this.hasUnsavedChanges = true;
-                        this.updateSaveStatus();
-
-                        const migrationLines = (migrationResult.appliedMigrations || []).map(step => {
-                            if (step.description) {
-                                return `• ${step.description} (${step.from} → ${step.to})`;
+                            if (!isValidTOTP) {
+                                alert('Invalid authentication code. Please check your authenticator app for the current code.');
+                                return;
                             }
-                            return `• Schema upgraded from ${step.from} to ${step.to}`;
-                        });
-
-                        const noticeLines = [
-                            '🔄 Your vault data was upgraded to the latest schema.',
-                            'Please download a new encrypted vault file to capture these changes.'
-                        ];
-
-                        if (migrationLines.length > 0) {
-                            noticeLines.push('', ...migrationLines);
                         }
 
-                        alert(noticeLines.join('\n'));
-                    } else {
-                        this.hasUnsavedChanges = false;
-                        this.updateSaveStatus();
-                        this.pendingSchemaNotice = null;
-                    }
+                        const incomingSchemaVersion = decryptedPayload.schemaVersion
+                            || decryptedPayload.__schemaVersion
+                            || this.schemaVersion;
 
-                    if (isNewerSchema) {
-                        alert(
-                            '⚠️ This vault was created with a newer schema than this release can fully interpret.\n\n'
-                            + 'Review the data carefully and consider updating the application when possible.'
-                        );
-                    }
+                        const migrationResult = schemaManager.migrate(decryptedPayload, incomingSchemaVersion);
+                        migrationDataRef = migrationResult.data;
+                        normalizedData = fieldRegistry.normalizeIncomingData(migrationResult.data);
 
+                        this.sessionPassword = password;
+                        this.totpSecret = normalizedData.totpSecret;
+                        this.schemaVersion = migrationResult.version;
+
+                        const migrationsApplied = Array.isArray(migrationResult.appliedMigrations)
+                            ? migrationResult.appliedMigrations.map(step => ({ ...step }))
+                            : [];
+
+                        const needsResave = Boolean(migrationResult?.needsResave);
+                        const isNewerSchema = Boolean(migrationResult?.newerThanApp);
+
+                        this.pendingSchemaNotice = needsResave
+                            ? { needsResave: true, appliedMigrations: migrationsApplied }
+                            : null;
+
+                        this.loadFormData(normalizedData);
+                        this.modules = this.savedModules || this.modules;
+
+                        this.updateModuleVisibility();
+                        const emergencyBanner = document.getElementById('emergencyAccessBanner');
+                        if (emergencyBanner) {
+                            emergencyBanner.style.display = 'none';
+                        }
+                        document.getElementById('unlockScreen')?.style.display = 'none';
+                        document.getElementById('mainContent')?.style.display = 'block';
+                        document.getElementById('navTabs')?.style.display = 'block';
+
+                        this.unlock();
+                        this.clearSensitiveInputs();
+
+                        this.applyVersionMetadata();
+
+                        if (needsResave) {
+                            this.hasUnsavedChanges = true;
+                            this.updateSaveStatus();
+
+                            const migrationLines = migrationsApplied.map(step => {
+                                if (step.description) {
+                                    return `• ${step.description} (${step.from} → ${step.to})`;
+                                }
+                                return `• Schema upgraded from ${step.from} to ${step.to}`;
+                            });
+
+                            const noticeLines = [
+                                '🔄 Your vault data was upgraded to the latest schema.',
+                                'Please download a new encrypted vault file to capture these changes.'
+                            ];
+
+                            if (migrationLines.length > 0) {
+                                noticeLines.push('', ...migrationLines);
+                            }
+
+                            alert(noticeLines.join('\n'));
+                        } else {
+                            this.hasUnsavedChanges = false;
+                            this.updateSaveStatus();
+                            this.pendingSchemaNotice = null;
+                        }
+
+                        if (isNewerSchema) {
+                            alert(
+                                '⚠️ This vault was created with a newer schema than this release can fully interpret.\n\n'
+                                + 'Review the data carefully and consider updating the application when possible.'
+                            );
+                        }
+                    } finally {
+                        if (normalizedData) {
+                            this.securelyClearObject(normalizedData);
+                            normalizedData = null;
+                        }
+
+                        if (migrationDataRef) {
+                            this.securelyClearObject(migrationDataRef);
+                            migrationDataRef = null;
+                        }
+
+                        this.securelyClearObject(decryptedPayload);
+                        decryptedPayload = null;
+                    }
                 }).catch(error => {
                     if (this.requires2FA) {
                         alert('Invalid password or authentication code.\n\nMake sure you are using the current 6-digit code from your authenticator app.');
@@ -4274,11 +4316,14 @@
                 } else {
                     document.getElementById('mainContent').style.display = 'block';
                     document.getElementById('navTabs').style.display = 'block';
-                    
+
+                    this.unlock();
+                    this.clearSensitiveInputs();
+
                     this.isInitialized = true;
                     this.hasUnsavedChanges = true;
                     this.updateSaveStatus();
-                    
+
                     alert(`✅ Vault created!\n\n` +
                           `Your vault "${this.vaultIdentity}" is ready to use.\n\n` +
                           `• Enter your medical information\n` +
@@ -4337,6 +4382,8 @@
                 formData.lastUpdated = timestamp;
 
                 const encrypted = await this.crypto.encrypt(formData, password);
+
+                this.securelyClearObject(formData);
 
                 const htmlDoc = document.documentElement.cloneNode(true);
 
@@ -4748,7 +4795,10 @@
                 document.getElementById('totpModal').classList.remove('active');
                 document.getElementById('mainContent').style.display = 'block';
                 document.getElementById('navTabs').style.display = 'block';
-                
+
+                this.unlock();
+                this.clearSensitiveInputs();
+
                 this.isInitialized = true;
                 this.hasUnsavedChanges = true;
                 this.updateSaveStatus();
@@ -4770,11 +4820,14 @@
                     this.requires2FA = false;
                     document.getElementById('mainContent').style.display = 'block';
                     document.getElementById('navTabs').style.display = 'block';
-                    
+
+                    this.unlock();
+                    this.clearSensitiveInputs();
+
                     this.isInitialized = true;
                     this.hasUnsavedChanges = true;
                     this.updateSaveStatus();
-                    
+
                     alert(`✅ Vault created without 2FA!\n\n` +
                           `Your vault "${this.vaultIdentity}" is ready to use.\n\n` +
                           `• Enter your medical information\n` +
@@ -6399,18 +6452,53 @@
             
             toggleLock() {
                 if (this.isLocked) {
-                    this.unlock();
-                } else {
-                    this.lock();
+                    const unlockScreen = document.getElementById('unlockScreen');
+                    if (unlockScreen) {
+                        unlockScreen.style.display = 'flex';
+                    }
+                    document.getElementById('unlock-password')?.focus();
+                    return;
                 }
+
+                if (this.hasUnsavedChanges) {
+                    const proceed = confirm(
+                        'Locking now will discard any unsaved changes until you download a new encrypted vault. Continue?'
+                    );
+
+                    if (!proceed) {
+                        return;
+                    }
+                }
+
+                this.signOut({ reason: 'manual' });
             }
-            
+
             lock() {
+                this.stopSessionWatchers();
                 this.isLocked = true;
-                document.getElementById('lockBtn').innerHTML = '🔒 Unlock';
-                document.getElementById('mainContent').style.display = 'none';
-                document.getElementById('navTabs').style.display = 'none';
-                document.getElementById('unlockScreen').style.display = 'flex';
+
+                const lockBtn = document.getElementById('lockBtn');
+                if (lockBtn) {
+                    lockBtn.innerHTML = '🔒 Unlock';
+                    lockBtn.style.display = 'none';
+                }
+
+                this.clearSensitiveInputs();
+
+                const mainContent = document.getElementById('mainContent');
+                if (mainContent) {
+                    mainContent.style.display = 'none';
+                }
+
+                const navTabs = document.getElementById('navTabs');
+                if (navTabs) {
+                    navTabs.style.display = 'none';
+                }
+
+                const unlockScreen = document.getElementById('unlockScreen');
+                if (unlockScreen) {
+                    unlockScreen.style.display = 'flex';
+                }
 
                 if (this.emergencyAccessConfig && this.emergencyAccessConfig.enabled) {
                     this.showEmergencyAccess(this.emergencyAccessConfig.data || {});
@@ -6421,11 +6509,220 @@
                         document.getElementById('totpField').style.display = 'none';
                     }
                 }
+
+                this.updateLockTimerDisplay();
             }
 
             unlock() {
                 this.isLocked = false;
-                document.getElementById('lockBtn').innerHTML = '🔓 Lock';
+                const lockBtn = document.getElementById('lockBtn');
+                if (lockBtn) {
+                    lockBtn.innerHTML = '🔓 Lock';
+                    lockBtn.style.display = 'inline-block';
+                }
+                this.startSessionWatchers();
+            }
+
+            clearSensitiveInputs() {
+                document.querySelectorAll('input[type="password"]').forEach(input => {
+                    input.value = '';
+                });
+
+                document.getElementById('totp-code')?.value = '';
+                document.getElementById('verifyTOTP')?.value = '';
+            }
+
+            startSessionWatchers() {
+                if (!this.sessionPassword) {
+                    return;
+                }
+
+                if (!this._boundSessionActivityHandler) {
+                    this._boundSessionActivityHandler = () => this.recordSessionActivity();
+                }
+
+                if (Array.isArray(this._sessionActivityTargets) && !this._sessionGuardsActive) {
+                    this._sessionActivityTargets.forEach(({ target, type, options }) => {
+                        if (!target || !type) {
+                            return;
+                        }
+                        target.addEventListener(type, this._boundSessionActivityHandler, options || false);
+                    });
+                    this._sessionGuardsActive = true;
+                }
+
+                this.resetSessionTimer();
+            }
+
+            stopSessionWatchers() {
+                if (this._sessionTimerId) {
+                    clearTimeout(this._sessionTimerId);
+                    this._sessionTimerId = null;
+                }
+
+                if (this._sessionIntervalId) {
+                    clearInterval(this._sessionIntervalId);
+                    this._sessionIntervalId = null;
+                }
+
+                if (this._sessionGuardsActive && Array.isArray(this._sessionActivityTargets)) {
+                    this._sessionActivityTargets.forEach(({ target, type, options }) => {
+                        if (!target || !type) {
+                            return;
+                        }
+                        target.removeEventListener(type, this._boundSessionActivityHandler, options || false);
+                    });
+                    this._sessionGuardsActive = false;
+                }
+
+                this._sessionExpiration = null;
+                this.updateLockTimerDisplay();
+            }
+
+            recordSessionActivity() {
+                if (this.isLocked || !this.sessionPassword) {
+                    return;
+                }
+                this.resetSessionTimer();
+            }
+
+            resetSessionTimer() {
+                if (this.isLocked || !this.sessionPassword) {
+                    return;
+                }
+
+                this._sessionExpiration = Date.now() + this.SESSION_TIMEOUT_MS;
+
+                if (this._sessionTimerId) {
+                    clearTimeout(this._sessionTimerId);
+                }
+
+                this._sessionTimerId = window.setTimeout(() => this.handleSessionTimeout(), this.SESSION_TIMEOUT_MS);
+
+                if (!this._sessionIntervalId) {
+                    this._sessionIntervalId = window.setInterval(() => this.updateLockTimerDisplay(), 1000);
+                }
+
+                this.updateLockTimerDisplay();
+            }
+
+            handleSessionTimeout() {
+                this._sessionTimerId = null;
+                this.signOut({ reason: 'timeout' });
+            }
+
+            updateLockTimerDisplay() {
+                const timerEl = document.getElementById('lockTimer');
+                if (!timerEl) {
+                    return;
+                }
+
+                if (!this._sessionExpiration || this.isLocked || !this.sessionPassword) {
+                    timerEl.textContent = '';
+                    return;
+                }
+
+                const remaining = Math.max(0, this._sessionExpiration - Date.now());
+
+                if (remaining <= 0) {
+                    timerEl.textContent = 'Signing out…';
+                    return;
+                }
+
+                const minutes = Math.floor(remaining / 60000);
+                const seconds = Math.floor((remaining % 60000) / 1000);
+                timerEl.textContent = `Auto sign-out in ${minutes.toString().padStart(2, '0')}:${seconds
+                    .toString()
+                    .padStart(2, '0')}`;
+            }
+
+            clearDecryptedState() {
+                document.querySelectorAll('.form-data').forEach(input => {
+                    if (input.type === 'checkbox') {
+                        input.checked = false;
+                    } else if (input.tagName === 'SELECT') {
+                        input.selectedIndex = 0;
+                    } else {
+                        input.value = '';
+                    }
+                });
+
+                this.noteTags = [];
+                this.saveNoteTagsToStorage();
+                this.renderTagChips();
+                this.refreshAllNoteTagSelectors();
+                this.refreshProviderOptions();
+                this.updateEmergencySettingsVisibility();
+
+                const nameEl = document.getElementById('patientDisplayName');
+                if (nameEl) {
+                    nameEl.textContent = 'Enter patient name';
+                }
+
+                const metaEl = document.getElementById('patientDisplayMeta');
+                if (metaEl) {
+                    metaEl.textContent = 'Add DOB, sex, and MRN for quick reference.';
+                }
+
+                const avatarEl = document.getElementById('patientAvatar');
+                if (avatarEl) {
+                    avatarEl.textContent = '👤';
+                }
+
+                const lastUpdated = document.getElementById('lastUpdatedHeader');
+                if (lastUpdated) {
+                    lastUpdated.textContent = 'Last Updated: Never';
+                }
+
+                this.closeAllModals();
+            }
+
+            closeAllModals() {
+                document.querySelectorAll('.modal.active, .qr-modal.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+            }
+
+            securelyClearObject(obj) {
+                if (!obj || typeof obj !== 'object') {
+                    return;
+                }
+
+                Object.keys(obj).forEach(key => {
+                    const value = obj[key];
+                    if (value && typeof value === 'object') {
+                        this.securelyClearObject(value);
+                    }
+                    obj[key] = null;
+                });
+            }
+
+            signOut({ reason = 'manual', silent = false } = {}) {
+                this.stopSessionWatchers();
+                this.sessionPassword = null;
+                this.totpSecret = null;
+                this.currentTOTPSecret = null;
+                this.hasUnsavedChanges = false;
+                this.updateSaveStatus();
+
+                this.clearDecryptedState();
+                localStorage.clear();
+                sessionStorage.clear();
+
+                if (!this.isLocked) {
+                    this.lock();
+                } else {
+                    this.clearSensitiveInputs();
+                    this.updateLockTimerDisplay();
+                }
+
+                if (!silent) {
+                    if (reason === 'timeout') {
+                        alert('For security, you have been signed out after 45 minutes of inactivity.');
+                    } else {
+                        alert('Session locked. Re-enter your password to continue.');
+                    }
+                }
             }
             
             // Crypto utilities
@@ -6444,12 +6741,12 @@
                         {
                             name: 'PBKDF2',
                             salt: salt,
-                            iterations: 100000,
+                            iterations: 210000,
                             hash: 'SHA-256'
                         },
                         keyMaterial,
                         { name: 'AES-GCM', length: 256 },
-                        true,
+                        false,
                         ['encrypt', 'decrypt']
                     );
                 },
@@ -6460,17 +6757,23 @@
                     const iv = crypto.getRandomValues(new Uint8Array(12));
                     const key = await this.deriveKey(password, salt);
                     
-                    const encrypted = await crypto.subtle.encrypt(
+                    const encryptedBuffer = await crypto.subtle.encrypt(
                         { name: 'AES-GCM', iv: iv },
                         key,
                         encoder.encode(JSON.stringify(data))
                     );
-                    
-                    return {
+
+                    const encryptedBytes = new Uint8Array(encryptedBuffer);
+
+                    const payload = {
                         salt: Array.from(salt),
                         iv: Array.from(iv),
-                        data: Array.from(new Uint8Array(encrypted))
+                        data: Array.from(encryptedBytes)
                     };
+
+                    encryptedBytes.fill(0);
+
+                    return payload;
                 },
                 
                 async decrypt(encryptedData, password) {
@@ -6479,14 +6782,17 @@
                     const data = new Uint8Array(encryptedData.data);
                     const key = await this.deriveKey(password, salt);
                     
-                    const decrypted = await crypto.subtle.decrypt(
+                    const decryptedBuffer = await crypto.subtle.decrypt(
                         { name: 'AES-GCM', iv: iv },
                         key,
                         data
                     );
-                    
+
                     const decoder = new TextDecoder();
-                    return JSON.parse(decoder.decode(decrypted));
+                    const decryptedBytes = new Uint8Array(decryptedBuffer);
+                    const result = JSON.parse(decoder.decode(decryptedBytes));
+                    decryptedBytes.fill(0);
+                    return result;
                 }
             };
         }
