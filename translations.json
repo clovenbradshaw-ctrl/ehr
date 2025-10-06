@@ -3330,6 +3330,22 @@
       "vi": "Always Encrypted",
       "zh-Hans": "Always Encrypted"
     },
+    "trusted_device_warning": {
+      "en": "⚠️ Security Tip: Only create or open this vault on a device you trust. For extra privacy, use your browser's private or incognito mode.",
+      "es": "⚠️ Consejo de seguridad: Crea o abre esta bóveda solo en un dispositivo de confianza. Para mayor privacidad, usa el modo privado o incógnito de tu navegador.",
+      "my": "⚠️ လုံခြုံရေး အကြံပြုချက် - ယုံကြည်ရသော စက်ပစ္စည်းများပေါ်တွင်သာ ဤဗေါ့ကို ဖန်တီးပါ သို့မဟုတ် ဖွင့်ပါ။ ပိုမိုလုံခြုံစေရန် ဘရေါဇာ၏ Private/Incognito mode ကို အသုံးပြုပါ။",
+      "ar": "⚠️ Security Tip: Only create or open this vault on a device you trust. For extra privacy, use your browser's private or incognito mode.",
+      "fil": "⚠️ Security Tip: Only create or open this vault on a device you trust. For extra privacy, use your browser's private or incognito mode.",
+      "fr": "⚠️ Conseil de sécurité : créez ou ouvrez cette voûte uniquement sur un appareil de confiance. Pour plus de confidentialité, utilisez le mode privé ou navigation privée de votre navigateur.",
+      "ht": "⚠️ Security Tip: Only create or open this vault on a device you trust. For extra privacy, use your browser's private or incognito mode.",
+      "kmr": "⚠️ Security Tip: Only create or open this vault on a device you trust. For extra privacy, use your browser's private or incognito mode.",
+      "ko": "⚠️ 보안 팁: 신뢰할 수 있는 기기에서만 이 볼트를 만들거나 여세요. 추가 개인정보 보호를 위해 브라우저의 시크릿/프라이빗 모드를 사용하세요.",
+      "pt-BR": "⚠️ Dica de segurança: Crie ou abra este cofre apenas em um dispositivo confiável. Para maior privacidade, use o modo privado ou anônimo do navegador.",
+      "ru": "⚠️ Совет по безопасности: создавайте или открывайте это хранилище только на доверенном устройстве. Для дополнительной конфиденциальности используйте приватный или инкогнито режим браузера.",
+      "so": "⚠️ Talo Amni: Ku abuur ama ku fur kaydkan oo keliya aalad aad aaminsan tahay. Si aad u hesho asturnaan dheeraad ah, isticmaal habka gaarka ah ama incognito ee browser-kaaga.",
+      "vi": "⚠️ Mẹo bảo mật: Chỉ tạo hoặc mở kho này trên thiết bị bạn tin tưởng. Để tăng quyền riêng tư, hãy dùng chế độ riêng tư hoặc ẩn danh của trình duyệt.",
+      "zh-Hans": "⚠️ 安全提示：仅在您信任的设备上创建或打开此保险库。为增强隐私，建议使用浏览器的隐私或无痕模式。"
+    },
     "app_title": {
       "en": "Personal Health Vault - Secure Medical Record",
       "es": "Bóveda de Salud Personal - Historia Clínica Segura",
