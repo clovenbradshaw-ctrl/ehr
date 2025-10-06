@@ -28,7 +28,7 @@
             color: #1e293b;
             background: white;
             padding: 20px;
-            padding-top: 160px;
+            padding-top: 105px;
         }
         
         .unlock-screen {
@@ -254,22 +254,6 @@
             justify-content: center;
             flex: 0 1 340px;
             margin: 0 10px;
-        }
-
-        .save-metadata {
-            display: none;
-            flex-direction: column;
-            gap: 2px;
-            font-size: 8.5pt;
-            color: #e2e8f0;
-            text-align: right;
-            line-height: 1.2;
-            flex: 0 1 220px;
-        }
-
-        .save-metadata strong {
-            color: #facc15;
-            font-weight: 700;
         }
         
         .save-status.never-saved {
@@ -507,11 +491,9 @@
             background: #f8fafc;
             border-bottom: 1px solid #e2e8f0;
             z-index: 999;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: flex-end;
-            gap: 6px 12px;
-            padding: 8px 20px 6px;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding: 0 20px;
             scrollbar-width: thin;
         }
         
@@ -525,10 +507,7 @@
         }
         
         .tab {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
+            display: inline-block;
             padding: 12px 20px;
             cursor: pointer;
             border-bottom: 3px solid transparent;
@@ -536,8 +515,6 @@
             font-size: 10pt;
             font-weight: 500;
             color: #64748b;
-            flex: 0 1 auto;
-            min-width: 0;
         }
         
         .tab:hover {
@@ -554,41 +531,6 @@
             background: #fef3c7;
             border-radius: 4px 4px 0 0;
             margin-left: 10px;
-        }
-
-        .nav-tabs-mobile {
-            display: none;
-            position: fixed;
-            top: 56px;
-            left: 0;
-            right: 0;
-            background: #f8fafc;
-            border-bottom: 1px solid #e2e8f0;
-            z-index: 999;
-            padding: 12px 20px;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .nav-tabs-mobile label {
-            font-weight: 600;
-            color: #1e293b;
-            font-size: 10pt;
-        }
-
-        .nav-tabs-mobile select {
-            flex: 1;
-            padding: 10px 14px;
-            font-size: 11pt;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            background: white;
-            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
-        }
-
-        .nav-tabs-mobile select:focus {
-            outline: 2px solid #3b82f6;
-            outline-offset: 2px;
         }
         
         .main-content {
@@ -1559,7 +1501,7 @@
         @media (max-width: 900px) {
             body {
                 padding: 15px;
-                padding-top: 210px;
+                padding-top: 150px;
                 font-size: 10.5pt;
             }
 
@@ -1604,10 +1546,6 @@
                 justify-content: space-between;
             }
 
-            .save-metadata {
-                display: none !important;
-            }
-
             .action-buttons {
                 flex-wrap: wrap;
                 gap: 6px;
@@ -1627,15 +1565,13 @@
             }
 
             .nav-tabs {
-                top: 120px;
-                padding: 8px 12px 6px;
-                gap: 6px 8px;
+                top: 68px;
+                padding: 0 12px;
             }
 
             .tab {
                 padding: 10px 14px;
                 font-size: 9pt;
-                gap: 4px;
             }
 
             .chart-header-top {
@@ -1690,7 +1626,7 @@
         @media (max-width: 600px) {
             body {
                 padding: 12px;
-                padding-top: 190px;
+                padding-top: 170px;
             }
 
             .unlock-container {
@@ -1701,35 +1637,10 @@
                 gap: 12px;
             }
 
-            .save-metadata {
-                display: none !important;
-            }
-
             .security-status {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 4px;
-            }
-
-            .nav-tabs {
-                display: none;
-            }
-
-            .nav-tabs-mobile {
-                display: flex;
-                flex-direction: column;
-                align-items: stretch;
-                gap: 8px;
-                padding: 14px 16px;
-                top: 108px;
-            }
-
-            .nav-tabs-mobile label {
-                font-size: 11pt;
-            }
-
-            .nav-tabs-mobile select {
-                font-size: 13pt;
             }
 
             .action-buttons {
@@ -2000,9 +1911,19 @@
             
             body {
                 padding: 10px;
-                padding-top: 240px;
+                padding-top: 140px;
             }
-
+            
+            .nav-tabs {
+                padding: 0 10px;
+                top: 100px;
+            }
+            
+            .tab {
+                padding: 10px 15px;
+                font-size: 9pt;
+            }
+            
             .demo-field {
                 min-width: 100%;
             }
@@ -2019,20 +1940,6 @@
             .language-selector:hover,
             .language-selector:focus-within {
                 width: 100%;
-            }
-
-            .nav-tabs {
-                display: none;
-            }
-
-            .nav-tabs-mobile {
-                display: flex;
-                padding: 12px 16px;
-                top: 96px;
-            }
-
-            .nav-tabs-mobile select {
-                font-size: 12pt;
             }
         }
         
@@ -2089,7 +1996,6 @@
             <label for="languageSelect" data-i18n-key="language_label">Language</label>
             <select id="languageSelect" data-language-selector aria-label="Language"></select>
         </div>
-        <div class="save-metadata" id="payloadStats" aria-live="polite"></div>
         <div class="action-buttons">
             <button class="btn btn-secondary" id="settingsBtn" data-i18n-key="settings_button">⚙️ Settings</button>
             <button class="btn btn-lock" id="lockBtn" style="display: none;" data-i18n-key="unlock_action">🔓 Lock</button>
@@ -2111,11 +2017,6 @@
         <div class="tab" data-section="notes" data-i18n-key="nav_notes">📝 Notes</div>
         <div class="tab" data-section="attachments" data-i18n-key="nav_attachments">📎 Attachments</div>
         <!-- Module tabs added dynamically -->
-    </div>
-
-    <div class="nav-tabs-mobile no-print" id="navTabsMobile" style="display: none;">
-        <label for="navTabsSelect">Navigate</label>
-        <select id="navTabsSelect" aria-label="Navigate between sections"></select>
     </div>
 
     <!-- Settings Modal -->
@@ -2439,7 +2340,7 @@
             </ul>
         </div>
         <div class="welcome-actions">
-            <button class="btn-start" id="startSetupBtn">
+            <button class="btn-start" onclick="app?.startSetup()">
                 Get Started
             </button>
             <button class="btn-import" id="openVaultBtn">
@@ -3969,6 +3870,9 @@
                 // Generate initial vault identity
                 this.vaultIdentity = this.generateVaultName();
                 
+                // Check for embedded data
+                this.checkInitialization();
+                
                 // Initialize state
                 this.hasUnsavedChanges = false;
                 this.sessionPassword = null;
@@ -3996,10 +3900,6 @@
                 // Application version metadata
                 this.version = APP_VERSION;
                 this.lastUpdated = APP_LAST_UPDATED;
-
-                // Check for embedded data
-                this.checkInitialization();
-
                 this.applyVersionMetadata();
 
                 // Initialize
@@ -4011,82 +3911,6 @@
                 const noun = this.nouns[Math.floor(Math.random() * this.nouns.length)];
                 const num = Math.floor(Math.random() * 1000);
                 return `${adj}-${noun}-${num}`;
-            }
-
-            arrayBufferToBase64(buffer) {
-                let view;
-                if (buffer instanceof Uint8Array) {
-                    view = buffer;
-                } else if (buffer instanceof ArrayBuffer) {
-                    view = new Uint8Array(buffer);
-                } else if (buffer && buffer.buffer instanceof ArrayBuffer) {
-                    view = new Uint8Array(buffer.buffer, buffer.byteOffset || 0, buffer.byteLength || buffer.length || 0);
-                } else {
-                    return '';
-                }
-
-                if (!view.length) {
-                    return '';
-                }
-
-                const chunkSize = 0x8000;
-                let binary = '';
-                for (let i = 0; i < view.length; i += chunkSize) {
-                    const chunk = view.subarray(i, i + chunkSize);
-                    binary += String.fromCharCode(...chunk);
-                }
-
-                return btoa(binary);
-            }
-
-            base64ToUint8Array(base64) {
-                if (typeof base64 !== 'string') {
-                    throw new Error('Invalid base64 payload.');
-                }
-
-                const clean = base64.trim();
-                if (!clean) {
-                    return new Uint8Array(0);
-                }
-
-                const binary = atob(clean);
-                const length = binary.length;
-                const bytes = new Uint8Array(length);
-
-                for (let i = 0; i < length; i++) {
-                    bytes[i] = binary.charCodeAt(i);
-                }
-
-                return bytes;
-            }
-
-            normalizeToUint8Array(value) {
-                if (value instanceof Uint8Array) {
-                    return value;
-                }
-
-                if (value instanceof ArrayBuffer) {
-                    return new Uint8Array(value);
-                }
-
-                if (Array.isArray(value)) {
-                    return new Uint8Array(value);
-                }
-
-                if (typeof value === 'string') {
-                    try {
-                        return this.base64ToUint8Array(value);
-                    } catch (error) {
-                        console.warn('Failed to decode base64 payload', error);
-                        return new Uint8Array(0);
-                    }
-                }
-
-                if (value && typeof value === 'object' && value.data && Array.isArray(value.data)) {
-                    return new Uint8Array(value.data);
-                }
-
-                return new Uint8Array(0);
             }
             
             checkInitialization() {
@@ -4171,16 +3995,11 @@
                         if (this.emergencyAccessConfig && this.emergencyAccessConfig.enabled) {
                             this.showEmergencyAccess(this.emergencyAccessConfig.data || {});
                         }
-
-                        this.updatePayloadStats(this.encryptedData);
                     } catch (e) {
                         this.isInitialized = false;
-                        this.encryptedData = null;
-                        this.updatePayloadStats(null);
                     }
                 } else {
                     this.isInitialized = false;
-                    this.encryptedData = null;
                     // Show welcome screen
                     document.getElementById('welcomeScreen').style.display = 'block';
                     document.getElementById('mainContent').style.display = 'none';
@@ -4193,7 +4012,6 @@
                     this.version = APP_VERSION;
                     this.schemaVersion = schemaManager.currentVersion;
                     this.applyVersionMetadata();
-                    this.updatePayloadStats(null);
                 }
             }
 
@@ -4413,19 +4231,7 @@
                 document.querySelectorAll('.tab').forEach(tab => {
                     tab.addEventListener('click', (e) => this.navigateToSection(e));
                 });
-
-                const navSelect = document.getElementById('navTabsSelect');
-                if (navSelect) {
-                    navSelect.addEventListener('change', (event) => {
-                        const { value } = event.target;
-                        if (value) {
-                            this.navigateToSection(value);
-                        }
-                    });
-                }
-
-                this.updateNavigationSelectOptions();
-
+                
                 // Module toggles
                 ['identity', 'gac', 'mental', 'chronic'].forEach(module => {
                     const toggle = document.getElementById(`module-${module}`);
@@ -5029,47 +4835,12 @@
                 }
             }
             
-            navigateToSection(target) {
-                let sectionId = '';
-                let tabElement = null;
-
-                if (typeof target === 'string') {
-                    sectionId = target;
-                } else if (target?.target) {
-                    const eventTarget = target.currentTarget || target.target;
-                    sectionId = eventTarget?.dataset?.section || '';
-                    tabElement = eventTarget?.closest('.tab') || eventTarget;
-                    if (typeof target.preventDefault === 'function') {
-                        target.preventDefault();
-                    }
-                } else if (target?.dataset) {
-                    sectionId = target.dataset.section;
-                    tabElement = target;
-                }
-
-                if (!sectionId) {
-                    return;
-                }
-
-                const navTabs = document.getElementById('navTabs');
-                if (navTabs) {
-                    navTabs.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-                    if (!tabElement) {
-                        tabElement = navTabs.querySelector(`.tab[data-section="${sectionId}"]`);
-                    }
-                }
-
-                if (tabElement) {
-                    tabElement.classList.add('active');
-                }
-
-                const navSelect = document.getElementById('navTabsSelect');
-                if (navSelect && navSelect.value !== sectionId) {
-                    navSelect.value = sectionId;
-                }
-
+            navigateToSection(e) {
+                const sectionId = e.target.dataset.section;
                 const section = document.getElementById(`${sectionId}-section`);
                 if (section) {
+                    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+                    e.target.classList.add('active');
                     section.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             }
@@ -5119,7 +4890,7 @@
                 const navTabs = document.getElementById('navTabs');
                 const existingModuleTabs = navTabs.querySelectorAll('.module-tab');
                 existingModuleTabs.forEach(tab => tab.remove());
-
+                
                 const demographicsTab = navTabs.querySelector('[data-section="demographics"]');
 
                 if (this.modules.identity) {
@@ -5165,44 +4936,6 @@
                 });
 
                 window.localization?.applyTranslations();
-
-                this.updateNavigationSelectOptions();
-            }
-
-            updateNavigationSelectOptions() {
-                const navTabs = document.getElementById('navTabs');
-                const navSelect = document.getElementById('navTabsSelect');
-
-                if (!navTabs || !navSelect) {
-                    return;
-                }
-
-                const currentValue = navSelect.value;
-                navSelect.innerHTML = '';
-
-                const tabs = Array.from(navTabs.querySelectorAll('.tab'));
-                tabs.forEach((tab) => {
-                    const section = tab.getAttribute('data-section');
-                    if (!section) {
-                        return;
-                    }
-
-                    const option = document.createElement('option');
-                    option.value = section;
-                    option.textContent = tab.textContent.trim();
-                    navSelect.appendChild(option);
-                });
-
-                const activeTab = navTabs.querySelector('.tab.active');
-                const activeValue = activeTab?.getAttribute('data-section');
-
-                if (activeValue && navSelect.querySelector(`option[value="${activeValue}"]`)) {
-                    navSelect.value = activeValue;
-                } else if (currentValue && navSelect.querySelector(`option[value="${currentValue}"]`)) {
-                    navSelect.value = currentValue;
-                } else if (navSelect.options.length > 0) {
-                    navSelect.selectedIndex = 0;
-                }
             }
             
             markAsChanged() {
@@ -5213,6 +4946,8 @@
             updateSaveStatus() {
                 const statusEl = document.getElementById('saveStatus');
                 const saveBtn = document.getElementById('saveBtn');
+                
+                const translate = (key, fallback) => window.localization?.t(key, fallback) ?? fallback ?? key;
 
                 if (!this.isInitialized) {
                     statusEl.className = 'save-status never-saved';
@@ -5238,76 +4973,6 @@
                 }
 
                 window.localization?.applyTranslations();
-            }
-
-            formatBytes(bytes) {
-                if (typeof bytes !== 'number' || !isFinite(bytes) || bytes <= 0) {
-                    return '0 B';
-                }
-
-                const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-                const exponent = Math.min(units.length - 1, Math.floor(Math.log(bytes) / Math.log(1024)));
-                const value = bytes / Math.pow(1024, exponent);
-                const decimals = exponent === 0 || value >= 100 ? 0 : value < 10 ? 2 : 1;
-
-                return `${value.toFixed(decimals)} ${units[exponent]}`;
-            }
-
-            updatePayloadStats(encryptedData = null) {
-                const target = document.getElementById('payloadStats');
-
-                if (!target) {
-                    return;
-                }
-
-                if (!encryptedData || typeof encryptedData !== 'object') {
-                    target.innerHTML = '';
-                    target.style.display = 'none';
-                    return;
-                }
-
-                const originalSize = typeof encryptedData.originalSize === 'number' ? encryptedData.originalSize : null;
-                const compressedSize = typeof encryptedData.compressedSize === 'number' ? encryptedData.compressedSize : null;
-                const algorithm = typeof encryptedData.compression === 'string' ? encryptedData.compression : 'none';
-                const reason = typeof encryptedData.compressionReason === 'string' ? encryptedData.compressionReason : '';
-
-                const lines = [];
-
-                if (compressedSize !== null && isFinite(compressedSize)) {
-                    lines.push(`<div><strong>${this.formatBytes(compressedSize)}</strong> stored</div>`);
-                } else if (originalSize !== null && isFinite(originalSize)) {
-                    lines.push(`<div><strong>${this.formatBytes(originalSize)}</strong> stored</div>`);
-                }
-
-                if (algorithm && algorithm !== 'none') {
-                    if (originalSize !== null && compressedSize !== null && originalSize > 0) {
-                        const savings = Math.max(0, originalSize - compressedSize);
-                        const percent = Math.round((savings / originalSize) * 100);
-                        lines.push(`<div>${percent > 0 ? `${percent}% smaller than raw` : 'No size reduction'}</div>`);
-                    }
-
-                    lines.push(`<div style="opacity:0.8;">Compression: ${algorithm.toUpperCase()}</div>`);
-                } else if (originalSize !== null) {
-                    let descriptor = 'Compression: None';
-                    if (reason === 'unsupported') {
-                        descriptor = 'Compression: None (Browser limited)';
-                    } else if (reason === 'noBenefit') {
-                        descriptor = 'Compression: None (Already efficient)';
-                    } else if (reason === 'error') {
-                        descriptor = 'Compression: None (Fallback)';
-                    }
-
-                    lines.push(`<div style="opacity:0.8;">${descriptor}</div>`);
-                }
-
-                if (!lines.length) {
-                    target.innerHTML = '';
-                    target.style.display = 'none';
-                    return;
-                }
-
-                target.innerHTML = lines.join('');
-                target.style.display = 'flex';
             }
             
             async saveVault() {
@@ -5851,9 +5516,6 @@
                 formData.lastUpdated = timestamp;
 
                 const encrypted = await this.crypto.encrypt(formData, password);
-
-                this.encryptedData = encrypted;
-                this.updatePayloadStats(encrypted);
 
                 const htmlDoc = document.documentElement.cloneNode(true);
 
@@ -7395,11 +7057,17 @@
                 }
             }
 
-            base64ToBlob(base64, mimeType = 'application/octet-stream') {
-                const bytes = this.normalizeToUint8Array(typeof base64 === 'string' ? base64.trim() : base64);
-
-                if (!bytes.length) {
+            base64ToBlob(base64, mimeType = 'application/octet-stream', isCompressed = false) {
+                const clean = typeof base64 === 'string' ? base64.trim() : '';
+                if (!clean) {
                     throw new Error('Attachment data is empty.');
+                }
+
+                const binary = atob(clean);
+                const length = binary.length;
+                const bytes = new Uint8Array(length);
+                for (let i = 0; i < length; i++) {
+                    bytes[i] = binary.charCodeAt(i);
                 }
 
                 let finalBytes = bytes;
@@ -8451,122 +8119,9 @@
                 }
             }
             
-            compression = {
-                isSupported: typeof CompressionStream === 'function' && typeof DecompressionStream === 'function',
-
-                compressString: async (text) => {
-                    const encoder = new TextEncoder();
-                    const input = encoder.encode(text);
-                    const originalSize = input.byteLength;
-                    const originalBuffer = this.compression.cloneBuffer(input);
-
-                    if (!this.compression.isSupported) {
-                        return {
-                            algorithm: 'none',
-                            buffer: originalBuffer,
-                            originalSize,
-                            compressedSize: originalSize,
-                            reason: 'unsupported'
-                        };
-                    }
-
-                    try {
-                        const compressedBuffer = await this.compression.compressWithStream(input);
-                        const compressedSize = compressedBuffer.byteLength;
-
-                        if (!compressedSize || compressedSize >= originalSize * 0.95) {
-                            return {
-                                algorithm: 'none',
-                                buffer: originalBuffer,
-                                originalSize,
-                                compressedSize: originalSize,
-                                reason: 'noBenefit'
-                            };
-                        }
-
-                        return {
-                            algorithm: 'gzip',
-                            buffer: compressedBuffer,
-                            originalSize,
-                            compressedSize,
-                            reason: 'compressed'
-                        };
-                    } catch (error) {
-                        console.warn('Compression failed, storing uncompressed payload', error);
-                        return {
-                            algorithm: 'none',
-                            buffer: originalBuffer,
-                            originalSize,
-                            compressedSize: originalSize,
-                            reason: 'error'
-                        };
-                    }
-                },
-
-                decompressToString: async (buffer, algorithm = 'none') => {
-                    const decoder = new TextDecoder();
-
-                    if (!algorithm || algorithm === 'none') {
-                        const view = buffer instanceof ArrayBuffer ? new Uint8Array(buffer) : this.normalizeToUint8Array(buffer);
-                        return decoder.decode(view);
-                    }
-
-                    if (algorithm !== 'gzip') {
-                        throw new Error(`Unsupported compression format: ${algorithm}`);
-                    }
-
-                    if (!this.compression.isSupported) {
-                        throw new Error('This vault file uses compression that is not supported in this browser. Please open it in a modern browser.');
-                    }
-
-                    const decompressedBuffer = await this.compression.decompressWithStream(buffer);
-                    return decoder.decode(new Uint8Array(decompressedBuffer));
-                },
-
-                compressWithStream: async (input) => {
-                    const stream = new CompressionStream('gzip');
-                    const writer = stream.writable.getWriter();
-                    await writer.write(input);
-                    await writer.close();
-                    return await new Response(stream.readable).arrayBuffer();
-                },
-
-                decompressWithStream: async (buffer) => {
-                    const source = buffer instanceof ArrayBuffer
-                        ? buffer
-                        : this.compression.cloneBuffer(buffer);
-
-                    const stream = new DecompressionStream('gzip');
-                    const writer = stream.writable.getWriter();
-                    await writer.write(new Uint8Array(source));
-                    await writer.close();
-                    return await new Response(stream.readable).arrayBuffer();
-                },
-
-                cloneBuffer: (value) => {
-                    if (value instanceof ArrayBuffer) {
-                        return value.slice(0);
-                    }
-
-                    if (value instanceof Uint8Array) {
-                        return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
-                    }
-
-                    if (Array.isArray(value)) {
-                        return new Uint8Array(value).buffer;
-                    }
-
-                    if (value && value.buffer instanceof ArrayBuffer) {
-                        return value.buffer.slice(value.byteOffset || 0, (value.byteOffset || 0) + (value.byteLength || value.length || 0));
-                    }
-
-                    return new Uint8Array(0).buffer;
-                }
-            };
-
             // Crypto utilities
             crypto = {
-                deriveKey: async (password, salt) => {
+                async deriveKey(password, salt) {
                     const encoder = new TextEncoder();
                     const keyMaterial = await crypto.subtle.importKey(
                         'raw',
@@ -8575,11 +8130,11 @@
                         false,
                         ['deriveBits', 'deriveKey']
                     );
-
+                    
                     return await crypto.subtle.deriveKey(
                         {
                             name: 'PBKDF2',
-                            salt,
+                            salt: salt,
                             iterations: 100000,
                             hash: 'SHA-256'
                         },
@@ -8589,76 +8144,44 @@
                         ['encrypt', 'decrypt']
                     );
                 },
-
-                encrypt: async (data, password) => {
+                
+                async encrypt(data, password) {
+                    const encoder = new TextEncoder();
                     const salt = crypto.getRandomValues(new Uint8Array(16));
                     const iv = crypto.getRandomValues(new Uint8Array(12));
-                    const compressionResult = await this.compression.compressString(JSON.stringify(data));
-                    const key = await this.crypto.deriveKey(password, salt);
-
-                    const encryptedBuffer = await crypto.subtle.encrypt(
-                        { name: 'AES-GCM', iv },
+                    const key = await this.deriveKey(password, salt);
+                    
+                    const encrypted = await crypto.subtle.encrypt(
+                        { name: 'AES-GCM', iv: iv },
                         key,
-                        compressionResult.buffer
+                        encoder.encode(JSON.stringify(data))
                     );
-
-                    const encryptedBytes = new Uint8Array(encryptedBuffer);
-
+                    
                     return {
-                        salt: this.arrayBufferToBase64(salt),
-                        iv: this.arrayBufferToBase64(iv),
-                        data: this.arrayBufferToBase64(encryptedBytes),
-                        encoding: 'base64',
-                        compression: compressionResult.algorithm,
-                        compressionReason: compressionResult.reason,
-                        originalSize: compressionResult.originalSize,
-                        compressedSize: compressionResult.compressedSize
+                        salt: Array.from(salt),
+                        iv: Array.from(iv),
+                        data: Array.from(new Uint8Array(encrypted))
                     };
                 },
-
-                decrypt: async (encryptedData, password) => {
-                    if (!encryptedData || typeof encryptedData !== 'object') {
-                        throw new Error('The encrypted payload could not be read.');
-                    }
-
-                    const saltBytes = this.normalizeToUint8Array(encryptedData.salt);
-                    const ivBytes = this.normalizeToUint8Array(encryptedData.iv);
-                    const dataBytes = this.normalizeToUint8Array(encryptedData.data);
-
-                    if (!saltBytes.length || !ivBytes.length || !dataBytes.length) {
-                        throw new Error('The encrypted data is incomplete or corrupted.');
-                    }
-
-                    const key = await this.crypto.deriveKey(password, saltBytes);
-
-                    const decryptedBuffer = await crypto.subtle.decrypt(
-                        { name: 'AES-GCM', iv: ivBytes },
+                
+                async decrypt(encryptedData, password) {
+                    const salt = new Uint8Array(encryptedData.salt);
+                    const iv = new Uint8Array(encryptedData.iv);
+                    const data = new Uint8Array(encryptedData.data);
+                    const key = await this.deriveKey(password, salt);
+                    
+                    const decrypted = await crypto.subtle.decrypt(
+                        { name: 'AES-GCM', iv: iv },
                         key,
-                        dataBytes
+                        data
                     );
-
-                    const compressionAlgorithm = typeof encryptedData.compression === 'string'
-                        ? encryptedData.compression
-                        : 'none';
-
-                    const decryptedText = await this.compression.decompressToString(decryptedBuffer, compressionAlgorithm);
-                    return JSON.parse(decryptedText);
+                    
+                    const decoder = new TextDecoder();
+                    return JSON.parse(decoder.decode(decrypted));
                 }
             };
         }
         
-        let pendingStartSetup = false;
-        const startSetupButton = document.getElementById('startSetupBtn');
-        if (startSetupButton) {
-            startSetupButton.addEventListener('click', () => {
-                if (window.app && typeof window.app.startSetup === 'function') {
-                    window.app.startSetup();
-                } else {
-                    pendingStartSetup = true;
-                }
-            });
-        }
-
         // Initialize localization and app
         const localization = new LocalizationManager();
         window.localization = localization;
@@ -8669,10 +8192,6 @@
             })
             .finally(() => {
                 window.app = new HealthVaultApp();
-                if (pendingStartSetup) {
-                    pendingStartSetup = false;
-                    window.app.startSetup();
-                }
             });
     </script>
 </body>
