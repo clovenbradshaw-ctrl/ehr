@@ -7,6 +7,7 @@
     <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="expires" content="0">
     <link rel="icon" type="image/x-icon" href="https://storage.googleapis.com/intelechia-content/favicon.ico">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js" integrity="sha512-5Y3OVd9VVKa70BxZ0JItNaJ+uwOxa7Xpu8aHf36JI3hLN3PTTr7X6KhoORmvK+jEbwSwrgPWSlhBu7/52iKR2w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <title>Personal Health Vault - Secure Medical Record</title>
     <style>
         @page {
@@ -304,7 +305,56 @@
             flex-grow: 0;
             flex-shrink: 0;
         }
-        
+
+        .language-selector {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+            margin-right: 20px;
+            color: #0f172a;
+        }
+
+        .language-selector label {
+            font-size: 9pt;
+            color: #64748b;
+        }
+
+        .language-selector select {
+            padding: 6px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 10pt;
+            min-width: 150px;
+        }
+
+        .unlock-language {
+            text-align: left;
+            margin-bottom: 15px;
+        }
+
+        .unlock-language label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #1e293b;
+        }
+
+        .unlock-language select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 10pt;
+        }
+
+        .unlock-language small {
+            display: block;
+            margin-top: 6px;
+            font-size: 9pt;
+            color: #64748b;
+        }
+
         .btn {
             padding: 5px 12px;
             border: none;
@@ -1824,6 +1874,15 @@
             .demo-field {
                 min-width: 100%;
             }
+
+            .language-selector {
+                width: 100%;
+                margin-right: 0;
+            }
+
+            .language-selector select {
+                width: 100%;
+            }
         }
         
         .hidden {
@@ -1834,11 +1893,16 @@
 <body>
     <div class="unlock-screen" id="unlockScreen" style="display: none;">
         <div class="unlock-container">
-            <h2>🔒 Health Vault Locked</h2>
-            <p>This .ehv vault file contains encrypted medical records</p>
-            <input type="password" id="unlock-password" placeholder="Enter password">
+            <h2 data-i18n-key="unlock_title">🔒 Health Vault Locked</h2>
+            <p data-i18n-key="unlock_subtitle">This .ehv vault file contains encrypted medical records</p>
+            <div class="unlock-language">
+                <label for="unlockLanguageSelect" data-i18n-key="default_language_label">Default language</label>
+                <select id="unlockLanguageSelect" data-language-selector data-default-selector="true"></select>
+                <small data-i18n-key="default_language_hint">Use this language automatically when opening the vault.</small>
+            </div>
+            <input type="password" id="unlock-password" placeholder="Enter password" data-i18n-placeholder="unlock_password_placeholder">
             <div id="totpField" style="display: none;">
-                <input type="text" id="totp-code" placeholder="6-digit code" maxlength="6">
+                <input type="text" id="totp-code" placeholder="6-digit code" maxlength="6" data-i18n-placeholder="unlock_totp_placeholder">
             </div>
             <div id="temporaryAccessHint" style="display: none; font-size: 9pt; color: #f97316; margin: 10px 0 0 0; text-align: left;">
             </div>
@@ -1854,7 +1918,7 @@
         <div class="emergency-banner-content">
             <h2>🚨 EMERGENCY MEDICAL INFORMATION</h2>
             <div class="emergency-data-display" id="emergencyDataDisplay"></div>
-            <button class="btn btn-primary" onclick="app.proceedToUnlock()">
+            <button class="btn btn-primary" onclick="app?.proceedToUnlock()">
                 Access Full Medical Record (Password Required)
             </button>
         </div>
@@ -1866,32 +1930,34 @@
         </div>
         <div class="security-status">
             <div class="status-icon"></div>
-            <span id="securityText">Always Encrypted</span>
+            <span id="securityText" data-i18n-key="always_encrypted">Always Encrypted</span>
             <span id="lockTimer"></span>
         </div>
-        <div class="save-status never-saved" id="saveStatus">
-            ⚠️ Not Initialized - Create Your Vault
+        <div class="save-status never-saved" id="saveStatus" data-i18n-key="not_initialized">⚠️ Not Initialized - Create Your Vault</div>
+        <div class="language-selector no-print">
+            <label for="languageSelect" data-i18n-key="language_label">Language</label>
+            <select id="languageSelect" data-language-selector></select>
         </div>
         <div class="action-buttons">
-            <button class="btn btn-secondary" id="settingsBtn">⚙️ Settings</button>
-            <button class="btn btn-lock" id="lockBtn" style="display: none;">🔓 Lock</button>
-            <button class="btn btn-secondary" id="exportBtn">Export/Print</button>
-            <button class="btn btn-save" id="saveBtn">Create Encrypted Vault</button>
+            <button class="btn btn-secondary" id="settingsBtn" data-i18n-key="settings_button">⚙️ Settings</button>
+            <button class="btn btn-lock" id="lockBtn" style="display: none;" data-i18n-key="unlock_action">🔓 Lock</button>
+            <button class="btn btn-secondary" id="exportBtn" data-i18n-key="export_button">Export/Print</button>
+            <button class="btn btn-save" id="saveBtn" data-i18n-key="save_button_create">Create Encrypted Vault</button>
         </div>
     </div>
 
     <div class="nav-tabs no-print" id="navTabs" style="display: none;">
-        <div class="tab active" data-section="demographics">📋 Demographics</div>
-        <div class="tab" data-section="emergency">🆘 Emergency</div>
-        <div class="tab" data-section="medications">💊 Medications</div>
-        <div class="tab" data-section="history">🩺 History</div>
-        <div class="tab" data-section="vitals">❤️ Vitals</div>
-        <div class="tab" data-section="immunizations">💉 Vaccines</div>
-        <div class="tab" data-section="labs">🔬 Lab Results</div>
-        <div class="tab" data-section="providers">👩‍⚕️ Providers</div>
-        <div class="tab" data-section="insurance">🏥 Insurance</div>
-        <div class="tab" data-section="notes">📝 Notes</div>
-        <div class="tab" data-section="attachments">📎 Attachments</div>
+        <div class="tab active" data-section="demographics" data-i18n-key="nav_demographics">📋 Demographics</div>
+        <div class="tab" data-section="emergency" data-i18n-key="nav_emergency">🆘 Emergency</div>
+        <div class="tab" data-section="medications" data-i18n-key="nav_medications">💊 Medications</div>
+        <div class="tab" data-section="history" data-i18n-key="nav_history">🩺 History</div>
+        <div class="tab" data-section="vitals" data-i18n-key="nav_vitals">❤️ Vitals</div>
+        <div class="tab" data-section="immunizations" data-i18n-key="nav_immunizations">💉 Vaccines</div>
+        <div class="tab" data-section="labs" data-i18n-key="nav_labs">🔬 Lab Results</div>
+        <div class="tab" data-section="providers" data-i18n-key="nav_providers">👩‍⚕️ Providers</div>
+        <div class="tab" data-section="insurance" data-i18n-key="nav_insurance">🏥 Insurance</div>
+        <div class="tab" data-section="notes" data-i18n-key="nav_notes">📝 Notes</div>
+        <div class="tab" data-section="attachments" data-i18n-key="nav_attachments">📎 Attachments</div>
         <!-- Module tabs added dynamically -->
     </div>
 
@@ -1899,7 +1965,7 @@
     <div class="modal" id="settingsModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>⚙️ Settings & Modules</h3>
+                <h3 data-i18n-key="settings_title">⚙️ Settings &amp; Modules</h3>
                 <p class="settings-version">
                     <strong>Version:</strong>
                     <span id="appVersion">2024.04.07.1200</span>
@@ -1911,15 +1977,15 @@
             <div class="modal-body">
                 <div class="settings-grid">
                     <div class="settings-section">
-                        <h4>Optional Modules</h4>
-                        <p style="font-size: 9pt; color: #64748b; margin-bottom: 15px;">
+                        <h4 data-i18n-key="optional_modules_heading">Optional Modules</h4>
+                        <p style="font-size: 9pt; color: #64748b; margin-bottom: 15px;" data-i18n-key="optional_modules_subtitle">
                             Enable specialized tracking modules as needed
                         </p>
                         
                         <div class="module-toggle">
                             <div class="module-info">
-                                <div class="module-name">Extended Identity</div>
-                                <div class="module-desc">Pronouns, chosen names, context-specific usage</div>
+                                <div class="module-name" data-i18n-key="module_identity_name">Extended Identity</div>
+                                <div class="module-desc" data-i18n-key="module_identity_desc">Pronouns, chosen names, context-specific usage</div>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" id="module-identity">
@@ -1929,8 +1995,8 @@
                         
                         <div class="module-toggle">
                             <div class="module-info">
-                                <div class="module-name">Gender Affirming Care</div>
-                                <div class="module-desc">HRT tracking, surgeries, specialized providers</div>
+                                <div class="module-name" data-i18n-key="module_gac_name">Gender Affirming Care</div>
+                                <div class="module-desc" data-i18n-key="module_gac_desc">HRT tracking, surgeries, specialized providers</div>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" id="module-gac">
@@ -1940,8 +2006,8 @@
                         
                         <div class="module-toggle">
                             <div class="module-info">
-                                <div class="module-name">Mental Health</div>
-                                <div class="module-desc">Mood tracking, therapy notes, crisis resources</div>
+                                <div class="module-name" data-i18n-key="module_mental_name">Mental Health</div>
+                                <div class="module-desc" data-i18n-key="module_mental_desc">Mood tracking, therapy notes, crisis resources</div>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" id="module-mental">
@@ -1951,8 +2017,8 @@
                         
                         <div class="module-toggle">
                             <div class="module-info">
-                                <div class="module-name">Chronic Disease</div>
-                                <div class="module-desc">Diabetes, hypertension, pain management</div>
+                                <div class="module-name" data-i18n-key="module_chronic_name">Chronic Disease</div>
+                                <div class="module-desc" data-i18n-key="module_chronic_desc">Diabetes, hypertension, pain management</div>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" id="module-chronic">
@@ -1962,8 +2028,8 @@
                     </div>
                     
                     <div class="settings-section" id="totpSettings">
-                        <h4>🔐 Two-Factor Authentication Status</h4>
-                        <p style="font-size: 9pt; color: #64748b; margin-bottom: 15px;">
+                        <h4 data-i18n-key="totp_status_title">🔐 Two-Factor Authentication Status</h4>
+                        <p style="font-size: 9pt; color: #64748b; margin-bottom: 15px;" data-i18n-key="totp_status_subtitle">
                             Enhanced security using time-based codes
                         </p>
                         <div id="totpStatus" style="padding: 15px; background: #f8fafc; border-radius: 6px;">
@@ -1972,41 +2038,41 @@
                     </div>
 
                     <div class="settings-section">
-                        <h4>Emergency Access (No Password Required)</h4>
-                        <p style="font-size: 9pt; color: #64748b; margin-bottom: 15px;">
+                        <h4 data-i18n-key="emergency_access_title">Emergency Access (No Password Required)</h4>
+                        <p style="font-size: 9pt; color: #64748b; margin-bottom: 15px;" data-i18n-key="emergency_access_subtitle">
                             Select information visible to anyone who opens this file, even without the password.
                             Useful for first responders or emergency situations.
                         </p>
 
                         <div class="checkbox-item">
                             <input type="checkbox" id="emergency-enabled" class="form-data" data-field="emergencyAccessEnabled">
-                            <label for="emergency-enabled"><strong>Enable Emergency Access</strong></label>
+                            <label for="emergency-enabled"><strong data-i18n-key="emergency_enable">Enable Emergency Access</strong></label>
                         </div>
 
                         <div id="emergencyOptions" style="margin-left: 20px; margin-top: 10px; display: none;">
                             <div class="checkbox-item">
                                 <input type="checkbox" id="emergency-blood" class="form-data" data-field="showBloodType">
-                                <label for="emergency-blood">Blood Type</label>
+                                <label for="emergency-blood" data-i18n-key="emergency_blood">Blood Type</label>
                             </div>
                             <div class="checkbox-item">
                                 <input type="checkbox" id="emergency-allergies" class="form-data" data-field="showCriticalAllergies">
-                                <label for="emergency-allergies">Critical Allergies</label>
+                                <label for="emergency-allergies" data-i18n-key="emergency_allergies">Critical Allergies</label>
                             </div>
                             <div class="checkbox-item">
                                 <input type="checkbox" id="emergency-contacts" class="form-data" data-field="showEmergencyContacts">
-                                <label for="emergency-contacts">Emergency Contacts</label>
+                                <label for="emergency-contacts" data-i18n-key="emergency_contacts">Emergency Contacts</label>
                             </div>
                             <div class="checkbox-item">
                                 <input type="checkbox" id="emergency-conditions" class="form-data" data-field="showCriticalConditions">
-                                <label for="emergency-conditions">Critical Medical Conditions</label>
+                                <label for="emergency-conditions" data-i18n-key="emergency_conditions">Critical Medical Conditions</label>
                             </div>
                             <div class="checkbox-item">
                                 <input type="checkbox" id="emergency-directive" class="form-data" data-field="showAdvanceDirective">
-                                <label for="emergency-directive">Advance Directive Status</label>
+                                <label for="emergency-directive" data-i18n-key="emergency_directive">Advance Directive Status</label>
                             </div>
                             <div class="checkbox-item">
                                 <input type="checkbox" id="emergency-medications" class="form-data" data-field="showCriticalMedications">
-                                <label for="emergency-medications">Critical Medications</label>
+                                <label for="emergency-medications" data-i18n-key="emergency_medications">Critical Medications</label>
                             </div>
                         </div>
 
@@ -2018,19 +2084,19 @@
                     </div>
 
                     <div class="settings-section">
-                        <h4>Privacy Levels</h4>
+                        <h4 data-i18n-key="privacy_levels">Privacy Levels</h4>
                         <select id="privacyLevel" class="form-data" data-field="privacyLevel">
-                            <option value="1">Level 1: Full Information</option>
-                            <option value="2">Level 2: Hide Sensitive Sections</option>
-                            <option value="3">Level 3: Emergency Only</option>
-                            <option value="4">Level 4: Custom</option>
+                            <option value="1" data-i18n-key="privacy_level_1">Level 1: Full Information</option>
+                            <option value="2" data-i18n-key="privacy_level_2">Level 2: Hide Sensitive Sections</option>
+                            <option value="3" data-i18n-key="privacy_level_3">Level 3: Emergency Only</option>
+                            <option value="4" data-i18n-key="privacy_level_4">Level 4: Custom</option>
                         </select>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="app.closeSettings()">Cancel</button>
-                <button class="btn btn-primary" onclick="app.saveSettings()">Save Settings</button>
+                <button class="btn btn-secondary" onclick="app?.closeSettings()" data-i18n-key="settings_cancel">Cancel</button>
+                <button class="btn btn-primary" onclick="app?.saveSettings()" data-i18n-key="settings_save">Save Settings</button>
             </div>
         </div>
     </div>
@@ -2039,29 +2105,29 @@
     <div class="modal" id="totpModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>🔐 Setup Two-Factor Authentication</h3>
+                <h3 data-i18n-key="totp_setup_title">🔐 Setup Two-Factor Authentication</h3>
             </div>
             <div class="modal-body">
                 <div class="totp-setup">
-                    <p>Scan this QR code with your authenticator app:</p>
+                    <p data-i18n-key="totp_scan_prompt">Scan this QR code with your authenticator app:</p>
                     <div class="totp-qr" id="totpQR"></div>
-                    <p style="margin-top: 10px;">Or enter this secret manually:</p>
+                    <p style="margin-top: 10px;" data-i18n-key="totp_manual_prompt">Or enter this secret manually:</p>
                     <code id="totpSecret" style="font-size: 12pt; background: #f0f0f0; padding: 8px; border-radius: 4px;"></code>
-                    
+
                     <div style="margin-top: 20px;">
-                        <label>Verify code from your app:</label>
+                        <label data-i18n-key="totp_verify_label">Verify code from your app:</label>
                         <input type="text" id="verifyTOTP" placeholder="000000" maxlength="6" style="width: 150px; text-align: center; font-size: 14pt;">
                     </div>
-                    
+
                     <div class="warning-box" style="margin-top: 20px;">
-                        <strong>Backup Codes (Save These!):</strong>
+                        <strong data-i18n-key="totp_backup">Backup Codes (Save These!)</strong>
                         <div class="backup-codes" id="backupCodes"></div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="app.cancelTOTP()">Cancel</button>
-                <button class="btn btn-primary" onclick="app.verifyTOTP()">Verify & Enable</button>
+                <button class="btn btn-secondary" onclick="app?.cancelTOTP()" data-i18n-key="totp_cancel">Cancel</button>
+                <button class="btn btn-primary" onclick="app?.verifyTOTP()" data-i18n-key="totp_verify">Verify &amp; Enable</button>
             </div>
         </div>
     </div>
@@ -2070,12 +2136,12 @@
     <div class="modal" id="passwordModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 id="modalTitle">Set Encryption Password</h3>
+                <h3 id="modalTitle" data-i18n-key="password_modal_title">Set Encryption Password</h3>
             </div>
             <div class="modal-body">
                 <div class="field">
-                    <label>Password</label>
-                    <input type="password" id="modalPassword" placeholder="Enter password">
+                    <label data-i18n-key="password_label">Password</label>
+                    <input type="password" id="modalPassword" placeholder="Enter password" data-i18n-placeholder="unlock_password_placeholder">
                     <div class="password-strength" id="passwordStrength" style="display: none;">
                         <div class="strength-bar" id="strength1"></div>
                         <div class="strength-bar" id="strength2"></div>
@@ -2084,17 +2150,17 @@
                     </div>
                 </div>
                 <div class="field" id="confirmPasswordField">
-                    <label>Confirm Password</label>
-                    <input type="password" id="modalConfirmPassword" placeholder="Confirm password">
+                    <label data-i18n-key="confirm_password_label">Confirm Password</label>
+                    <input type="password" id="modalConfirmPassword" placeholder="Confirm password" data-i18n-placeholder="confirm_password_placeholder">
                 </div>
                 <div class="warning-box">
-                    <strong>Important:</strong> This vault file (.ehv) will contain your encrypted data.
-                    Always download and save the updated .ehv file after making changes.
+                    <strong data-i18n-key="important_notice">Important:</strong> <span data-i18n-key="vault_notice">This vault file (.ehv) will contain your encrypted data.
+                    Always download and save the updated .ehv file after making changes.</span>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" id="modalCancel">Cancel</button>
-                <button class="btn btn-primary" id="modalSubmit">Continue</button>
+                <button class="btn btn-secondary" id="modalCancel" data-i18n-key="modal_cancel">Cancel</button>
+                <button class="btn btn-primary" id="modalSubmit" data-i18n-key="modal_continue">Continue</button>
             </div>
         </div>
     </div>
@@ -2103,35 +2169,35 @@
     <div class="modal" id="passwordUpdateModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Save Vault</h3>
+                <h3 data-i18n-key="save_vault_title">Save Vault</h3>
             </div>
             <div class="modal-body">
                 <div class="password-update-option">
                     <label>
                         <input type="radio" name="passwordUpdateChoice" value="keep" checked>
-                        Keep current password
+                        <span data-i18n-key="keep_password_option">Keep current password</span>
                     </label>
-                    <p>
+                    <p data-i18n-key="keep_password_desc">
                         Your vault will be encrypted with the password you unlocked it with.
                     </p>
                 </div>
                 <div class="password-update-option">
                     <label>
                         <input type="radio" name="passwordUpdateChoice" value="change">
-                        Set a new password before saving
+                        <span data-i18n-key="change_password_option">Set a new password before saving</span>
                     </label>
                     <div class="password-update-fields" id="passwordUpdateFields" style="display: none;">
                         <div class="field">
-                            <label>New Password</label>
-                            <input type="password" id="updateNewPassword" placeholder="Enter new password">
+                            <label data-i18n-key="new_password_label">New Password</label>
+                            <input type="password" id="updateNewPassword" placeholder="Enter new password" data-i18n-placeholder="new_password_label">
                         </div>
                         <div class="field">
-                            <label>Confirm New Password</label>
-                            <input type="password" id="updateConfirmPassword" placeholder="Confirm new password">
+                            <label data-i18n-key="confirm_new_password_label">Confirm New Password</label>
+                            <input type="password" id="updateConfirmPassword" placeholder="Confirm new password" data-i18n-placeholder="confirm_new_password_label">
                         </div>
                     </div>
                 </div>
-                <p class="password-update-note" id="passwordUpdate2FANote" style="display: none;">
+                <p class="password-update-note" id="passwordUpdate2FANote" style="display: none;" data-i18n-key="two_fa_note">
                     Two-factor authentication stays connected—your existing authenticator codes will continue to work after changing your password.
                 </p>
                 <div class="password-update-option" id="temporaryAccessSection" style="margin-top: 20px; display: none;">
@@ -2172,8 +2238,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" id="passwordUpdateCancel">Cancel</button>
-                <button class="btn btn-primary" id="passwordUpdateSubmit">Save Vault</button>
+                <button class="btn btn-secondary" id="passwordUpdateCancel" data-i18n-key="modal_cancel">Cancel</button>
+                <button class="btn btn-primary" id="passwordUpdateSubmit" data-i18n-key="save_vault_submit">Save Vault</button>
             </div>
         </div>
     </div>
@@ -2182,14 +2248,14 @@
     <div class="modal" id="exportModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>📄 Export &amp; Share</h3>
+                <h3 data-i18n-key="export_title">📄 Export &amp; Share</h3>
             </div>
             <div class="modal-body">
-                <p>Select how you'd like to share or archive this record.</p>
+                <p data-i18n-key="export_prompt">Select how you'd like to share or archive this record.</p>
                 <div class="export-options">
-                    <button class="btn btn-primary" id="printSummaryBtn">🖨️ Printable Care Summary</button>
+                    <button class="btn btn-primary" id="printSummaryBtn" data-i18n-key="print_summary_button">🖨️ Printable Care Summary</button>
                 </div>
-                <p class="export-note">
+                <p class="export-note" data-i18n-key="export_note">
                     The printable summary reformats your record into an easy-to-read care handoff that can be printed or saved as a PDF for sharing.
                 </p>
             </div>
@@ -2216,7 +2282,7 @@
             </ul>
         </div>
         <div class="welcome-actions">
-            <button class="btn-start" onclick="app.startSetup()">
+            <button class="btn-start" onclick="app?.startSetup()">
                 Get Started
             </button>
             <button class="btn-import" id="openVaultBtn">
@@ -3157,6 +3223,212 @@
         const APP_LAST_UPDATED = '2024-04-07T12:00:00Z';
         const DEFAULT_SCHEMA_VERSION = '1.0.0';
 
+        class LocalizationManager {
+            constructor() {
+                this.translations = {};
+                this.availableLanguages = [];
+                this.languageSelectors = [];
+                this.currentLanguage = 'en';
+                this.fallbackLanguage = 'en';
+            }
+
+            async init() {
+                await this.loadTranslations();
+                this.languageSelectors = Array.from(document.querySelectorAll('[data-language-selector]'));
+                if (!this.availableLanguages.includes(this.currentLanguage)) {
+                    this.currentLanguage = this.fallbackLanguage;
+                }
+                this.populateSelectors();
+                this.applyTranslations();
+
+                this.languageSelectors.forEach(select => {
+                    select.addEventListener('change', event => {
+                        this.setLanguage(event.target.value, { persist: true });
+                    });
+                });
+            }
+
+            async loadTranslations() {
+                try {
+                    const response = await fetch('translations.json', { cache: 'no-store' });
+                    if (!response.ok) {
+                        throw new Error(`Failed to load translations: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    if (data && typeof data === 'object') {
+                        this.translations = data;
+                    }
+                } catch (error) {
+                    console.error('[Localization] Unable to load translations.json', error);
+                    this.translations = { en: {} };
+                }
+
+                if (!this.translations || typeof this.translations !== 'object') {
+                    this.translations = { en: {} };
+                }
+
+                if (!this.translations.en) {
+                    this.translations.en = {};
+                }
+
+                this.availableLanguages = Object.keys(this.translations);
+                if (this.availableLanguages.length === 0) {
+                    this.availableLanguages = ['en'];
+                }
+
+                this.fallbackLanguage = this.translations.en ? 'en' : this.availableLanguages[0];
+
+                const stored = this.safeGet('preferredLanguage');
+                const browser = this.detectBrowserLanguage();
+                const defaultLang = this.availableLanguages.includes(stored)
+                    ? stored
+                    : (browser && this.availableLanguages.includes(browser) ? browser : this.fallbackLanguage);
+
+                this.currentLanguage = defaultLang;
+                document.documentElement.setAttribute('lang', this.currentLanguage);
+                this.safeSet('preferredLanguage', this.currentLanguage);
+            }
+
+            populateSelectors() {
+                if (!this.languageSelectors.length) {
+                    return;
+                }
+
+                const optionsHtml = this.availableLanguages
+                    .map(code => `<option value="${code}">${this.getLanguageName(code)}</option>`)
+                    .join('');
+
+                this.languageSelectors.forEach(select => {
+                    const previous = select.value;
+                    select.innerHTML = optionsHtml;
+                    select.value = this.availableLanguages.includes(previous) ? previous : this.currentLanguage;
+                });
+            }
+
+            detectBrowserLanguage() {
+                const languages = Array.isArray(navigator.languages) && navigator.languages.length
+                    ? navigator.languages
+                    : [navigator.language];
+                if (!languages) {
+                    return null;
+                }
+                const normalized = languages
+                    .map(code => (code || '').toLowerCase())
+                    .map(code => code.split('-')[0]);
+                return normalized.find(code => this.availableLanguages.includes(code)) || null;
+            }
+
+            getLanguageName(code) {
+                const lookup = {
+                    en: 'English',
+                    es: 'Español',
+                    my: 'မြန်မာ',
+                };
+
+                if (lookup[code]) {
+                    return lookup[code];
+                }
+
+                try {
+                    const display = new Intl.DisplayNames([this.currentLanguage, 'en'], { type: 'language' });
+                    return display.of(code) || code;
+                } catch (error) {
+                    return code;
+                }
+            }
+
+            setLanguage(language, { persist = true } = {}) {
+                if (!this.translations[language]) {
+                    language = this.fallbackLanguage;
+                }
+
+                this.currentLanguage = language;
+                document.documentElement.setAttribute('lang', language);
+
+                if (persist) {
+                    this.safeSet('preferredLanguage', language);
+                }
+
+                this.updateSelectors();
+                this.applyTranslations();
+            }
+
+            updateSelectors() {
+                if (!this.languageSelectors.length) {
+                    return;
+                }
+
+                this.languageSelectors.forEach(select => {
+                    if (select.value !== this.currentLanguage) {
+                        select.value = this.currentLanguage;
+                    }
+                });
+            }
+
+            applyTranslations() {
+                const active = this.translations[this.currentLanguage] || {};
+                const fallback = this.translations[this.fallbackLanguage] || {};
+
+                document.querySelectorAll('[data-i18n-key]').forEach(element => {
+                    const key = element.getAttribute('data-i18n-key');
+                    if (!key) {
+                        return;
+                    }
+                    const prefix = element.dataset.i18nPrefix || '';
+                    const suffix = element.dataset.i18nSuffix || '';
+                    const translation = active[key] ?? fallback[key];
+                    if (translation === undefined) {
+                        return;
+                    }
+                    if (element.dataset.i18nHtml === 'true') {
+                        element.innerHTML = `${prefix}${translation}${suffix}`;
+                    } else {
+                        element.textContent = `${prefix}${translation}${suffix}`;
+                    }
+                });
+
+                document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+                    const key = element.getAttribute('data-i18n-placeholder');
+                    if (!key) {
+                        return;
+                    }
+                    const translation = active[key] ?? fallback[key];
+                    if (translation !== undefined) {
+                        element.setAttribute('placeholder', translation);
+                    }
+                });
+
+                document.title = this.t('app_title', document.title);
+            }
+
+            t(key, fallback) {
+                if (!key) {
+                    return fallback ?? '';
+                }
+                return this.translations[this.currentLanguage]?.[key]
+                    ?? this.translations[this.fallbackLanguage]?.[key]
+                    ?? fallback
+                    ?? key;
+            }
+
+            safeGet(key) {
+                try {
+                    return localStorage.getItem(key);
+                } catch (error) {
+                    console.warn('[Localization] Unable to read localStorage', error);
+                    return null;
+                }
+            }
+
+            safeSet(key, value) {
+                try {
+                    localStorage.setItem(key, value);
+                } catch (error) {
+                    console.warn('[Localization] Unable to persist preference', error);
+                }
+            }
+        }
+
         class SchemaManager {
             constructor(currentVersion, migrations = []) {
                 this.currentVersion = this.normalizeVersion(currentVersion);
@@ -3714,9 +3986,33 @@
                 this.setupEventListeners();
                 this.updateSaveStatus();
 
-                // Clear any cached data
-                localStorage.clear();
-                sessionStorage.clear();
+                // Clear any cached data while preserving localization preference
+                let preferredLanguage = null;
+                try {
+                    preferredLanguage = localStorage.getItem('preferredLanguage');
+                } catch (error) {
+                    console.warn('Unable to read preferred language from localStorage', error);
+                }
+
+                try {
+                    localStorage.clear();
+                } catch (error) {
+                    console.warn('Unable to clear localStorage', error);
+                }
+
+                if (preferredLanguage) {
+                    try {
+                        localStorage.setItem('preferredLanguage', preferredLanguage);
+                    } catch (error) {
+                        console.warn('Unable to restore preferred language', error);
+                    }
+                }
+
+                try {
+                    sessionStorage.clear();
+                } catch (error) {
+                    console.warn('Unable to clear sessionStorage', error);
+                }
             }
 
             applyVersionMetadata() {
@@ -4092,7 +4388,8 @@
                     const lockBtn = document.getElementById('lockBtn');
                     if (lockBtn) {
                         lockBtn.style.display = 'none';
-                        lockBtn.innerHTML = '🔓 Lock';
+                        lockBtn.setAttribute('data-i18n-key', 'unlock_action');
+                        lockBtn.textContent = window.localization?.t('unlock_action', '🔓 Lock');
                     }
 
                     this.updateSaveStatus();
@@ -4146,29 +4443,29 @@
                             <label class="checkbox-item" style="align-items: flex-start; gap: 10px;">
                                 <input type="checkbox" id="setup-module-identity">
                                 <span>
-                                    <strong>Extended Identity</strong><br>
-                                    <span style="font-size: 9pt; color: #64748b;">Pronouns, chosen names, context-specific usage</span>
+                                    <strong data-i18n-key="module_identity_name">Extended Identity</strong><br>
+                                    <span style="font-size: 9pt; color: #64748b;" data-i18n-key="module_identity_desc">Pronouns, chosen names, context-specific usage</span>
                                 </span>
                             </label>
                             <label class="checkbox-item" style="align-items: flex-start; gap: 10px;">
                                 <input type="checkbox" id="setup-module-gac">
                                 <span>
-                                    <strong>Gender Affirming Care</strong><br>
-                                    <span style="font-size: 9pt; color: #64748b;">HRT tracking, surgeries, specialized providers</span>
+                                    <strong data-i18n-key="module_gac_name">Gender Affirming Care</strong><br>
+                                    <span style="font-size: 9pt; color: #64748b;" data-i18n-key="module_gac_desc">HRT tracking, surgeries, specialized providers</span>
                                 </span>
                             </label>
                             <label class="checkbox-item" style="align-items: flex-start; gap: 10px;">
                                 <input type="checkbox" id="setup-module-mental">
                                 <span>
-                                    <strong>Mental Health</strong><br>
-                                    <span style="font-size: 9pt; color: #64748b;">Mood tracking, therapy notes, crisis resources</span>
+                                    <strong data-i18n-key="module_mental_name">Mental Health</strong><br>
+                                    <span style="font-size: 9pt; color: #64748b;" data-i18n-key="module_mental_desc">Mood tracking, therapy notes, crisis resources</span>
                                 </span>
                             </label>
                             <label class="checkbox-item" style="align-items: flex-start; gap: 10px;">
                                 <input type="checkbox" id="setup-module-chronic">
                                 <span>
-                                    <strong>Chronic Disease</strong><br>
-                                    <span style="font-size: 9pt; color: #64748b;">Diabetes, hypertension, pain management</span>
+                                    <strong data-i18n-key="module_chronic_name">Chronic Disease</strong><br>
+                                    <span style="font-size: 9pt; color: #64748b;" data-i18n-key="module_chronic_desc">Diabetes, hypertension, pain management</span>
                                 </span>
                             </label>
                         </div>
@@ -4192,6 +4489,7 @@
                 const confirmField = document.getElementById('confirmPasswordField');
                 if (!document.getElementById('setupModuleSelection')) {
                     confirmField.insertAdjacentHTML('afterend', moduleSelectionHTML);
+                    window.localization?.applyTranslations();
                 }
 
                 ['identity', 'gac', 'mental', 'chronic'].forEach(module => {
@@ -4205,6 +4503,8 @@
                     const insertAfter = document.getElementById('setupModuleSelection') || confirmField;
                     insertAfter.insertAdjacentHTML('afterend', twoFAHTML);
                 }
+
+                window.localization?.applyTranslations();
             }
 
             applySetupModuleSelections() {
@@ -4441,36 +4741,50 @@
                 existingModuleTabs.forEach(tab => tab.remove());
                 
                 const demographicsTab = navTabs.querySelector('[data-section="demographics"]');
-                
+
                 if (this.modules.identity) {
                     const identityTab = document.createElement('div');
                     identityTab.className = 'tab module-tab';
                     identityTab.setAttribute('data-section', 'identity');
-                    identityTab.innerHTML = '👤 Identity';
+                    identityTab.setAttribute('data-i18n-key', 'module_identity_tab');
+                    identityTab.textContent = (window.localization?.t('module_identity_tab', '👤 Identity'));
                     demographicsTab.after(identityTab);
                 }
-                
+
                 if (this.modules.gac) {
                     const gacTab = document.createElement('div');
                     gacTab.className = 'tab module-tab';
                     gacTab.setAttribute('data-section', 'gac');
-                    gacTab.innerHTML = '🏳️‍⚧️ GAC';
-                    const insertAfter = this.modules.identity ? 
-                        navTabs.querySelector('[data-section="identity"]') : 
+                    gacTab.setAttribute('data-i18n-key', 'module_gac_tab');
+                    gacTab.textContent = (window.localization?.t('module_gac_tab', '🏳️‍⚧️ GAC'));
+                    const insertAfter = this.modules.identity ?
+                        navTabs.querySelector('[data-section="identity"]') :
                         demographicsTab;
                     insertAfter.after(gacTab);
                 }
-                
+
                 if (this.modules.mental) {
-                    navTabs.insertAdjacentHTML('beforeend', '<div class="tab module-tab" data-section="mental">🧠 Mental Health</div>');
+                    const mentalTab = document.createElement('div');
+                    mentalTab.className = 'tab module-tab';
+                    mentalTab.setAttribute('data-section', 'mental');
+                    mentalTab.setAttribute('data-i18n-key', 'module_mental_tab');
+                    mentalTab.textContent = (window.localization?.t('module_mental_tab', '🧠 Mental Health'));
+                    navTabs.appendChild(mentalTab);
                 }
                 if (this.modules.chronic) {
-                    navTabs.insertAdjacentHTML('beforeend', '<div class="tab module-tab" data-section="chronic">📊 Chronic</div>');
+                    const chronicTab = document.createElement('div');
+                    chronicTab.className = 'tab module-tab';
+                    chronicTab.setAttribute('data-section', 'chronic');
+                    chronicTab.setAttribute('data-i18n-key', 'module_chronic_tab');
+                    chronicTab.textContent = (window.localization?.t('module_chronic_tab', '📊 Chronic'));
+                    navTabs.appendChild(chronicTab);
                 }
-                
+
                 navTabs.querySelectorAll('.module-tab').forEach(tab => {
                     tab.addEventListener('click', (e) => this.navigateToSection(e));
                 });
+
+                window.localization?.applyTranslations();
             }
             
             markAsChanged() {
@@ -4482,22 +4796,32 @@
                 const statusEl = document.getElementById('saveStatus');
                 const saveBtn = document.getElementById('saveBtn');
                 
+                const translate = (key, fallback) => window.localization?.t(key, fallback) ?? fallback ?? key;
+
                 if (!this.isInitialized) {
                     statusEl.className = 'save-status never-saved';
-                    statusEl.innerHTML = '⚠️ Not Initialized - Create Your Vault';
-                    saveBtn.innerHTML = 'Create Encrypted Vault';
+                    statusEl.setAttribute('data-i18n-key', 'status_not_initialized');
+                    statusEl.textContent = translate('status_not_initialized', '⚠️ Not Initialized - Create Your Vault');
                     saveBtn.className = 'btn btn-save';
+                    saveBtn.setAttribute('data-i18n-key', 'action_create_vault');
+                    saveBtn.textContent = translate('action_create_vault', 'Create Encrypted Vault');
                 } else if (this.hasUnsavedChanges) {
                     statusEl.className = 'save-status unsaved';
-                    statusEl.innerHTML = '⚠️ Unsaved Changes - Download Updated Vault (.ehv)';
-                    saveBtn.innerHTML = 'Download Updated Vault (.ehv)';
+                    statusEl.setAttribute('data-i18n-key', 'status_unsaved');
+                    statusEl.textContent = translate('status_unsaved', '⚠️ Unsaved Changes - Download Updated Vault (.ehv)');
                     saveBtn.className = 'btn btn-save';
+                    saveBtn.setAttribute('data-i18n-key', 'action_download_updated');
+                    saveBtn.textContent = translate('action_download_updated', 'Download Updated Vault (.ehv)');
                 } else {
                     statusEl.className = 'save-status saved';
-                    statusEl.innerHTML = '✓ Data Encrypted in This Vault (.ehv)';
-                    saveBtn.innerHTML = 'Download Current Vault (.ehv)';
+                    statusEl.setAttribute('data-i18n-key', 'status_saved');
+                    statusEl.textContent = translate('status_saved', '✓ Data Encrypted in This Vault (.ehv)');
                     saveBtn.className = 'btn btn-save saved';
+                    saveBtn.setAttribute('data-i18n-key', 'action_download_current');
+                    saveBtn.textContent = translate('action_download_current', 'Download Current Vault (.ehv)');
                 }
+
+                window.localization?.applyTranslations();
             }
             
             async saveVault() {
@@ -6077,7 +6401,7 @@
 
                 for (const file of files) {
                     try {
-                        const base64 = await this.readFileAsBase64(file);
+                        const result = await this.readFileAsBase64(file);
                         const attachment = {
                             id: this.generateAttachmentId(),
                             name: typeof file.name === 'string' && file.name ? file.name : 'attachment',
@@ -6085,8 +6409,18 @@
                             size: typeof file.size === 'number' ? file.size : 0,
                             lastModified: typeof file.lastModified === 'number' ? file.lastModified : null,
                             addedAt: new Date().toISOString(),
-                            data: base64
+                            compressed: !!result?.compressed,
+                            originalSize: typeof result?.originalSize === 'number'
+                                ? result.originalSize
+                                : (typeof file.size === 'number' ? file.size : 0),
+                            compressedSize: typeof result?.compressedSize === 'number'
+                                ? result.compressedSize
+                                : (typeof result?.data === 'string' ? Math.ceil(result.data.length * 3 / 4) : (typeof file.size === 'number' ? file.size : 0)),
+                            data: typeof result?.data === 'string' ? result.data : ''
                         };
+                        if (!attachment.data) {
+                            throw new Error('Attachment data is empty');
+                        }
                         this.attachments.push(attachment);
                     } catch (error) {
                         console.error('Failed to add attachment', error);
@@ -6104,7 +6438,7 @@
                 }
             }
 
-            readFileAsBase64(file) {
+            readFileAsBase64(file, compress = true) {
                 return new Promise((resolve, reject) => {
                     if (!(file instanceof Blob)) {
                         reject(new Error('Invalid file'));
@@ -6117,16 +6451,46 @@
                             const result = reader.result;
                             if (result instanceof ArrayBuffer) {
                                 const bytes = new Uint8Array(result);
+                                let finalBytes = bytes;
+                                let isCompressed = false;
+
+                                if (compress && bytes.length > 1024) {
+                                    const pakoInstance = typeof window !== 'undefined' ? window.pako : null;
+                                    if (pakoInstance && typeof pakoInstance.deflate === 'function') {
+                                        try {
+                                            const compressed = pakoInstance.deflate(bytes, { level: 6 });
+                                            if (compressed && compressed.length < bytes.length) {
+                                                finalBytes = compressed;
+                                                isCompressed = true;
+                                            }
+                                        } catch (compressionError) {
+                                            console.warn('Attachment compression failed, storing uncompressed', compressionError);
+                                        }
+                                    }
+                                }
+
                                 const chunkSize = 0x8000;
                                 let binary = '';
-                                for (let i = 0; i < bytes.length; i += chunkSize) {
-                                    const chunk = bytes.subarray(i, i + chunkSize);
+                                for (let i = 0; i < finalBytes.length; i += chunkSize) {
+                                    const chunk = finalBytes.subarray(i, i + chunkSize);
                                     binary += String.fromCharCode(...chunk);
                                 }
-                                resolve(btoa(binary));
+
+                                resolve({
+                                    data: btoa(binary),
+                                    compressed: isCompressed,
+                                    originalSize: bytes.length,
+                                    compressedSize: finalBytes.length
+                                });
                             } else if (typeof result === 'string') {
                                 const base64Match = result.match(/^data:[^;]+;base64,(.*)$/);
-                                resolve(base64Match ? base64Match[1] : result);
+                                const data = base64Match ? base64Match[1] : result;
+                                resolve({
+                                    data,
+                                    compressed: false,
+                                    originalSize: typeof file.size === 'number' ? file.size : 0,
+                                    compressedSize: typeof file.size === 'number' ? file.size : 0
+                                });
                             } else {
                                 reject(new Error('Unsupported file data'));
                             }
@@ -6248,9 +6612,12 @@
                         name: attachment.name,
                         type: attachment.type,
                         size: attachment.size,
+                        compressed: !!attachment.compressed,
+                        originalSize: typeof attachment.originalSize === 'number' ? attachment.originalSize : (typeof attachment.size === 'number' ? attachment.size : 0),
+                        compressedSize: typeof attachment.compressedSize === 'number' ? attachment.compressedSize : (typeof attachment.data === 'string' ? Math.ceil(attachment.data.length * 3 / 4) : (typeof attachment.size === 'number' ? attachment.size : 0)),
                         lastModified: attachment.lastModified,
                         addedAt: attachment.addedAt,
-                        data: attachment.data
+                        data: typeof attachment.data === 'string' ? attachment.data : ''
                     }))
                     : [];
 
@@ -6295,9 +6662,16 @@
                         name: item.name || 'Attachment',
                         type: item.type || 'application/octet-stream',
                         size: typeof item.size === 'number' ? item.size : 0,
+                        compressed: !!item.compressed,
+                        originalSize: typeof item.originalSize === 'number'
+                            ? item.originalSize
+                            : (typeof item.size === 'number' ? item.size : 0),
+                        compressedSize: typeof item.compressedSize === 'number'
+                            ? item.compressedSize
+                            : (typeof item.data === 'string' ? Math.ceil(item.data.length * 3 / 4) : (typeof item.size === 'number' ? item.size : 0)),
                         lastModified: typeof item.lastModified === 'number' ? item.lastModified : null,
                         addedAt: item.addedAt || new Date().toISOString(),
-                        data: item.data
+                        data: typeof item.data === 'string' ? item.data : ''
                     }));
 
                 this.attachments = sanitized;
@@ -6424,7 +6798,7 @@
                 const mimeType = (attachment.type || 'application/octet-stream').toLowerCase();
 
                 try {
-                    const blob = this.base64ToBlob(attachment.data, attachment.type);
+                    const blob = this.base64ToBlob(attachment.data, attachment.type, attachment.compressed);
 
                     if (mimeType.startsWith('image/')) {
                         const url = URL.createObjectURL(blob);
@@ -6517,7 +6891,7 @@
                 }
 
                 try {
-                    const blob = this.base64ToBlob(attachment.data, attachment.type);
+                    const blob = this.base64ToBlob(attachment.data, attachment.type, attachment.compressed);
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
@@ -6532,7 +6906,7 @@
                 }
             }
 
-            base64ToBlob(base64, mimeType = 'application/octet-stream') {
+            base64ToBlob(base64, mimeType = 'application/octet-stream', isCompressed = false) {
                 const clean = typeof base64 === 'string' ? base64.trim() : '';
                 if (!clean) {
                     throw new Error('Attachment data is empty.');
@@ -6545,7 +6919,22 @@
                     bytes[i] = binary.charCodeAt(i);
                 }
 
-                return new Blob([bytes], { type: mimeType || 'application/octet-stream' });
+                let finalBytes = bytes;
+                if (isCompressed) {
+                    const pakoInstance = typeof window !== 'undefined' ? window.pako : null;
+                    if (!pakoInstance || typeof pakoInstance.inflate !== 'function') {
+                        throw new Error('Unable to decompress attachment: compression library unavailable.');
+                    }
+
+                    try {
+                        finalBytes = pakoInstance.inflate(bytes);
+                    } catch (error) {
+                        console.error('Failed to decompress attachment', error);
+                        throw new Error('Failed to decompress attachment data.');
+                    }
+                }
+
+                return new Blob([finalBytes], { type: mimeType || 'application/octet-stream' });
             }
 
             initializeExistingNotes() {
@@ -7548,7 +7937,11 @@
             
             lock() {
                 this.isLocked = true;
-                document.getElementById('lockBtn').innerHTML = '🔒 Unlock';
+                const lockBtn = document.getElementById('lockBtn');
+                if (lockBtn) {
+                    lockBtn.setAttribute('data-i18n-key', 'lock_action');
+                    lockBtn.textContent = window.localization?.t('lock_action', '🔒 Unlock');
+                }
                 document.getElementById('mainContent').style.display = 'none';
                 document.getElementById('navTabs').style.display = 'none';
                 document.getElementById('unlockScreen').style.display = 'flex';
@@ -7568,7 +7961,11 @@
 
             unlock() {
                 this.isLocked = false;
-                document.getElementById('lockBtn').innerHTML = '🔓 Lock';
+                const lockBtn = document.getElementById('lockBtn');
+                if (lockBtn) {
+                    lockBtn.setAttribute('data-i18n-key', 'unlock_action');
+                    lockBtn.textContent = window.localization?.t('unlock_action', '🔓 Lock');
+                }
             }
             
             // Crypto utilities
@@ -7634,8 +8031,17 @@
             };
         }
         
-        // Initialize app
-        const app = new HealthVaultApp();
+        // Initialize localization and app
+        const localization = new LocalizationManager();
+        window.localization = localization;
+
+        localization.init()
+            .catch(error => {
+                console.error('[Localization] Initialization error', error);
+            })
+            .finally(() => {
+                window.app = new HealthVaultApp();
+            });
     </script>
 </body>
 </html>
