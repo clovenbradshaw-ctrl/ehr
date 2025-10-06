@@ -6,6 +6,7 @@
     <meta http-equiv="pragma" content="no-cache">
     <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="expires" content="0">
+    <link rel="icon" type="image/x-icon" href="https://storage.googleapis.com/intelechia-content/favicon.ico">
     <title>Personal Health Vault - Secure Medical Record</title>
     <style>
         @page {
@@ -226,6 +227,17 @@
             flex-wrap: nowrap;
             gap: 8px;
             min-height: 48px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .logo-container img {
+            height: 32px;
+            width: auto;
         }
 
         .save-status {
@@ -1253,6 +1265,10 @@
                 padding: 10px 12px;
             }
 
+            .logo-container {
+                justify-content: center;
+            }
+
             .security-status,
             .action-buttons {
                 width: 100%;
@@ -1675,6 +1691,9 @@
     </div>
 
     <div class="security-bar no-print">
+        <div class="logo-container">
+            <img src="https://storage.googleapis.com/intelechia-content/ehr%20vault.png" alt="EHR Vault logo" loading="lazy" decoding="async">
+        </div>
         <div class="security-status">
             <div class="status-icon"></div>
             <span id="securityText">Always Encrypted</span>
