@@ -3628,6 +3628,16 @@
             }
         }
 
+        if (typeof window !== 'undefined') {
+            window.translate = function translate(key, fallback) {
+                const localization = window.localization;
+                if (localization && typeof localization.t === 'function') {
+                    return localization.t(key, fallback);
+                }
+                return fallback ?? key;
+            };
+        }
+
         class SchemaManager {
             constructor(currentVersion, migrations = []) {
                 this.currentVersion = this.normalizeVersion(currentVersion);
@@ -4994,30 +5004,31 @@
             updateSaveStatus() {
                 const statusEl = document.getElementById('saveStatus');
                 const saveBtn = document.getElementById('saveBtn');
-                
-                const translate = (key, fallback) => window.localization?.t(key, fallback) ?? fallback ?? key;
+
+                const translateText = window.translate
+                    || ((key, fallback) => window.localization?.t(key, fallback) ?? fallback ?? key);
 
                 if (!this.isInitialized) {
                     statusEl.className = 'save-status never-saved';
                     statusEl.setAttribute('data-i18n-key', 'status_not_initialized');
-                    statusEl.textContent = translate('status_not_initialized', '⚠️ Not Initialized - Create Your Vault');
+                    statusEl.textContent = translateText('status_not_initialized', '⚠️ Not Initialized - Create Your Vault');
                     saveBtn.className = 'btn btn-save';
                     saveBtn.setAttribute('data-i18n-key', 'action_create_vault');
-                    saveBtn.textContent = translate('action_create_vault', 'Create Encrypted Vault');
+                    saveBtn.textContent = translateText('action_create_vault', 'Create Encrypted Vault');
                 } else if (this.hasUnsavedChanges) {
                     statusEl.className = 'save-status unsaved';
                     statusEl.setAttribute('data-i18n-key', 'status_unsaved');
-                    statusEl.textContent = translate('status_unsaved', '⚠️ Unsaved Changes - Download Updated Vault (.ehv)');
+                    statusEl.textContent = translateText('status_unsaved', '⚠️ Unsaved Changes - Download Updated Vault (.ehv)');
                     saveBtn.className = 'btn btn-save';
                     saveBtn.setAttribute('data-i18n-key', 'action_download_updated');
-                    saveBtn.textContent = translate('action_download_updated', 'Download Updated Vault (.ehv)');
+                    saveBtn.textContent = translateText('action_download_updated', 'Download Updated Vault (.ehv)');
                 } else {
                     statusEl.className = 'save-status saved';
                     statusEl.setAttribute('data-i18n-key', 'status_saved');
-                    statusEl.textContent = translate('status_saved', '✓ Data Encrypted in This Vault (.ehv)');
+                    statusEl.textContent = translateText('status_saved', '✓ Data Encrypted in This Vault (.ehv)');
                     saveBtn.className = 'btn btn-save saved';
                     saveBtn.setAttribute('data-i18n-key', 'action_download_current');
-                    saveBtn.textContent = translate('action_download_current', 'Download Current Vault (.ehv)');
+                    saveBtn.textContent = translateText('action_download_current', 'Download Current Vault (.ehv)');
                 }
 
                 window.localization?.applyTranslations();
