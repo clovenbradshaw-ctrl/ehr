@@ -2376,7 +2376,7 @@
             </ul>
         </div>
         <div class="welcome-actions">
-            <button class="btn-start" onclick="app?.startSetup()">
+            <button class="btn-start" id="startSetupBtn">
                 Get Started
             </button>
             <button class="btn-import" id="openVaultBtn">
@@ -8498,6 +8498,18 @@
             };
         }
         
+        let pendingStartSetup = false;
+        const startSetupButton = document.getElementById('startSetupBtn');
+        if (startSetupButton) {
+            startSetupButton.addEventListener('click', () => {
+                if (window.app && typeof window.app.startSetup === 'function') {
+                    window.app.startSetup();
+                } else {
+                    pendingStartSetup = true;
+                }
+            });
+        }
+
         // Initialize localization and app
         const localization = new LocalizationManager();
         window.localization = localization;
@@ -8508,6 +8520,10 @@
             })
             .finally(() => {
                 window.app = new HealthVaultApp();
+                if (pendingStartSetup) {
+                    pendingStartSetup = false;
+                    window.app.startSetup();
+                }
             });
     </script>
 </body>
