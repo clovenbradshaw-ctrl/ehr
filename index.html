@@ -548,6 +548,41 @@
             border-radius: 4px 4px 0 0;
             margin-left: 10px;
         }
+
+        .nav-tabs-mobile {
+            display: none;
+            position: fixed;
+            top: 56px;
+            left: 0;
+            right: 0;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            z-index: 999;
+            padding: 12px 20px;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .nav-tabs-mobile label {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 10pt;
+        }
+
+        .nav-tabs-mobile select {
+            flex: 1;
+            padding: 10px 14px;
+            font-size: 11pt;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+        }
+
+        .nav-tabs-mobile select:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
         
         .main-content {
             margin-top: 20px;
@@ -1646,7 +1681,7 @@
         @media (max-width: 600px) {
             body {
                 padding: 12px;
-                padding-top: 170px;
+                padding-top: 190px;
             }
 
             .unlock-container {
@@ -1665,6 +1700,27 @@
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 4px;
+            }
+
+            .nav-tabs {
+                display: none;
+            }
+
+            .nav-tabs-mobile {
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+                padding: 14px 16px;
+                top: 108px;
+            }
+
+            .nav-tabs-mobile label {
+                font-size: 11pt;
+            }
+
+            .nav-tabs-mobile select {
+                font-size: 13pt;
             }
 
             .action-buttons {
@@ -1937,17 +1993,7 @@
                 padding: 10px;
                 padding-top: 140px;
             }
-            
-            .nav-tabs {
-                padding: 0 10px;
-                top: 100px;
-            }
-            
-            .tab {
-                padding: 10px 15px;
-                font-size: 9pt;
-            }
-            
+
             .demo-field {
                 min-width: 100%;
             }
@@ -1964,6 +2010,20 @@
             .language-selector:hover,
             .language-selector:focus-within {
                 width: 100%;
+            }
+
+            .nav-tabs {
+                display: none;
+            }
+
+            .nav-tabs-mobile {
+                display: flex;
+                padding: 12px 16px;
+                top: 96px;
+            }
+
+            .nav-tabs-mobile select {
+                font-size: 12pt;
             }
         }
         
@@ -2042,6 +2102,11 @@
         <div class="tab" data-section="notes" data-i18n-key="nav_notes">📝 Notes</div>
         <div class="tab" data-section="attachments" data-i18n-key="nav_attachments">📎 Attachments</div>
         <!-- Module tabs added dynamically -->
+    </div>
+
+    <div class="nav-tabs-mobile no-print" id="navTabsMobile" style="display: none;">
+        <label for="navTabsSelect">Navigate</label>
+        <select id="navTabsSelect" aria-label="Navigate between sections"></select>
     </div>
 
     <!-- Settings Modal -->
@@ -4338,7 +4403,19 @@
                 document.querySelectorAll('.tab').forEach(tab => {
                     tab.addEventListener('click', (e) => this.navigateToSection(e));
                 });
-                
+
+                const navSelect = document.getElementById('navTabsSelect');
+                if (navSelect) {
+                    navSelect.addEventListener('change', (event) => {
+                        const { value } = event.target;
+                        if (value) {
+                            this.navigateToSection(value);
+                        }
+                    });
+                }
+
+                this.updateNavigationSelectOptions();
+
                 // Module toggles
                 ['identity', 'gac', 'mental', 'chronic'].forEach(module => {
                     const toggle = document.getElementById(`module-${module}`);
@@ -4942,12 +5019,47 @@
                 }
             }
             
-            navigateToSection(e) {
-                const sectionId = e.target.dataset.section;
+            navigateToSection(target) {
+                let sectionId = '';
+                let tabElement = null;
+
+                if (typeof target === 'string') {
+                    sectionId = target;
+                } else if (target?.target) {
+                    const eventTarget = target.currentTarget || target.target;
+                    sectionId = eventTarget?.dataset?.section || '';
+                    tabElement = eventTarget?.closest('.tab') || eventTarget;
+                    if (typeof target.preventDefault === 'function') {
+                        target.preventDefault();
+                    }
+                } else if (target?.dataset) {
+                    sectionId = target.dataset.section;
+                    tabElement = target;
+                }
+
+                if (!sectionId) {
+                    return;
+                }
+
+                const navTabs = document.getElementById('navTabs');
+                if (navTabs) {
+                    navTabs.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+                    if (!tabElement) {
+                        tabElement = navTabs.querySelector(`.tab[data-section="${sectionId}"]`);
+                    }
+                }
+
+                if (tabElement) {
+                    tabElement.classList.add('active');
+                }
+
+                const navSelect = document.getElementById('navTabsSelect');
+                if (navSelect && navSelect.value !== sectionId) {
+                    navSelect.value = sectionId;
+                }
+
                 const section = document.getElementById(`${sectionId}-section`);
                 if (section) {
-                    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-                    e.target.classList.add('active');
                     section.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             }
@@ -4997,7 +5109,7 @@
                 const navTabs = document.getElementById('navTabs');
                 const existingModuleTabs = navTabs.querySelectorAll('.module-tab');
                 existingModuleTabs.forEach(tab => tab.remove());
-                
+
                 const demographicsTab = navTabs.querySelector('[data-section="demographics"]');
 
                 if (this.modules.identity) {
@@ -5043,6 +5155,44 @@
                 });
 
                 window.localization?.applyTranslations();
+
+                this.updateNavigationSelectOptions();
+            }
+
+            updateNavigationSelectOptions() {
+                const navTabs = document.getElementById('navTabs');
+                const navSelect = document.getElementById('navTabsSelect');
+
+                if (!navTabs || !navSelect) {
+                    return;
+                }
+
+                const currentValue = navSelect.value;
+                navSelect.innerHTML = '';
+
+                const tabs = Array.from(navTabs.querySelectorAll('.tab'));
+                tabs.forEach((tab) => {
+                    const section = tab.getAttribute('data-section');
+                    if (!section) {
+                        return;
+                    }
+
+                    const option = document.createElement('option');
+                    option.value = section;
+                    option.textContent = tab.textContent.trim();
+                    navSelect.appendChild(option);
+                });
+
+                const activeTab = navTabs.querySelector('.tab.active');
+                const activeValue = activeTab?.getAttribute('data-section');
+
+                if (activeValue && navSelect.querySelector(`option[value="${activeValue}"]`)) {
+                    navSelect.value = activeValue;
+                } else if (currentValue && navSelect.querySelector(`option[value="${currentValue}"]`)) {
+                    navSelect.value = currentValue;
+                } else if (navSelect.options.length > 0) {
+                    navSelect.selectedIndex = 0;
+                }
             }
             
             markAsChanged() {
