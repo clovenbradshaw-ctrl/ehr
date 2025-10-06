@@ -806,7 +806,66 @@
             align-items: center;
             gap: 5px;
         }
-        
+
+        .module-selection {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 6px;
+        }
+
+        .module-option-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 10px;
+        }
+
+        label.module-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+        }
+
+        label.module-option input {
+            flex-shrink: 0;
+            margin-top: 3px;
+        }
+
+        .module-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .module-copy strong {
+            color: #1e293b;
+        }
+
+        .module-copy span {
+            color: #64748b;
+            font-size: 9pt;
+            line-height: 1.4;
+        }
+
+        .two-factor-option {
+            margin-top: 16px;
+            padding: 15px;
+            background: #f0f9ff;
+            border-radius: 6px;
+        }
+
+        .two-factor-option p {
+            margin: 8px 0 0 28px;
+            font-size: 9pt;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
         input[type="checkbox"] {
             width: 16px;
             height: 16px;
@@ -3956,51 +4015,51 @@
                 }
 
                 const moduleSelectionHTML = `
-                    <div id="setupModuleSelection" style="margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 6px;">
+                    <div id="setupModuleSelection" class="module-selection">
                         <h4 style="margin: 0 0 10px 0;">Enable Optional Modules</h4>
                         <p style="margin: 0 0 12px 0; font-size: 9pt; color: #64748b;">
                             Choose any specialized sections to include from the start. You can adjust these later in Settings.
                         </p>
-                        <div style="display: flex; flex-direction: column; gap: 8px;">
-                            <label class="checkbox-item" style="align-items: flex-start; gap: 10px;">
+                        <div class="module-option-grid">
+                            <label class="module-option">
                                 <input type="checkbox" id="setup-module-identity">
-                                <span>
-                                    <strong>Extended Identity</strong><br>
-                                    <span style="font-size: 9pt; color: #64748b;">Pronouns, chosen names, context-specific usage</span>
-                                </span>
+                                <div class="module-copy">
+                                    <strong>Extended Identity</strong>
+                                    <span>Pronouns, chosen names, context-specific usage</span>
+                                </div>
                             </label>
-                            <label class="checkbox-item" style="align-items: flex-start; gap: 10px;">
+                            <label class="module-option">
                                 <input type="checkbox" id="setup-module-gac">
-                                <span>
-                                    <strong>Gender Affirming Care</strong><br>
-                                    <span style="font-size: 9pt; color: #64748b;">HRT tracking, surgeries, specialized providers</span>
-                                </span>
+                                <div class="module-copy">
+                                    <strong>Gender Affirming Care</strong>
+                                    <span>HRT tracking, surgeries, specialized providers</span>
+                                </div>
                             </label>
-                            <label class="checkbox-item" style="align-items: flex-start; gap: 10px;">
+                            <label class="module-option">
                                 <input type="checkbox" id="setup-module-mental">
-                                <span>
-                                    <strong>Mental Health</strong><br>
-                                    <span style="font-size: 9pt; color: #64748b;">Mood tracking, therapy notes, crisis resources</span>
-                                </span>
+                                <div class="module-copy">
+                                    <strong>Mental Health</strong>
+                                    <span>Mood tracking, therapy notes, crisis resources</span>
+                                </div>
                             </label>
-                            <label class="checkbox-item" style="align-items: flex-start; gap: 10px;">
+                            <label class="module-option">
                                 <input type="checkbox" id="setup-module-chronic">
-                                <span>
-                                    <strong>Chronic Disease</strong><br>
-                                    <span style="font-size: 9pt; color: #64748b;">Diabetes, hypertension, pain management</span>
-                                </span>
+                                <div class="module-copy">
+                                    <strong>Chronic Disease</strong>
+                                    <span>Diabetes, hypertension, pain management</span>
+                                </div>
                             </label>
                         </div>
                     </div>
                 `;
 
                 const twoFAHTML = `
-                    <div id="setupTwoFAOption" style="margin-top: 20px; padding: 15px; background: #f0f9ff; border-radius: 6px;">
+                    <div id="setupTwoFAOption" class="two-factor-option">
                         <div class="checkbox-item">
                             <input type="checkbox" id="enable2FA">
                             <label for="enable2FA"><strong>Enable Two-Factor Authentication (Optional)</strong></label>
                         </div>
-                        <p style="margin: 10px 0 0 20px; font-size: 9pt; color: #64748b;">
+                        <p>
                             <strong>Optional security enhancement:</strong> Adds an extra layer using an authenticator app.<br>
                             You can skip this and use password-only protection if you prefer.<br>
                             If enabled, you'll need both password AND 6-digit code to unlock.
