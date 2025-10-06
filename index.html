@@ -323,12 +323,37 @@
         }
 
         .language-selector {
+            position: relative;
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            gap: 4px;
+            justify-content: center;
+            gap: 6px;
             margin-right: 20px;
             color: #0f172a;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 32px;
+            min-width: 32px;
+            width: 32px;
+        }
+
+        .language-selector::before {
+            content: "🌐";
+            font-size: 18pt;
+            line-height: 1;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .language-selector label,
+        .language-selector select {
+            display: none;
         }
 
         .language-selector label {
@@ -342,6 +367,34 @@
             border-radius: 6px;
             font-size: 10pt;
             min-width: 150px;
+            background: white;
+            color: #0f172a;
+        }
+
+        .language-selector:hover::before,
+        .language-selector:focus-within::before {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        .language-selector:hover label,
+        .language-selector:focus-within label,
+        .language-selector:hover select,
+        .language-selector:focus-within select {
+            display: block;
+        }
+
+        .language-selector:hover,
+        .language-selector:focus-within {
+            background: rgba(148, 163, 184, 0.15);
+            padding: 8px 10px;
+            border-radius: 8px;
+            width: auto;
+        }
+
+        .language-selector:focus-visible {
+            outline: 2px solid #2563eb;
+            outline-offset: 2px;
         }
 
         .unlock-language {
@@ -1907,6 +1960,11 @@
             .language-selector select {
                 width: 100%;
             }
+
+            .language-selector:hover,
+            .language-selector:focus-within {
+                width: 100%;
+            }
         }
         
         .hidden {
@@ -1958,9 +2016,9 @@
             <span id="lockTimer"></span>
         </div>
         <div class="save-status never-saved" id="saveStatus" data-i18n-key="not_initialized">⚠️ Not Initialized - Create Your Vault</div>
-        <div class="language-selector no-print">
+        <div class="language-selector no-print" tabindex="0">
             <label for="languageSelect" data-i18n-key="language_label">Language</label>
-            <select id="languageSelect" data-language-selector></select>
+            <select id="languageSelect" data-language-selector aria-label="Language"></select>
         </div>
         <div class="save-metadata" id="payloadStats" aria-live="polite"></div>
         <div class="action-buttons">
@@ -3281,7 +3339,7 @@
                     }
                     const data = await response.json();
                     if (data && typeof data === 'object') {
-                        this.translations = data;
+                        this.translations = this.transformTranslations(data);
                     }
                 } catch (error) {
                     console.error('[Localization] Unable to load translations.json', error);
@@ -3319,7 +3377,18 @@
                     return;
                 }
 
-                const optionsHtml = this.availableLanguages
+                let collator;
+                try {
+                    collator = new Intl.Collator(this.currentLanguage, { sensitivity: 'base' });
+                } catch (error) {
+                    collator = new Intl.Collator('en', { sensitivity: 'base' });
+                }
+
+                const sortedLanguages = [...this.availableLanguages].sort((a, b) =>
+                    collator.compare(this.getLanguageName(a), this.getLanguageName(b))
+                );
+
+                const optionsHtml = sortedLanguages
                     .map(code => `<option value="${code}">${this.getLanguageName(code)}</option>`)
                     .join('');
 
@@ -3328,6 +3397,77 @@
                     select.innerHTML = optionsHtml;
                     select.value = this.availableLanguages.includes(previous) ? previous : this.currentLanguage;
                 });
+            }
+
+            transformTranslations(raw) {
+                if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+                    return { en: {} };
+                }
+
+                if (raw.en && typeof raw.en === 'object' && !Array.isArray(raw.en)) {
+                    return raw;
+                }
+
+                const languageKeyPattern = /^[a-z]{2,3}(?:-[A-Za-z]{2,4})?$/;
+                const languageSet = new Set();
+
+                const collectLanguages = (node) => {
+                    if (!node || typeof node !== 'object' || Array.isArray(node)) {
+                        return;
+                    }
+                    const keys = Object.keys(node);
+                    if (!keys.length) {
+                        return;
+                    }
+                    const isLanguageMap = keys.every(key => languageKeyPattern.test(key))
+                        && Object.values(node).every(value => typeof value === 'string' || typeof value === 'number' || value === null);
+                    if (isLanguageMap) {
+                        keys.forEach(key => languageSet.add(key));
+                        return;
+                    }
+                    keys.forEach(key => collectLanguages(node[key]));
+                };
+
+                collectLanguages(raw);
+
+                if (!languageSet.size) {
+                    return { en: {} };
+                }
+
+                const result = {};
+                languageSet.forEach(lang => {
+                    result[lang] = {};
+                });
+
+                const assignTranslations = (node, path = []) => {
+                    if (!node || typeof node !== 'object' || Array.isArray(node)) {
+                        return;
+                    }
+                    const keys = Object.keys(node);
+                    if (!keys.length) {
+                        return;
+                    }
+                    const isLanguageMap = keys.every(key => languageSet.has(key))
+                        && Object.values(node).every(value => typeof value === 'string' || typeof value === 'number' || value === null);
+                    if (isLanguageMap) {
+                        const translationKey = path[path.length - 1];
+                        if (!translationKey) {
+                            return;
+                        }
+                        keys.forEach(lang => {
+                            if (!result[lang]) {
+                                result[lang] = {};
+                            }
+                            result[lang][translationKey] = node[lang];
+                        });
+                        return;
+                    }
+                    keys.forEach(key => assignTranslations(node[key], [...path, key]));
+                };
+
+                assignTranslations(raw);
+
+                return result;
             }
 
             detectBrowserLanguage() {
@@ -3345,9 +3485,20 @@
 
             getLanguageName(code) {
                 const lookup = {
+                    ar: 'العربية',
                     en: 'English',
                     es: 'Español',
+                    fil: 'Filipino',
+                    fr: 'Français',
+                    ht: 'Kreyòl Ayisyen',
+                    kmr: 'Kurdî',
+                    ko: '한국어',
                     my: 'မြန်မာ',
+                    'pt-BR': 'Português (Brasil)',
+                    ru: 'Русский',
+                    so: 'Soomaaliga',
+                    vi: 'Tiếng Việt',
+                    'zh-Hans': '简体中文',
                 };
 
                 if (lookup[code]) {
