@@ -4818,5 +4818,169 @@
       "vi": "This vault file (.ehv) will contain your encrypted data. Always download and save the updated .ehv file after making changes.",
       "zh-Hans": "This vault file (.ehv) will contain your encrypted data. Always download and save the updated .ehv file after making changes."
     }
+  },
+  "gac_section_title": {
+    "en": "🏳️‍⚧️ Gender Affirming Care",
+    "es": "🏳️‍⚧️ Atención de afirmación de género"
+  },
+  "gac_hormone_heading": {
+    "en": "Hormone Therapy",
+    "es": "Terapia hormonal"
+  },
+  "hrt_status_label": {
+    "en": "HRT Status",
+    "es": "Estado de la TRH"
+  },
+  "option_select_placeholder": {
+    "en": "Select...",
+    "es": "Selecciona..."
+  },
+  "hrt_status_option_not_started": {
+    "en": "Not Started",
+    "es": "No iniciada"
+  },
+  "hrt_status_option_active": {
+    "en": "Active",
+    "es": "Activa"
+  },
+  "hrt_status_option_paused": {
+    "en": "Paused",
+    "es": "En pausa"
+  },
+  "hrt_status_option_discontinued": {
+    "en": "Discontinued",
+    "es": "Interrumpida"
+  },
+  "hrt_start_date_label": {
+    "en": "HRT Start Date",
+    "es": "Fecha de inicio de la TRH"
+  },
+  "current_hormone_regimen_label": {
+    "en": "Current Hormone Regimen",
+    "es": "Régimen hormonal actual"
+  },
+  "gac_procedures_heading": {
+    "en": "Gender-Affirming Procedures",
+    "es": "Procedimientos de afirmación de género"
+  },
+  "add_procedure_button": {
+    "en": "+ Add Procedure",
+    "es": "+ Agregar procedimiento"
+  },
+  "gac_notes_heading": {
+    "en": "Gender-Affirming Care Notes",
+    "es": "Notas de atención de afirmación de género"
+  },
+  "gac_notes_info_line1": {
+    "en": "Track care plans, provider feedback, goals, and milestones that are specific to gender-affirming care.",
+    "es": "Registra planes de atención, comentarios de proveedores, objetivos y hitos específicos del cuidado de afirmación de género."
+  },
+  "gac_notes_info_line2": {
+    "en": "Each note supports optional event dates, provider tagging, and reusable tags for quick filtering.",
+    "es": "Cada nota admite fechas opcionales, etiquetas de proveedores y etiquetas reutilizables para un filtrado rápido."
+  },
+  "add_gac_note_button": {
+    "en": "+ Add GAC Note",
+    "es": "+ Agregar nota de AAG"
+  },
+  "mental_section_title": {
+    "en": "🧠 Mental Health",
+    "es": "🧠 Salud mental"
+  },
+  "mental_current_heading": {
+    "en": "Current Mental Health",
+    "es": "Salud mental actual"
+  },
+  "mental_diagnoses_label": {
+    "en": "Diagnoses",
+    "es": "Diagnósticos"
+  },
+  "therapist_label": {
+    "en": "Therapist/Counselor",
+    "es": "Terapeuta/Consejero"
+  },
+  "psychiatrist_label": {
+    "en": "Psychiatrist",
+    "es": "Psiquiatra"
+  },
+  "mental_crisis_heading": {
+    "en": "Crisis Resources",
+    "es": "Recursos de crisis"
+  },
+  "crisis_contacts_label": {
+    "en": "Crisis Contacts",
+    "es": "Contactos de crisis"
+  },
+  "crisis_contacts_placeholder": {
+    "en": "988 Suicide & Crisis Lifeline\nCrisis text line: Text HOME to 741741",
+    "es": "Línea 988 de suicidio y crisis\nLínea de texto para crisis: envía HOME al 741741"
+  },
+  "safety_plan_label": {
+    "en": "Safety Plan",
+    "es": "Plan de seguridad"
+  },
+  "chronic_section_title": {
+    "en": "📊 Chronic Disease Management",
+    "es": "📊 Manejo de enfermedades crónicas"
+  },
+  "diabetes_management_heading": {
+    "en": "Diabetes Management",
+    "es": "Manejo de la diabetes"
+  },
+  "have_diabetes_label": {
+    "en": "I have diabetes",
+    "es": "Tengo diabetes"
+  },
+  "diabetes_type_label": {
+    "en": "Type",
+    "es": "Tipo"
+  },
+  "diabetes_type_option_1": {
+    "en": "Type 1",
+    "es": "Tipo 1"
+  },
+  "diabetes_type_option_2": {
+    "en": "Type 2",
+    "es": "Tipo 2"
+  },
+  "diabetes_type_option_gestational": {
+    "en": "Gestational",
+    "es": "Gestacional"
+  },
+  "diabetes_type_option_other": {
+    "en": "Other",
+    "es": "Otro"
+  },
+  "last_a1c_label": {
+    "en": "Last A1C",
+    "es": "Último A1C"
+  },
+  "a1c_date_label": {
+    "en": "A1C Date",
+    "es": "Fecha de A1C"
+  },
+  "blood_pressure_management_heading": {
+    "en": "Blood Pressure Management",
+    "es": "Manejo de la presión arterial"
+  },
+  "have_hypertension_label": {
+    "en": "I have hypertension",
+    "es": "Tengo hipertensión"
+  },
+  "target_bp_label": {
+    "en": "Target Blood Pressure",
+    "es": "Presión arterial objetivo"
+  },
+  "final_info_line1": {
+    "en": "This vault file (.ehv) contains all your encrypted medical data.",
+    "es": "Este archivo de bóveda (.ehv) contiene todos tus datos médicos cifrados."
+  },
+  "final_info_line2": {
+    "en": "After making changes, click \"Download Updated Vault (.ehv)\" to save the new file.",
+    "es": "Después de realizar cambios, haz clic en \"Descargar bóveda actualizada (.ehv)\" para guardar el nuevo archivo."
+  },
+  "final_info_line3": {
+    "en": "Replace your old file with the new one. Keep backups in secure locations.",
+    "es": "Reemplaza tu archivo anterior con el nuevo. Conserva copias de seguridad en lugares seguros."
   }
 }
