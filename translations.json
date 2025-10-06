@@ -13,7 +13,8 @@
       "ru": "Actions",
       "so": "Ficillada",
       "vi": "Hành động",
-      "zh-Hans": "操作"
+      "zh-Hans": "操作",
+      "my": "Действия"
     },
     "active": {
       "ar": "نشط",
@@ -28,7 +29,8 @@
       "ru": "Active",
       "so": "Firfircoon",
       "vi": "Hoạt động",
-      "zh-Hans": "活跃"
+      "zh-Hans": "活跃",
+      "my": "Активен"
     },
     "add": {
       "ar": "إضافة",
@@ -43,7 +45,8 @@
       "ru": "Add",
       "so": "Ku Dar",
       "vi": "Thêm",
-      "zh-Hans": "添加"
+      "zh-Hans": "添加",
+      "my": "Добавить"
     },
     "add_condition": {
       "ar": "+ إضافة شرط",
@@ -90,7 +93,8 @@
       "ru": "Add Note",
       "so": "Ku Dar Qoraal",
       "vi": "Thêm Ghi chú",
-      "zh-Hans": "添加笔记"
+      "zh-Hans": "添加笔记",
+      "my": "Добавить Заметку"
     },
     "add_user": {
       "ar": "إضافة مستخدم",
@@ -105,7 +109,8 @@
       "ru": "Add User",
       "so": "Ku Dar Isticmaale",
       "vi": "Thêm Người dùng",
-      "zh-Hans": "添加用户"
+      "zh-Hans": "添加用户",
+      "my": "Добавить Пользователя"
     },
     "address": {
       "ar": "العنوان",
@@ -152,7 +157,8 @@
       "ru": "Age",
       "so": "Da'da",
       "vi": "Tuổi",
-      "zh-Hans": "年龄"
+      "zh-Hans": "年龄",
+      "my": "Возраст"
     },
     "alert": {
       "ar": "تنبيه",
@@ -167,7 +173,8 @@
       "ru": "Alert",
       "so": "Digniin",
       "vi": "Cảnh báo",
-      "zh-Hans": "警报"
+      "zh-Hans": "警报",
+      "my": "Оповещение"
     },
     "all": {
       "ar": "الكل",
@@ -182,7 +189,8 @@
       "ru": "All",
       "so": "Dhammaan",
       "vi": "Tất cả",
-      "zh-Hans": "全部"
+      "zh-Hans": "全部",
+      "my": "Все"
     },
     "all_users": {
       "ar": "جميع المستخدمين",
@@ -309,7 +317,8 @@
       "ru": "Assigned",
       "so": "Loo Xilsaaray",
       "vi": "Đã giao",
-      "zh-Hans": "已分配"
+      "zh-Hans": "已分配",
+      "my": "Назначено"
     },
     "assigned_to": {
       "ar": "مسند إلى",
@@ -340,7 +349,8 @@
       "ru": "Attachment",
       "so": "Lifaaq",
       "vi": "Tệp đính kèm",
-      "zh-Hans": "附件"
+      "zh-Hans": "附件",
+      "my": "Вложение"
     },
     "attachments": {
       "ar": "المرفقات",
@@ -355,7 +365,8 @@
       "ru": "Attachments",
       "so": "Lifaaqyo",
       "vi": "Tệp đính kèm",
-      "zh-Hans": "附件"
+      "zh-Hans": "附件",
+      "my": "Вложения"
     },
     "back": {
       "ar": "رجوع",
@@ -418,7 +429,8 @@
       "ru": "Case",
       "so": "Kiis",
       "vi": "Trường hợp",
-      "zh-Hans": "案例"
+      "zh-Hans": "案例",
+      "my": "Дело"
     },
     "case_details": {
       "ar": "تفاصيل الحالة",
@@ -449,7 +461,8 @@
       "ru": "Case ID",
       "so": "Aqoonsiga Kiiska",
       "vi": "ID Trường hợp",
-      "zh-Hans": "案例ID"
+      "zh-Hans": "案例ID",
+      "my": "ID Дела"
     },
     "case_manager": {
       "ar": "مدير الحالة",
@@ -496,7 +509,8 @@
       "ru": "Case Status",
       "so": "Xaaladda Kiiska",
       "vi": "Trạng thái Trường hợp",
-      "zh-Hans": "案例状态"
+      "zh-Hans": "案例状态",
+      "my": "Статус Дела"
     },
     "cases": {
       "ar": "الحالات",
@@ -687,7 +701,8 @@
       "ru": "Closed",
       "so": "Xiran",
       "vi": "Đã đóng",
-      "zh-Hans": "已关闭"
+      "zh-Hans": "已关闭",
+      "my": "Закрыто"
     },
     "comment": {
       "ar": "تعليق",
@@ -702,7 +717,8 @@
       "ru": "Comment",
       "so": "Faallo",
       "vi": "Bình luận",
-      "zh-Hans": "评论"
+      "zh-Hans": "评论",
+      "my": "Комментарий"
     },
     "comments": {
       "ar": "التعليقات",
@@ -717,7 +733,8 @@
       "ru": "Comments",
       "so": "Faallooyinka",
       "vi": "Bình luận",
-      "zh-Hans": "评论"
+      "zh-Hans": "评论",
+      "my": "Комментарии"
     },
     "complete": {
       "ar": "إكمال",
@@ -732,7 +749,8 @@
       "ru": "Complete",
       "so": "Dhammaystir",
       "vi": "Hoàn thành",
-      "zh-Hans": "完成"
+      "zh-Hans": "完成",
+      "my": "Завершить"
     },
     "completed": {
       "ar": "مكتمل",
@@ -747,7 +765,8 @@
       "ru": "Completed",
       "so": "Dhammaystiran",
       "vi": "Đã hoàn thành",
-      "zh-Hans": "已完成"
+      "zh-Hans": "已完成",
+      "my": "Завершено"
     },
     "confirm": {
       "ar": "تأكيد",
@@ -842,7 +861,8 @@
       "ru": "Country",
       "so": "Dalka",
       "vi": "Quốc gia",
-      "zh-Hans": "国家"
+      "zh-Hans": "国家",
+      "my": "Страна"
     },
     "create": {
       "ar": "إنشاء",
@@ -953,7 +973,8 @@
       "ru": "Critical",
       "so": "Aad u Muhiim",
       "vi": "Nghiêm trọng",
-      "zh-Hans": "紧急"
+      "zh-Hans": "紧急",
+      "my": "Критический"
     },
     "current_password": {
       "ar": "كلمة المرور الحالية",
@@ -1016,7 +1037,8 @@
       "ru": "Date Created",
       "so": "Taariikhda La Sameeyay",
       "vi": "Ngày tạo",
-      "zh-Hans": "创建日期"
+      "zh-Hans": "创建日期",
+      "my": "Дата Создания"
     },
     "date_of_birth": {
       "ar": "تاريخ الميلاد",
@@ -1095,7 +1117,8 @@
       "ru": "Details",
       "so": "Faahfaahin",
       "vi": "Chi tiết",
-      "zh-Hans": "详情"
+      "zh-Hans": "详情",
+      "my": "Детали"
     },
     "dob": {
       "ar": "تاريخ الميلاد",
@@ -1110,7 +1133,8 @@
       "ru": "DOB",
       "so": "Taariikhda Dhalashada",
       "vi": "Ngày sinh",
-      "zh-Hans": "出生日期"
+      "zh-Hans": "出生日期",
+      "my": "Дата Рождения"
     },
     "documents": {
       "ar": "المستندات",
@@ -1157,7 +1181,8 @@
       "ru": "Due Date",
       "so": "Taariikhda Ugu Dambeeyay",
       "vi": "Hạn chót",
-      "zh-Hans": "截止日期"
+      "zh-Hans": "截止日期",
+      "my": "Срок Выполнения"
     },
     "duration": {
       "ar": "المدة",
@@ -1172,7 +1197,8 @@
       "ru": "Duration",
       "so": "Muddada",
       "vi": "Thời lượng",
-      "zh-Hans": "持续时间"
+      "zh-Hans": "持续时间",
+      "my": "Продолжительность"
     },
     "edit": {
       "ar": "تعديل",
@@ -1203,7 +1229,8 @@
       "ru": "Edit Case",
       "so": "Wax Ka Bedel Kiiska",
       "vi": "Chỉnh sửa Trường hợp",
-      "zh-Hans": "编辑案例"
+      "zh-Hans": "编辑案例",
+      "my": "Редактировать Дело"
     },
     "edit_client": {
       "ar": "تعديل العميل",
@@ -1218,7 +1245,8 @@
       "ru": "Edit Client",
       "so": "Wax Ka Bedel Macmiilka",
       "vi": "Chỉnh sửa Khách hàng",
-      "zh-Hans": "编辑客户"
+      "zh-Hans": "编辑客户",
+      "my": "Редактировать Клиента"
     },
     "edit_profile": {
       "ar": "تعديل الملف الشخصي",
@@ -1489,7 +1517,8 @@
       "ru": "High",
       "so": "Sare",
       "vi": "Cao",
-      "zh-Hans": "高"
+      "zh-Hans": "高",
+      "my": "Высокий"
     },
     "history": {
       "ar": "السجل",
@@ -1504,7 +1533,8 @@
       "ru": "History",
       "so": "Taariikh",
       "vi": "Lịch sử",
-      "zh-Hans": "历史"
+      "zh-Hans": "历史",
+      "my": "История"
     },
     "home": {
       "ar": "الرئيسية",
@@ -1695,7 +1725,8 @@
       "ru": "Low",
       "so": "Hoose",
       "vi": "Thấp",
-      "zh-Hans": "低"
+      "zh-Hans": "低",
+      "my": "Низкий"
     },
     "male": {
       "ar": "ذكر",
@@ -1742,7 +1773,8 @@
       "ru": "Medium",
       "so": "Dhexdhexaad",
       "vi": "Trung bình",
-      "zh-Hans": "中"
+      "zh-Hans": "中",
+      "my": "Средний"
     },
     "message": {
       "ar": "رسالة",
@@ -1821,7 +1853,8 @@
       "ru": "New",
       "so": "Cusub",
       "vi": "Mới",
-      "zh-Hans": "新"
+      "zh-Hans": "新",
+      "my": "Новый"
     },
     "new_case": {
       "ar": "حالة جديدة",
@@ -1980,7 +2013,8 @@
       "ru": "Notification",
       "so": "Ogeysiin",
       "vi": "Thông báo",
-      "zh-Hans": "通知"
+      "zh-Hans": "通知",
+      "my": "Уведомление"
     },
     "notifications": {
       "ar": "الإشعارات",
@@ -2043,7 +2077,8 @@
       "ru": "Overview",
       "so": "Dulmar Guud",
       "vi": "Tổng quan",
-      "zh-Hans": "概览"
+      "zh-Hans": "概览",
+      "my": "Обзор"
     },
     "password": {
       "ar": "كلمة المرور",
@@ -2250,7 +2285,8 @@
       "ru": "Provider",
       "so": "Bixiyaha",
       "vi": "Nhà cung cấp",
-      "zh-Hans": "提供者"
+      "zh-Hans": "提供者",
+      "my": "Поставщик"
     },
     "recent": {
       "ar": "حديث",
@@ -2265,7 +2301,8 @@
       "ru": "Recent",
       "so": "Dhawaan",
       "vi": "Gần đây",
-      "zh-Hans": "最近"
+      "zh-Hans": "最近",
+      "my": "Недавние"
     },
     "record": {
       "ar": "سجل",
@@ -2280,7 +2317,8 @@
       "ru": "Record",
       "so": "Diiwaanka",
       "vi": "Hồ sơ",
-      "zh-Hans": "记录"
+      "zh-Hans": "记录",
+      "my": "Запись"
     },
     "records": {
       "ar": "السجلات",
@@ -2295,7 +2333,8 @@
       "ru": "Records",
       "so": "Diiwaannada",
       "vi": "Hồ sơ",
-      "zh-Hans": "记录"
+      "zh-Hans": "记录",
+      "my": "Записи"
     },
     "referred_by": {
       "ar": "إحالة من",
@@ -2438,7 +2477,8 @@
       "ru": "Resolved",
       "so": "La Xalliyay",
       "vi": "Đã giải quyết",
-      "zh-Hans": "已解决"
+      "zh-Hans": "已解决",
+      "my": "Решено"
     },
     "role": {
       "ar": "الدور",
@@ -2501,7 +2541,8 @@
       "ru": "Schedule",
       "so": "Jadwalka",
       "vi": "Lịch trình",
-      "zh-Hans": "日程"
+      "zh-Hans": "日程",
+      "my": "Расписание"
     },
     "search": {
       "ar": "بحث",
@@ -2628,7 +2669,8 @@
       "ru": "Service",
       "so": "Adeeg",
       "vi": "Dịch vụ",
-      "zh-Hans": "服务"
+      "zh-Hans": "服务",
+      "my": "Услуга"
     },
     "services": {
       "ar": "الخدمات",
@@ -2643,7 +2685,8 @@
       "ru": "Services",
       "so": "Adeegyada",
       "vi": "Dịch vụ",
-      "zh-Hans": "服务"
+      "zh-Hans": "服务",
+      "my": "Услуги"
     },
     "settings": {
       "ar": "الإعدادات",
@@ -2818,7 +2861,8 @@
       "ru": "Summary",
       "so": "Soo Koob",
       "vi": "Tóm tắt",
-      "zh-Hans": "摘要"
+      "zh-Hans": "摘要",
+      "my": "အနှစ်ချုပ်"
     },
     "support": {
       "ar": "الدعم",
@@ -2833,7 +2877,8 @@
       "ru": "Support",
       "so": "Taageero",
       "vi": "Hỗ trợ",
-      "zh-Hans": "支持"
+      "zh-Hans": "支持",
+      "my": "ပံ့ပိုးမှု"
     },
     "task": {
       "ar": "مهمة",
@@ -2848,7 +2893,8 @@
       "ru": "Task",
       "so": "Hawl",
       "vi": "Nhiệm vụ",
-      "zh-Hans": "任务"
+      "zh-Hans": "任务",
+      "my": "Задача"
     },
     "tasks": {
       "ar": "المهام",
@@ -2863,7 +2909,8 @@
       "ru": "Tasks",
       "so": "Hawlaha",
       "vi": "Nhiệm vụ",
-      "zh-Hans": "任务"
+      "zh-Hans": "任务",
+      "my": "လုပ်ငန်းများ"
     },
     "time": {
       "ar": "الوقت",
@@ -2878,7 +2925,8 @@
       "ru": "Time",
       "so": "Waqtiga",
       "vi": "Thời gian",
-      "zh-Hans": "时间"
+      "zh-Hans": "时间",
+      "my": "အချိန်"
     },
     "title": {
       "ar": "العنوان",
@@ -2893,7 +2941,8 @@
       "ru": "Title",
       "so": "Cinwaanka",
       "vi": "Tiêu đề",
-      "zh-Hans": "标题"
+      "zh-Hans": "标题",
+      "my": "ခေါင်းစဉ်"
     },
     "total": {
       "ar": "المجموع",
@@ -2908,7 +2957,8 @@
       "ru": "Total",
       "so": "Wadarta",
       "vi": "Tổng cộng",
-      "zh-Hans": "总计"
+      "zh-Hans": "总计",
+      "my": "စုစုပေါင်း"
     },
     "type": {
       "ar": "النوع",
@@ -2923,7 +2973,8 @@
       "ru": "Type",
       "so": "Nooca",
       "vi": "Loại",
-      "zh-Hans": "类型"
+      "zh-Hans": "类型",
+      "my": "Тип"
     },
     "unassigned": {
       "ar": "غير مسند",
@@ -2938,7 +2989,8 @@
       "ru": "Unassigned",
       "so": "Aan Loo Xilsaarin",
       "vi": "Chưa giao",
-      "zh-Hans": "未分配"
+      "zh-Hans": "未分配",
+      "my": "Не Назначено"
     },
     "update": {
       "ar": "تحديث",
@@ -2953,7 +3005,8 @@
       "ru": "Update",
       "so": "Cusboonaysii",
       "vi": "Cập nhật",
-      "zh-Hans": "更新"
+      "zh-Hans": "更新",
+      "my": "Обновить"
     },
     "updated": {
       "ar": "تم التحديث",
@@ -2968,7 +3021,8 @@
       "ru": "Updated",
       "so": "La Cusboonaysiiyay",
       "vi": "Đã cập nhật",
-      "zh-Hans": "已更新"
+      "zh-Hans": "已更新",
+      "my": "Обновлено"
     },
     "updated_at": {
       "ar": "تم التحديث في",
@@ -2983,7 +3037,8 @@
       "ru": "Updated At",
       "so": "La Cusboonaysiiyay",
       "vi": "Cập nhật lúc",
-      "zh-Hans": "更新于"
+      "zh-Hans": "更新于",
+      "my": "Обновлено"
     },
     "upload": {
       "ar": "رفع",
@@ -2998,7 +3053,8 @@
       "ru": "Upload",
       "so": "Soo Rar",
       "vi": "Tải lên",
-      "zh-Hans": "上传"
+      "zh-Hans": "上传",
+      "my": "Загрузить"
     },
     "upload_document": {
       "ar": "رفع مستند",
@@ -3013,7 +3069,8 @@
       "ru": "Upload Document",
       "so": "Soo Rar Dukumeenti",
       "vi": "Tải lên Tài liệu",
-      "zh-Hans": "上传文档"
+      "zh-Hans": "上传文档",
+      "my": "Загрузить Документ"
     },
     "urgent": {
       "ar": "عاجل",
@@ -3028,7 +3085,8 @@
       "ru": "Urgent",
       "so": "Degdeg",
       "vi": "Khẩn cấp",
-      "zh-Hans": "紧急"
+      "zh-Hans": "紧急",
+      "my": "Срочный"
     },
     "user": {
       "ar": "المستخدم",
@@ -3043,7 +3101,8 @@
       "ru": "User",
       "so": "Isticmaale",
       "vi": "Người dùng",
-      "zh-Hans": "用户"
+      "zh-Hans": "用户",
+      "my": "Пользователь"
     },
     "user_details": {
       "ar": "تفاصيل المستخدم",
@@ -3058,7 +3117,8 @@
       "ru": "User Details",
       "so": "Faahfaahinta Isticmaalaha",
       "vi": "Chi tiết Người dùng",
-      "zh-Hans": "用户详情"
+      "zh-Hans": "用户详情",
+      "my": "Детали Пользователя"
     },
     "user_management": {
       "ar": "إدارة المستخدمين",
@@ -3073,7 +3133,8 @@
       "ru": "User Management",
       "so": "Maaraynta Isticmaalayaasha",
       "vi": "Quản lý Người dùng",
-      "zh-Hans": "用户管理"
+      "zh-Hans": "用户管理",
+      "my": "Управление Пользователями"
     },
     "username": {
       "ar": "اسم المستخدم",
@@ -3088,7 +3149,8 @@
       "ru": "Username",
       "so": "Magaca Isticmaalaha",
       "vi": "Tên người dùng",
-      "zh-Hans": "用户名"
+      "zh-Hans": "用户名",
+      "my": "Имя Пользователя"
     },
     "users": {
       "ar": "المستخدمون",
@@ -3103,7 +3165,8 @@
       "ru": "Users",
       "so": "Isticmaalayaasha",
       "vi": "Người dùng",
-      "zh-Hans": "用户"
+      "zh-Hans": "用户",
+      "my": "Пользователи"
     },
     "view": {
       "ar": "عرض",
@@ -3118,7 +3181,8 @@
       "ru": "View",
       "so": "Arag",
       "vi": "Xem",
-      "zh-Hans": "查看"
+      "zh-Hans": "查看",
+      "my": "Просмотр"
     },
     "view_all": {
       "ar": "عرض الكل",
@@ -3133,7 +3197,8 @@
       "ru": "View All",
       "so": "Arag Dhammaan",
       "vi": "Xem Tất cả",
-      "zh-Hans": "查看全部"
+      "zh-Hans": "查看全部",
+      "my": "Посмотреть Все"
     },
     "view_details": {
       "ar": "عرض التفاصيل",
@@ -3148,7 +3213,8 @@
       "ru": "View Details",
       "so": "Arag Faahfaahinta",
       "vi": "Xem Chi tiết",
-      "zh-Hans": "查看详情"
+      "zh-Hans": "查看详情",
+      "my": "Просмотреть Детали"
     },
     "welcome": {
       "ar": "مرحباً",
@@ -3163,7 +3229,8 @@
       "ru": "Welcome",
       "so": "Soo Dhowow",
       "vi": "Chào mừng",
-      "zh-Hans": "欢迎"
+      "zh-Hans": "欢迎",
+      "my": "Добро Пожаловать"
     },
     "yes": {
       "ar": "نعم",
@@ -3178,7 +3245,8 @@
       "ru": "Yes",
       "so": "Haa",
       "vi": "Có",
-      "zh-Hans": "是"
+      "zh-Hans": "是",
+      "my": "Да"
     },
     "zip_code": {
       "ar": "الرمز البريدي",
@@ -3193,494 +3261,1562 @@
       "ru": "ZIP Code",
       "so": "Koodka Boostada",
       "vi": "Mã ZIP",
-      "zh-Hans": "邮政编码"
+      "zh-Hans": "邮政编码",
+      "my": "Почтовый Индекс"
     }
   },
   "personal_health_vault": {
     "action_create_vault": {
       "en": "Create Encrypted Vault",
       "es": "Crear bóveda cifrada",
-      "my": "ကုဒ်ဖြင့်ဗေါ့ ဖန်တီးပါ"
+      "my": "ကုဒ်ဖြင့်ဗေါ့ ဖန်တီးပါ",
+      "ar": "Create Encrypted Vault",
+      "fil": "Create Encrypted Vault",
+      "fr": "Create Encrypted Vault",
+      "ht": "Create Encrypted Vault",
+      "kmr": "Create Encrypted Vault",
+      "ko": "Create Encrypted Vault",
+      "pt-BR": "Create Encrypted Vault",
+      "ru": "Create Encrypted Vault",
+      "so": "Create Encrypted Vault",
+      "vi": "Create Encrypted Vault",
+      "zh-Hans": "Create Encrypted Vault"
     },
     "action_download_current": {
       "en": "Download Current Vault (.ehv)",
       "es": "Descargar bóveda actual (.ehv)",
-      "my": "လက်ရှိဗေါ့ (.ehv) ကို ဒေါင်းလုဒ်ဆွဲပါ"
+      "my": "လက်ရှိဗေါ့ (.ehv) ကို ဒေါင်းလုဒ်ဆွဲပါ",
+      "ar": "Download Current Vault (.ehv)",
+      "fil": "Download Current Vault (.ehv)",
+      "fr": "Download Current Vault (.ehv)",
+      "ht": "Download Current Vault (.ehv)",
+      "kmr": "Download Current Vault (.ehv)",
+      "ko": "Download Current Vault (.ehv)",
+      "pt-BR": "Download Current Vault (.ehv)",
+      "ru": "Download Current Vault (.ehv)",
+      "so": "Download Current Vault (.ehv)",
+      "vi": "Download Current Vault (.ehv)",
+      "zh-Hans": "Download Current Vault (.ehv)"
     },
     "action_download_updated": {
       "en": "Download Updated Vault (.ehv)",
       "es": "Descargar bóveda actualizada (.ehv)",
-      "my": "အပ်ဒိတ်ဗေါ့ (.ehv) ကို ဒေါင်းလုဒ်ဆွဲပါ"
+      "my": "အပ်ဒိတ်ဗေါ့ (.ehv) ကို ဒေါင်းလုဒ်ဆွဲပါ",
+      "ar": "Download Updated Vault (.ehv)",
+      "fil": "Download Updated Vault (.ehv)",
+      "fr": "Download Updated Vault (.ehv)",
+      "ht": "Download Updated Vault (.ehv)",
+      "kmr": "Download Updated Vault (.ehv)",
+      "ko": "Download Updated Vault (.ehv)",
+      "pt-BR": "Download Updated Vault (.ehv)",
+      "ru": "Download Updated Vault (.ehv)",
+      "so": "Download Updated Vault (.ehv)",
+      "vi": "Download Updated Vault (.ehv)",
+      "zh-Hans": "Download Updated Vault (.ehv)"
     },
     "always_encrypted": {
       "en": "Always Encrypted",
       "es": "Siempre cifrado",
-      "my": "အမြဲလုံခြုံစွာ ကုဒ်ထည့်ထားသည်"
+      "my": "အမြဲလုံခြုံစွာ ကုဒ်ထည့်ထားသည်",
+      "ar": "Always Encrypted",
+      "fil": "Always Encrypted",
+      "fr": "Always Encrypted",
+      "ht": "Always Encrypted",
+      "kmr": "Always Encrypted",
+      "ko": "Always Encrypted",
+      "pt-BR": "Always Encrypted",
+      "ru": "Always Encrypted",
+      "so": "Always Encrypted",
+      "vi": "Always Encrypted",
+      "zh-Hans": "Always Encrypted"
     },
     "app_title": {
       "en": "Personal Health Vault - Secure Medical Record",
       "es": "Bóveda de Salud Personal - Historia Clínica Segura",
-      "my": "ကိုယ်ပိုင် ကျန်းမာရေးဗေါ့ - လုံခြုံသော ဆေးဘက်မှတ်တမ်း"
+      "my": "ကိုယ်ပိုင် ကျန်းမာရေးဗေါ့ - လုံခြုံသော ဆေးဘက်မှတ်တမ်း",
+      "ar": "Personal Health Vault - Secure Medical Record",
+      "fil": "Personal Health Vault - Secure Medical Record",
+      "fr": "Personal Health Vault - Secure Medical Record",
+      "ht": "Personal Health Vault - Secure Medical Record",
+      "kmr": "Personal Health Vault - Secure Medical Record",
+      "ko": "Personal Health Vault - Secure Medical Record",
+      "pt-BR": "Personal Health Vault - Secure Medical Record",
+      "ru": "Personal Health Vault - Secure Medical Record",
+      "so": "Personal Health Vault - Secure Medical Record",
+      "vi": "Personal Health Vault - Secure Medical Record",
+      "zh-Hans": "Personal Health Vault - Secure Medical Record"
     },
     "change_password_option": {
       "en": "Set a new password before saving",
       "es": "Establecer una nueva contraseña antes de guardar",
-      "my": "သိမ်းဆည်းရန် မတိုင်မီ စကားဝှက်အသစ် သတ်မှတ်ပါ"
+      "my": "သိမ်းဆည်းရန် မတိုင်မီ စကားဝှက်အသစ် သတ်မှတ်ပါ",
+      "ar": "Set a new password before saving",
+      "fil": "Set a new password before saving",
+      "fr": "Set a new password before saving",
+      "ht": "Set a new password before saving",
+      "kmr": "Set a new password before saving",
+      "ko": "Set a new password before saving",
+      "pt-BR": "Set a new password before saving",
+      "ru": "Set a new password before saving",
+      "so": "Set a new password before saving",
+      "vi": "Set a new password before saving",
+      "zh-Hans": "Set a new password before saving"
     },
     "confirm_new_password_label": {
       "en": "Confirm New Password",
       "es": "Confirmar nueva contraseña",
-      "my": "စကားဝှက်အသစ်ကို အတည်ပြုပါ"
+      "my": "စကားဝှက်အသစ်ကို အတည်ပြုပါ",
+      "ar": "Confirm New Password",
+      "fil": "Confirm New Password",
+      "fr": "Confirm New Password",
+      "ht": "Confirm New Password",
+      "kmr": "Confirm New Password",
+      "ko": "Confirm New Password",
+      "pt-BR": "Confirm New Password",
+      "ru": "Confirm New Password",
+      "so": "Confirm New Password",
+      "vi": "Confirm New Password",
+      "zh-Hans": "Confirm New Password"
     },
     "confirm_password_label": {
       "en": "Confirm Password",
       "es": "Confirmar contraseña",
-      "my": "စကားဝှက်အတည်ပြုပါ"
+      "my": "စကားဝှက်အတည်ပြုပါ",
+      "ar": "Confirm Password",
+      "fil": "Confirm Password",
+      "fr": "Confirm Password",
+      "ht": "Confirm Password",
+      "kmr": "Confirm Password",
+      "ko": "Confirm Password",
+      "pt-BR": "Confirm Password",
+      "ru": "Confirm Password",
+      "so": "Confirm Password",
+      "vi": "Confirm Password",
+      "zh-Hans": "Confirm Password"
     },
     "confirm_password_placeholder": {
       "en": "Confirm password",
       "es": "Confirma la contraseña",
-      "my": "စကားဝှက်အတည်ပြုပါ"
+      "my": "စကားဝှက်အတည်ပြုပါ",
+      "ar": "Confirm password",
+      "fil": "Confirm password",
+      "fr": "Confirm password",
+      "ht": "Confirm password",
+      "kmr": "Confirm password",
+      "ko": "Confirm password",
+      "pt-BR": "Confirm password",
+      "ru": "Confirm password",
+      "so": "Confirm password",
+      "vi": "Confirm password",
+      "zh-Hans": "Confirm password"
     },
     "default_language_hint": {
       "en": "Use this language automatically when opening the vault.",
       "es": "Usa este idioma automáticamente al abrir la bóveda.",
-      "my": "ဗေါ့ကို ဖွင့်သောအခါ ဒီဘာသာစကားကို အလိုအလျောက် အသုံးပြုပါ။"
+      "my": "ဗေါ့ကို ဖွင့်သောအခါ ဒီဘာသာစကားကို အလိုအလျောက် အသုံးပြုပါ။",
+      "ar": "Use this language automatically when opening the vault.",
+      "fil": "Use this language automatically when opening the vault.",
+      "fr": "Use this language automatically when opening the vault.",
+      "ht": "Use this language automatically when opening the vault.",
+      "kmr": "Use this language automatically when opening the vault.",
+      "ko": "Use this language automatically when opening the vault.",
+      "pt-BR": "Use this language automatically when opening the vault.",
+      "ru": "Use this language automatically when opening the vault.",
+      "so": "Use this language automatically when opening the vault.",
+      "vi": "Use this language automatically when opening the vault.",
+      "zh-Hans": "Use this language automatically when opening the vault."
     },
     "default_language_label": {
       "en": "Default language",
       "es": "Idioma predeterminado",
-      "my": "ပုံမှန် ဘာသာစကား"
+      "my": "ပုံမှန် ဘာသာစကား",
+      "ar": "Default language",
+      "fil": "Default language",
+      "fr": "Default language",
+      "ht": "Default language",
+      "kmr": "Default language",
+      "ko": "Default language",
+      "pt-BR": "Default language",
+      "ru": "Default language",
+      "so": "Default language",
+      "vi": "Default language",
+      "zh-Hans": "Default language"
     },
     "emergency_access_subtitle": {
       "en": "Select information visible to anyone who opens this file, even without the password. Useful for first responders or emergency situations.",
       "es": "Selecciona la información visible para cualquiera que abra este archivo, incluso sin la contraseña. Útil para primeros respondedores o situaciones de emergencia.",
-      "my": "စကားဝှက်မပါဘဲ ဤဖိုင်ကို ဖွင့်သည့် မည်သူမဆို ကြည့်ရှုနိုင်မည့် အချက်အလက်များကို ရွေးချယ်ပါ။ ပထမဆုံးတုံ့ပြန်ရသူများနှင့် အရေးပေါ်အခြေအနေများအတွက် အသုံးဝင်သည်။"
+      "my": "စကားဝှက်မပါဘဲ ဤဖိုင်ကို ဖွင့်သည့် မည်သူမဆို ကြည့်ရှုနိုင်မည့် အချက်အလက်များကို ရွေးချယ်ပါ။ ပထမဆုံးတုံ့ပြန်ရသူများနှင့် အရေးပေါ်အခြေအနေများအတွက် အသုံးဝင်သည်။",
+      "ar": "Select information visible to anyone who opens this file, even without the password. Useful for first responders or emergency situations.",
+      "fil": "Select information visible to anyone who opens this file, even without the password. Useful for first responders or emergency situations.",
+      "fr": "Select information visible to anyone who opens this file, even without the password. Useful for first responders or emergency situations.",
+      "ht": "Select information visible to anyone who opens this file, even without the password. Useful for first responders or emergency situations.",
+      "kmr": "Select information visible to anyone who opens this file, even without the password. Useful for first responders or emergency situations.",
+      "ko": "Select information visible to anyone who opens this file, even without the password. Useful for first responders or emergency situations.",
+      "pt-BR": "Select information visible to anyone who opens this file, even without the password. Useful for first responders or emergency situations.",
+      "ru": "Select information visible to anyone who opens this file, even without the password. Useful for first responders or emergency situations.",
+      "so": "Select information visible to anyone who opens this file, even without the password. Useful for first responders or emergency situations.",
+      "vi": "Select information visible to anyone who opens this file, even without the password. Useful for first responders or emergency situations.",
+      "zh-Hans": "Select information visible to anyone who opens this file, even without the password. Useful for first responders or emergency situations."
     },
     "emergency_access_title": {
       "en": "Emergency Access (No Password Required)",
       "es": "Acceso de emergencia (no requiere contraseña)",
-      "my": "အရေးပေါ် ဝင်ရောက်မှု (စကားဝှက်မလို)"
+      "my": "အရေးပေါ် ဝင်ရောက်မှု (စကားဝှက်မလို)",
+      "ar": "Emergency Access (No Password Required)",
+      "fil": "Emergency Access (No Password Required)",
+      "fr": "Emergency Access (No Password Required)",
+      "ht": "Emergency Access (No Password Required)",
+      "kmr": "Emergency Access (No Password Required)",
+      "ko": "Emergency Access (No Password Required)",
+      "pt-BR": "Emergency Access (No Password Required)",
+      "ru": "Emergency Access (No Password Required)",
+      "so": "Emergency Access (No Password Required)",
+      "vi": "Emergency Access (No Password Required)",
+      "zh-Hans": "Emergency Access (No Password Required)"
     },
     "emergency_allergies": {
       "en": "Critical Allergies",
       "es": "Alergias críticas",
-      "my": "အရေးကြီး အာလူးဂျီ"
+      "my": "အရေးကြီး အာလူးဂျီ",
+      "ar": "Critical Allergies",
+      "fil": "Critical Allergies",
+      "fr": "Critical Allergies",
+      "ht": "Critical Allergies",
+      "kmr": "Critical Allergies",
+      "ko": "Critical Allergies",
+      "pt-BR": "Critical Allergies",
+      "ru": "Critical Allergies",
+      "so": "Critical Allergies",
+      "vi": "Critical Allergies",
+      "zh-Hans": "Critical Allergies"
     },
     "emergency_banner_button": {
       "en": "Access Full Medical Record (Password Required)",
       "es": "Acceder a la historia clínica completa (requiere contraseña)",
-      "my": "အပြည့်အစုံသော ဆေးဘက်မှတ်တမ်းသို့ ဝင်ရောက်ရန် (စကားဝှက်လိုအပ်သည်)"
+      "my": "အပြည့်အစုံသော ဆေးဘက်မှတ်တမ်းသို့ ဝင်ရောက်ရန် (စကားဝှက်လိုအပ်သည်)",
+      "ar": "Access Full Medical Record (Password Required)",
+      "fil": "Access Full Medical Record (Password Required)",
+      "fr": "Access Full Medical Record (Password Required)",
+      "ht": "Access Full Medical Record (Password Required)",
+      "kmr": "Access Full Medical Record (Password Required)",
+      "ko": "Access Full Medical Record (Password Required)",
+      "pt-BR": "Access Full Medical Record (Password Required)",
+      "ru": "Access Full Medical Record (Password Required)",
+      "so": "Access Full Medical Record (Password Required)",
+      "vi": "Access Full Medical Record (Password Required)",
+      "zh-Hans": "Access Full Medical Record (Password Required)"
     },
     "emergency_banner_title": {
       "en": "🚨 EMERGENCY MEDICAL INFORMATION",
       "es": "🚨 INFORMACIÓN MÉDICA DE EMERGENCIA",
-      "my": "🚨 အရေးပေါ် ဆေးဘက်သတင်းအချက်အလက်"
+      "my": "🚨 အရေးပေါ် ဆေးဘက်သတင်းအချက်အလက်",
+      "ar": "🚨 EMERGENCY MEDICAL INFORMATION",
+      "fil": "🚨 EMERGENCY MEDICAL INFORMATION",
+      "fr": "🚨 EMERGENCY MEDICAL INFORMATION",
+      "ht": "🚨 EMERGENCY MEDICAL INFORMATION",
+      "kmr": "🚨 EMERGENCY MEDICAL INFORMATION",
+      "ko": "🚨 EMERGENCY MEDICAL INFORMATION",
+      "pt-BR": "🚨 EMERGENCY MEDICAL INFORMATION",
+      "ru": "🚨 EMERGENCY MEDICAL INFORMATION",
+      "so": "🚨 EMERGENCY MEDICAL INFORMATION",
+      "vi": "🚨 EMERGENCY MEDICAL INFORMATION",
+      "zh-Hans": "🚨 EMERGENCY MEDICAL INFORMATION"
     },
     "emergency_blood": {
       "en": "Blood Type",
       "es": "Tipo de sangre",
-      "my": "သွေးအမျိုးအစား"
+      "my": "သွေးအမျိုးအစား",
+      "ar": "Blood Type",
+      "fil": "Blood Type",
+      "fr": "Blood Type",
+      "ht": "Blood Type",
+      "kmr": "Blood Type",
+      "ko": "Blood Type",
+      "pt-BR": "Blood Type",
+      "ru": "Blood Type",
+      "so": "Blood Type",
+      "vi": "Blood Type",
+      "zh-Hans": "Blood Type"
     },
     "emergency_conditions": {
       "en": "Critical Medical Conditions",
       "es": "Condiciones médicas críticas",
-      "my": "အရေးကြီး ဆေးဘက်အခြေအနေများ"
+      "my": "အရေးကြီး ဆေးဘက်အခြေအနေများ",
+      "ar": "Critical Medical Conditions",
+      "fil": "Critical Medical Conditions",
+      "fr": "Critical Medical Conditions",
+      "ht": "Critical Medical Conditions",
+      "kmr": "Critical Medical Conditions",
+      "ko": "Critical Medical Conditions",
+      "pt-BR": "Critical Medical Conditions",
+      "ru": "Critical Medical Conditions",
+      "so": "Critical Medical Conditions",
+      "vi": "Critical Medical Conditions",
+      "zh-Hans": "Critical Medical Conditions"
     },
     "emergency_contacts": {
       "en": "Emergency Contacts",
       "es": "Contactos de emergencia",
-      "my": "အရေးပေါ် ဆက်သွယ်ရန်များ"
+      "my": "အရေးပေါ် ဆက်သွယ်ရန်များ",
+      "ar": "Emergency Contacts",
+      "fil": "Emergency Contacts",
+      "fr": "Emergency Contacts",
+      "ht": "Emergency Contacts",
+      "kmr": "Emergency Contacts",
+      "ko": "Emergency Contacts",
+      "pt-BR": "Emergency Contacts",
+      "ru": "Emergency Contacts",
+      "so": "Emergency Contacts",
+      "vi": "Emergency Contacts",
+      "zh-Hans": "Emergency Contacts"
     },
     "emergency_directive": {
       "en": "Advance Directive Status",
       "es": "Estado de directiva anticipada",
-      "my": "ကြိုတင်ညွှန်ကြားချက် အခြေအနေ"
+      "my": "ကြိုတင်ညွှန်ကြားချက် အခြေအနေ",
+      "ar": "Advance Directive Status",
+      "fil": "Advance Directive Status",
+      "fr": "Advance Directive Status",
+      "ht": "Advance Directive Status",
+      "kmr": "Advance Directive Status",
+      "ko": "Advance Directive Status",
+      "pt-BR": "Advance Directive Status",
+      "ru": "Advance Directive Status",
+      "so": "Advance Directive Status",
+      "vi": "Advance Directive Status",
+      "zh-Hans": "Advance Directive Status"
     },
     "emergency_enable": {
       "en": "Enable Emergency Access",
       "es": "Habilitar acceso de emergencia",
-      "my": "အရေးပေါ် ဝင်ရောက်မှု ဖွင့်ပါ"
+      "my": "အရေးပေါ် ဝင်ရောက်မှု ဖွင့်ပါ",
+      "ar": "Enable Emergency Access",
+      "fil": "Enable Emergency Access",
+      "fr": "Enable Emergency Access",
+      "ht": "Enable Emergency Access",
+      "kmr": "Enable Emergency Access",
+      "ko": "Enable Emergency Access",
+      "pt-BR": "Enable Emergency Access",
+      "ru": "Enable Emergency Access",
+      "so": "Enable Emergency Access",
+      "vi": "Enable Emergency Access",
+      "zh-Hans": "Enable Emergency Access"
     },
     "emergency_medications": {
       "en": "Critical Medications",
       "es": "Medicamentos críticos",
-      "my": "အရေးကြီး ဆေးဝါးများ"
+      "my": "အရေးကြီး ဆေးဝါးများ",
+      "ar": "Critical Medications",
+      "fil": "Critical Medications",
+      "fr": "Critical Medications",
+      "ht": "Critical Medications",
+      "kmr": "Critical Medications",
+      "ko": "Critical Medications",
+      "pt-BR": "Critical Medications",
+      "ru": "Critical Medications",
+      "so": "Critical Medications",
+      "vi": "Critical Medications",
+      "zh-Hans": "Critical Medications"
     },
     "export_button": {
       "en": "Export/Print",
       "es": "Exportar/Imprimir",
-      "my": "တင်ပို့/ပုံနှိပ်"
+      "my": "တင်ပို့/ပုံနှိပ်",
+      "ar": "Export/Print",
+      "fil": "Export/Print",
+      "fr": "Export/Print",
+      "ht": "Export/Print",
+      "kmr": "Export/Print",
+      "ko": "Export/Print",
+      "pt-BR": "Export/Print",
+      "ru": "Export/Print",
+      "so": "Export/Print",
+      "vi": "Export/Print",
+      "zh-Hans": "Export/Print"
     },
     "export_note": {
       "en": "The printable summary reformats your record into an easy-to-read care handoff that can be printed or saved as a PDF for sharing.",
       "es": "El resumen imprimible reordena tu registro en un informe fácil de leer que puedes imprimir o guardar en PDF para compartir.",
-      "my": "ပုံနှိပ်နိုင်သော အနှစ်ချုပ်သည် သင်၏ မှတ်တမ်းကို ဖတ်ရလွယ်ကူသော စောင့်ရှောက်ရေး အနုတ်အထွက် ပုံစံသို့ ပြန်လည်စီစဉ်ပေးပြီး ပုံနှိပ်သို့မဟုတ် PDF အဖြစ် သိမ်းဆည်း၍ ဝေမျှနိုင်ပါသည်။"
+      "my": "ပုံနှိပ်နိုင်သော အနှစ်ချုပ်သည် သင်၏ မှတ်တမ်းကို ဖတ်ရလွယ်ကူသော စောင့်ရှောက်ရေး အနုတ်အထွက် ပုံစံသို့ ပြန်လည်စီစဉ်ပေးပြီး ပုံနှိပ်သို့မဟုတ် PDF အဖြစ် သိမ်းဆည်း၍ ဝေမျှနိုင်ပါသည်။",
+      "ar": "The printable summary reformats your record into an easy-to-read care handoff that can be printed or saved as a PDF for sharing.",
+      "fil": "The printable summary reformats your record into an easy-to-read care handoff that can be printed or saved as a PDF for sharing.",
+      "fr": "The printable summary reformats your record into an easy-to-read care handoff that can be printed or saved as a PDF for sharing.",
+      "ht": "The printable summary reformats your record into an easy-to-read care handoff that can be printed or saved as a PDF for sharing.",
+      "kmr": "The printable summary reformats your record into an easy-to-read care handoff that can be printed or saved as a PDF for sharing.",
+      "ko": "The printable summary reformats your record into an easy-to-read care handoff that can be printed or saved as a PDF for sharing.",
+      "pt-BR": "The printable summary reformats your record into an easy-to-read care handoff that can be printed or saved as a PDF for sharing.",
+      "ru": "The printable summary reformats your record into an easy-to-read care handoff that can be printed or saved as a PDF for sharing.",
+      "so": "The printable summary reformats your record into an easy-to-read care handoff that can be printed or saved as a PDF for sharing.",
+      "vi": "The printable summary reformats your record into an easy-to-read care handoff that can be printed or saved as a PDF for sharing.",
+      "zh-Hans": "The printable summary reformats your record into an easy-to-read care handoff that can be printed or saved as a PDF for sharing."
     },
     "export_prompt": {
       "en": "Select how you'd like to share or archive this record.",
       "es": "Elige cómo deseas compartir o archivar este registro.",
-      "my": "ဤမှတ်တမ်းကို မည်သို့ ဝေမျှရန် သို့မဟုတ် သိမ်းဆည်းရန် ရွေးချယ်ပါ။"
+      "my": "ဤမှတ်တမ်းကို မည်သို့ ဝေမျှရန် သို့မဟုတ် သိမ်းဆည်းရန် ရွေးချယ်ပါ။",
+      "ar": "Select how you'd like to share or archive this record.",
+      "fil": "Select how you'd like to share or archive this record.",
+      "fr": "Select how you'd like to share or archive this record.",
+      "ht": "Select how you'd like to share or archive this record.",
+      "kmr": "Select how you'd like to share or archive this record.",
+      "ko": "Select how you'd like to share or archive this record.",
+      "pt-BR": "Select how you'd like to share or archive this record.",
+      "ru": "Select how you'd like to share or archive this record.",
+      "so": "Select how you'd like to share or archive this record.",
+      "vi": "Select how you'd like to share or archive this record.",
+      "zh-Hans": "Select how you'd like to share or archive this record."
     },
     "export_title": {
       "en": "📄 Export & Share",
       "es": "📄 Exportar y compartir",
-      "my": "📄 တင်ပို့ပြီး ဝေမျှပါ"
+      "my": "📄 တင်ပို့ပြီး ဝေမျှပါ",
+      "ar": "📄 Export & Share",
+      "fil": "📄 Export & Share",
+      "fr": "📄 Export & Share",
+      "ht": "📄 Export & Share",
+      "kmr": "📄 Export & Share",
+      "ko": "📄 Export & Share",
+      "pt-BR": "📄 Export & Share",
+      "ru": "📄 Export & Share",
+      "so": "📄 Export & Share",
+      "vi": "📄 Export & Share",
+      "zh-Hans": "📄 Export & Share"
     },
     "important_notice": {
       "en": "Important:",
       "es": "Importante:",
-      "my": "အရေးကြီးပါသည်:"
+      "my": "အရေးကြီးပါသည်:",
+      "ar": "Important:",
+      "fil": "Important:",
+      "fr": "Important:",
+      "ht": "Important:",
+      "kmr": "Important:",
+      "ko": "Important:",
+      "pt-BR": "Important:",
+      "ru": "Important:",
+      "so": "Important:",
+      "vi": "Important:",
+      "zh-Hans": "Important:"
     },
     "keep_password_desc": {
       "en": "Your vault will be encrypted with the password you unlocked it with.",
       "es": "Tu bóveda se cifrará con la contraseña con la que la desbloqueaste.",
-      "my": "သင် ဖွင့်ထားသည့် စကားဝှက်ဖြင့် သင့်ဗေါ့ကို ကုဒ်ထည့်ထားမည်။"
+      "my": "သင် ဖွင့်ထားသည့် စကားဝှက်ဖြင့် သင့်ဗေါ့ကို ကုဒ်ထည့်ထားမည်။",
+      "ar": "Your vault will be encrypted with the password you unlocked it with.",
+      "fil": "Your vault will be encrypted with the password you unlocked it with.",
+      "fr": "Your vault will be encrypted with the password you unlocked it with.",
+      "ht": "Your vault will be encrypted with the password you unlocked it with.",
+      "kmr": "Your vault will be encrypted with the password you unlocked it with.",
+      "ko": "Your vault will be encrypted with the password you unlocked it with.",
+      "pt-BR": "Your vault will be encrypted with the password you unlocked it with.",
+      "ru": "Your vault will be encrypted with the password you unlocked it with.",
+      "so": "Your vault will be encrypted with the password you unlocked it with.",
+      "vi": "Your vault will be encrypted with the password you unlocked it with.",
+      "zh-Hans": "Your vault will be encrypted with the password you unlocked it with."
     },
     "keep_password_option": {
       "en": "Keep current password",
       "es": "Mantener la contraseña actual",
-      "my": "လက်ရှိ စကားဝှက်ကို ထိန်းသိမ်းပါ"
+      "my": "လက်ရှိ စကားဝှက်ကို ထိန်းသိမ်းပါ",
+      "ar": "Keep current password",
+      "fil": "Keep current password",
+      "fr": "Keep current password",
+      "ht": "Keep current password",
+      "kmr": "Keep current password",
+      "ko": "Keep current password",
+      "pt-BR": "Keep current password",
+      "ru": "Keep current password",
+      "so": "Keep current password",
+      "vi": "Keep current password",
+      "zh-Hans": "Keep current password"
     },
     "language_label": {
       "en": "Language",
       "es": "Idioma",
-      "my": "ဘာသာစကား"
+      "my": "ဘာသာစကား",
+      "ar": "Language",
+      "fil": "Language",
+      "fr": "Language",
+      "ht": "Language",
+      "kmr": "Language",
+      "ko": "Language",
+      "pt-BR": "Language",
+      "ru": "Language",
+      "so": "Language",
+      "vi": "Language",
+      "zh-Hans": "Language"
     },
     "lock_action": {
       "en": "🔒 Unlock",
       "es": "🔒 Desbloquear",
-      "my": "🔒 ဖွင့်ပါ"
+      "my": "🔒 ဖွင့်ပါ",
+      "ar": "🔒 Unlock",
+      "fil": "🔒 Unlock",
+      "fr": "🔒 Unlock",
+      "ht": "🔒 Unlock",
+      "kmr": "🔒 Unlock",
+      "ko": "🔒 Unlock",
+      "pt-BR": "🔒 Unlock",
+      "ru": "🔒 Unlock",
+      "so": "🔒 Unlock",
+      "vi": "🔒 Unlock",
+      "zh-Hans": "🔒 Unlock"
     },
     "modal_cancel": {
       "en": "Cancel",
       "es": "Cancelar",
-      "my": "ပယ်ဖျက်ပါ"
+      "my": "ပယ်ဖျက်ပါ",
+      "ar": "Cancel",
+      "fil": "Cancel",
+      "fr": "Cancel",
+      "ht": "Cancel",
+      "kmr": "Cancel",
+      "ko": "Cancel",
+      "pt-BR": "Cancel",
+      "ru": "Cancel",
+      "so": "Cancel",
+      "vi": "Cancel",
+      "zh-Hans": "Cancel"
     },
     "modal_continue": {
       "en": "Continue",
       "es": "Continuar",
-      "my": "ဆက်လက်လုပ်ဆောင်ပါ"
+      "my": "ဆက်လက်လုပ်ဆောင်ပါ",
+      "ar": "Continue",
+      "fil": "Continue",
+      "fr": "Continue",
+      "ht": "Continue",
+      "kmr": "Continue",
+      "ko": "Continue",
+      "pt-BR": "Continue",
+      "ru": "Continue",
+      "so": "Continue",
+      "vi": "Continue",
+      "zh-Hans": "Continue"
     },
     "module_chronic_desc": {
       "en": "Diabetes, hypertension, pain management",
       "es": "Diabetes, hipertensión, manejo del dolor",
-      "my": "ဆီးချို၊ သွေးတိုး၊ နာကျင်မှုကို စီမံခြင်း"
+      "my": "ဆီးချို၊ သွေးတိုး၊ နာကျင်မှုကို စီမံခြင်း",
+      "ar": "Diabetes, hypertension, pain management",
+      "fil": "Diabetes, hypertension, pain management",
+      "fr": "Diabetes, hypertension, pain management",
+      "ht": "Diabetes, hypertension, pain management",
+      "kmr": "Diabetes, hypertension, pain management",
+      "ko": "Diabetes, hypertension, pain management",
+      "pt-BR": "Diabetes, hypertension, pain management",
+      "ru": "Diabetes, hypertension, pain management",
+      "so": "Diabetes, hypertension, pain management",
+      "vi": "Diabetes, hypertension, pain management",
+      "zh-Hans": "Diabetes, hypertension, pain management"
     },
     "module_chronic_name": {
       "en": "Chronic Disease",
       "es": "Enfermedad crónica",
-      "my": "ရောဂါကြာရှည်ကျ"
+      "my": "ရောဂါကြာရှည်ကျ",
+      "ar": "Chronic Disease",
+      "fil": "Chronic Disease",
+      "fr": "Chronic Disease",
+      "ht": "Chronic Disease",
+      "kmr": "Chronic Disease",
+      "ko": "Chronic Disease",
+      "pt-BR": "Chronic Disease",
+      "ru": "Chronic Disease",
+      "so": "Chronic Disease",
+      "vi": "Chronic Disease",
+      "zh-Hans": "Chronic Disease"
     },
     "module_chronic_tab": {
       "en": "📊 Chronic",
       "es": "📊 Crónico",
-      "my": "📊 ရောဂါကြာရှည်"
+      "my": "📊 ရောဂါကြာရှည်",
+      "ar": "📊 Chronic",
+      "fil": "📊 Chronic",
+      "fr": "📊 Chronic",
+      "ht": "📊 Chronic",
+      "kmr": "📊 Chronic",
+      "ko": "📊 Chronic",
+      "pt-BR": "📊 Chronic",
+      "ru": "📊 Chronic",
+      "so": "📊 Chronic",
+      "vi": "📊 Chronic",
+      "zh-Hans": "📊 Chronic"
     },
     "module_chronic_tab_label": {
       "en": "📊 Chronic",
       "es": "📊 Crónico",
-      "my": "📊 ရောဂါကြာရှည်"
+      "my": "📊 ရောဂါကြာရှည်",
+      "ar": "📊 Chronic",
+      "fil": "📊 Chronic",
+      "fr": "📊 Chronic",
+      "ht": "📊 Chronic",
+      "kmr": "📊 Chronic",
+      "ko": "📊 Chronic",
+      "pt-BR": "📊 Chronic",
+      "ru": "📊 Chronic",
+      "so": "📊 Chronic",
+      "vi": "📊 Chronic",
+      "zh-Hans": "📊 Chronic"
     },
     "module_gac_desc": {
       "en": "HRT tracking, surgeries, specialized providers",
       "es": "Seguimiento de TRH, cirugías, proveedores especializados",
-      "my": "HRT စောင့်ကြည့်ခြင်း၊ ခွဲစိတ်ကုသမှု၊ အထူးပေးပို့သူများ"
+      "my": "HRT စောင့်ကြည့်ခြင်း၊ ခွဲစိတ်ကုသမှု၊ အထူးပေးပို့သူများ",
+      "ar": "HRT tracking, surgeries, specialized providers",
+      "fil": "HRT tracking, surgeries, specialized providers",
+      "fr": "HRT tracking, surgeries, specialized providers",
+      "ht": "HRT tracking, surgeries, specialized providers",
+      "kmr": "HRT tracking, surgeries, specialized providers",
+      "ko": "HRT tracking, surgeries, specialized providers",
+      "pt-BR": "HRT tracking, surgeries, specialized providers",
+      "ru": "HRT tracking, surgeries, specialized providers",
+      "so": "HRT tracking, surgeries, specialized providers",
+      "vi": "HRT tracking, surgeries, specialized providers",
+      "zh-Hans": "HRT tracking, surgeries, specialized providers"
     },
     "module_gac_name": {
       "en": "Gender Affirming Care",
       "es": "Atención de afirmación de género",
-      "my": "လိင်အတည်ပြု ကုသမှု"
+      "my": "လိင်အတည်ပြု ကုသမှု",
+      "ar": "Gender Affirming Care",
+      "fil": "Gender Affirming Care",
+      "fr": "Gender Affirming Care",
+      "ht": "Gender Affirming Care",
+      "kmr": "Gender Affirming Care",
+      "ko": "Gender Affirming Care",
+      "pt-BR": "Gender Affirming Care",
+      "ru": "Gender Affirming Care",
+      "so": "Gender Affirming Care",
+      "vi": "Gender Affirming Care",
+      "zh-Hans": "Gender Affirming Care"
     },
     "module_gac_tab": {
       "en": "🏳️‍⚧️ GAC",
       "es": "🏳️‍⚧️ CAG",
-      "my": "🏳️‍⚧️ GAC"
+      "my": "🏳️‍⚧️ GAC",
+      "ar": "🏳️‍⚧️ GAC",
+      "fil": "🏳️‍⚧️ GAC",
+      "fr": "🏳️‍⚧️ GAC",
+      "ht": "🏳️‍⚧️ GAC",
+      "kmr": "🏳️‍⚧️ GAC",
+      "ko": "🏳️‍⚧️ GAC",
+      "pt-BR": "🏳️‍⚧️ GAC",
+      "ru": "🏳️‍⚧️ GAC",
+      "so": "🏳️‍⚧️ GAC",
+      "vi": "🏳️‍⚧️ GAC",
+      "zh-Hans": "🏳️‍⚧️ GAC"
     },
     "module_identity_desc": {
       "en": "Pronouns, chosen names, context-specific usage",
       "es": "Pronombres, nombres elegidos, uso según el contexto",
-      "my": "အသုံးပြုလိုသော နာမဝိသေသနများ၊ ရွေးချယ်ထားသော အမည်များ၊ အခြေအနေလိုက် အသုံးပြုမှု"
+      "my": "အသုံးပြုလိုသော နာမဝိသေသနများ၊ ရွေးချယ်ထားသော အမည်များ၊ အခြေအနေလိုက် အသုံးပြုမှု",
+      "ar": "Pronouns, chosen names, context-specific usage",
+      "fil": "Pronouns, chosen names, context-specific usage",
+      "fr": "Pronouns, chosen names, context-specific usage",
+      "ht": "Pronouns, chosen names, context-specific usage",
+      "kmr": "Pronouns, chosen names, context-specific usage",
+      "ko": "Pronouns, chosen names, context-specific usage",
+      "pt-BR": "Pronouns, chosen names, context-specific usage",
+      "ru": "Pronouns, chosen names, context-specific usage",
+      "so": "Pronouns, chosen names, context-specific usage",
+      "vi": "Pronouns, chosen names, context-specific usage",
+      "zh-Hans": "Pronouns, chosen names, context-specific usage"
     },
     "module_identity_name": {
       "en": "Extended Identity",
       "es": "Identidad ampliada",
-      "my": "အမည်အမထက်ပိုသော အချက်အလက်"
+      "my": "အမည်အမထက်ပိုသော အချက်အလက်",
+      "ar": "Extended Identity",
+      "fil": "Extended Identity",
+      "fr": "Extended Identity",
+      "ht": "Extended Identity",
+      "kmr": "Extended Identity",
+      "ko": "Extended Identity",
+      "pt-BR": "Extended Identity",
+      "ru": "Extended Identity",
+      "so": "Extended Identity",
+      "vi": "Extended Identity",
+      "zh-Hans": "Extended Identity"
     },
     "module_identity_tab": {
       "en": "👤 Identity",
       "es": "👤 Identidad",
-      "my": "👤 အမည်အမ"
+      "my": "👤 အမည်အမ",
+      "ar": "👤 Identity",
+      "fil": "👤 Identity",
+      "fr": "👤 Identity",
+      "ht": "👤 Identity",
+      "kmr": "👤 Identity",
+      "ko": "👤 Identity",
+      "pt-BR": "👤 Identity",
+      "ru": "👤 Identity",
+      "so": "👤 Identity",
+      "vi": "👤 Identity",
+      "zh-Hans": "👤 Identity"
     },
     "module_mental_desc": {
       "en": "Mood tracking, therapy notes, crisis resources",
       "es": "Registro de estado de ánimo, notas de terapia, recursos de crisis",
-      "my": "စိတ်ခံစားမှု စောင့်ကြည့်ခြင်း၊ သက်သာကု မှတ်စုများ၊ အရေးပေါ်အရင်းအမြစ်များ"
+      "my": "စိတ်ခံစားမှု စောင့်ကြည့်ခြင်း၊ သက်သာကု မှတ်စုများ၊ အရေးပေါ်အရင်းအမြစ်များ",
+      "ar": "Mood tracking, therapy notes, crisis resources",
+      "fil": "Mood tracking, therapy notes, crisis resources",
+      "fr": "Mood tracking, therapy notes, crisis resources",
+      "ht": "Mood tracking, therapy notes, crisis resources",
+      "kmr": "Mood tracking, therapy notes, crisis resources",
+      "ko": "Mood tracking, therapy notes, crisis resources",
+      "pt-BR": "Mood tracking, therapy notes, crisis resources",
+      "ru": "Mood tracking, therapy notes, crisis resources",
+      "so": "Mood tracking, therapy notes, crisis resources",
+      "vi": "Mood tracking, therapy notes, crisis resources",
+      "zh-Hans": "Mood tracking, therapy notes, crisis resources"
     },
     "module_mental_name": {
       "en": "Mental Health",
       "es": "Salud mental",
-      "my": "စိတ်ကျန်းမာရေး"
+      "my": "စိတ်ကျန်းမာရေး",
+      "ar": "Mental Health",
+      "fil": "Mental Health",
+      "fr": "Mental Health",
+      "ht": "Mental Health",
+      "kmr": "Mental Health",
+      "ko": "Mental Health",
+      "pt-BR": "Mental Health",
+      "ru": "Mental Health",
+      "so": "Mental Health",
+      "vi": "Mental Health",
+      "zh-Hans": "Mental Health"
     },
     "module_mental_tab": {
       "en": "🧠 Mental Health",
       "es": "🧠 Salud mental",
-      "my": "🧠 စိတ်ကျန်းမာရေး"
+      "my": "🧠 စိတ်ကျန်းမာရေး",
+      "ar": "🧠 Mental Health",
+      "fil": "🧠 Mental Health",
+      "fr": "🧠 Mental Health",
+      "ht": "🧠 Mental Health",
+      "kmr": "🧠 Mental Health",
+      "ko": "🧠 Mental Health",
+      "pt-BR": "🧠 Mental Health",
+      "ru": "🧠 Mental Health",
+      "so": "🧠 Mental Health",
+      "vi": "🧠 Mental Health",
+      "zh-Hans": "🧠 Mental Health"
     },
     "nav_attachments": {
       "en": "📎 Attachments",
       "es": "📎 Adjuntos",
-      "my": "📎 ပူးတွဲဖိုင်များ"
+      "my": "📎 ပူးတွဲဖိုင်များ",
+      "ar": "📎 Attachments",
+      "fil": "📎 Attachments",
+      "fr": "📎 Attachments",
+      "ht": "📎 Attachments",
+      "kmr": "📎 Attachments",
+      "ko": "📎 Attachments",
+      "pt-BR": "📎 Attachments",
+      "ru": "📎 Attachments",
+      "so": "📎 Attachments",
+      "vi": "📎 Attachments",
+      "zh-Hans": "📎 Attachments"
     },
     "nav_demographics": {
       "en": "📋 Demographics",
       "es": "📋 Datos demográficos",
-      "my": "📋 လူမျိုးစာရင်းအချက်အလက်"
+      "my": "📋 လူမျိုးစာရင်းအချက်အလက်",
+      "ar": "📋 Demographics",
+      "fil": "📋 Demographics",
+      "fr": "📋 Demographics",
+      "ht": "📋 Demographics",
+      "kmr": "📋 Demographics",
+      "ko": "📋 Demographics",
+      "pt-BR": "📋 Demographics",
+      "ru": "📋 Demographics",
+      "so": "📋 Demographics",
+      "vi": "📋 Demographics",
+      "zh-Hans": "📋 Demographics"
     },
     "nav_emergency": {
       "en": "🆘 Emergency",
       "es": "🆘 Emergencia",
-      "my": "🆘 အရေးပေါ်"
+      "my": "🆘 အရေးပေါ်",
+      "ar": "🆘 Emergency",
+      "fil": "🆘 Emergency",
+      "fr": "🆘 Emergency",
+      "ht": "🆘 Emergency",
+      "kmr": "🆘 Emergency",
+      "ko": "🆘 Emergency",
+      "pt-BR": "🆘 Emergency",
+      "ru": "🆘 Emergency",
+      "so": "🆘 Emergency",
+      "vi": "🆘 Emergency",
+      "zh-Hans": "🆘 Emergency"
     },
     "nav_history": {
       "en": "🩺 History",
       "es": "🩺 Historia",
-      "my": "🩺 မှတ်တမ်း"
+      "my": "🩺 မှတ်တမ်း",
+      "ar": "🩺 History",
+      "fil": "🩺 History",
+      "fr": "🩺 History",
+      "ht": "🩺 History",
+      "kmr": "🩺 History",
+      "ko": "🩺 History",
+      "pt-BR": "🩺 History",
+      "ru": "🩺 History",
+      "so": "🩺 History",
+      "vi": "🩺 History",
+      "zh-Hans": "🩺 History"
     },
     "nav_immunizations": {
       "en": "💉 Vaccines",
       "es": "💉 Vacunas",
-      "my": "💉 ကာကွယ်ဆေးများ"
+      "my": "💉 ကာကွယ်ဆေးများ",
+      "ar": "💉 Vaccines",
+      "fil": "💉 Vaccines",
+      "fr": "💉 Vaccines",
+      "ht": "💉 Vaccines",
+      "kmr": "💉 Vaccines",
+      "ko": "💉 Vaccines",
+      "pt-BR": "💉 Vaccines",
+      "ru": "💉 Vaccines",
+      "so": "💉 Vaccines",
+      "vi": "💉 Vaccines",
+      "zh-Hans": "💉 Vaccines"
     },
     "nav_insurance": {
       "en": "🏥 Insurance",
       "es": "🏥 Seguro",
-      "my": "🏥 အာမခံ"
+      "my": "🏥 အာမခံ",
+      "ar": "🏥 Insurance",
+      "fil": "🏥 Insurance",
+      "fr": "🏥 Insurance",
+      "ht": "🏥 Insurance",
+      "kmr": "🏥 Insurance",
+      "ko": "🏥 Insurance",
+      "pt-BR": "🏥 Insurance",
+      "ru": "🏥 Insurance",
+      "so": "🏥 Insurance",
+      "vi": "🏥 Insurance",
+      "zh-Hans": "🏥 Insurance"
     },
     "nav_labs": {
       "en": "🔬 Lab Results",
       "es": "🔬 Resultados de laboratorio",
-      "my": "🔬 ခန္ဓာကိုယ်စစ်ဆေးမှုရလဒ်များ"
+      "my": "🔬 ခန္ဓာကိုယ်စစ်ဆေးမှုရလဒ်များ",
+      "ar": "🔬 Lab Results",
+      "fil": "🔬 Lab Results",
+      "fr": "🔬 Lab Results",
+      "ht": "🔬 Lab Results",
+      "kmr": "🔬 Lab Results",
+      "ko": "🔬 Lab Results",
+      "pt-BR": "🔬 Lab Results",
+      "ru": "🔬 Lab Results",
+      "so": "🔬 Lab Results",
+      "vi": "🔬 Lab Results",
+      "zh-Hans": "🔬 Lab Results"
     },
     "nav_medications": {
       "en": "💊 Medications",
       "es": "💊 Medicamentos",
-      "my": "💊 ဆေးဝါးများ"
+      "my": "💊 ဆေးဝါးများ",
+      "ar": "💊 Medications",
+      "fil": "💊 Medications",
+      "fr": "💊 Medications",
+      "ht": "💊 Medications",
+      "kmr": "💊 Medications",
+      "ko": "💊 Medications",
+      "pt-BR": "💊 Medications",
+      "ru": "💊 Medications",
+      "so": "💊 Medications",
+      "vi": "💊 Medications",
+      "zh-Hans": "💊 Medications"
     },
     "nav_notes": {
       "en": "📝 Notes",
       "es": "📝 Notas",
-      "my": "📝 မှတ်စုများ"
+      "my": "📝 မှတ်စုများ",
+      "ar": "📝 Notes",
+      "fil": "📝 Notes",
+      "fr": "📝 Notes",
+      "ht": "📝 Notes",
+      "kmr": "📝 Notes",
+      "ko": "📝 Notes",
+      "pt-BR": "📝 Notes",
+      "ru": "📝 Notes",
+      "so": "📝 Notes",
+      "vi": "📝 Notes",
+      "zh-Hans": "📝 Notes"
     },
     "nav_providers": {
       "en": "👩‍⚕️ Providers",
       "es": "👩‍⚕️ Proveedores",
-      "my": "👩‍⚕️ ဆေးဝါးပေးသမားများ"
+      "my": "👩‍⚕️ ဆေးဝါးပေးသမားများ",
+      "ar": "👩‍⚕️ Providers",
+      "fil": "👩‍⚕️ Providers",
+      "fr": "👩‍⚕️ Providers",
+      "ht": "👩‍⚕️ Providers",
+      "kmr": "👩‍⚕️ Providers",
+      "ko": "👩‍⚕️ Providers",
+      "pt-BR": "👩‍⚕️ Providers",
+      "ru": "👩‍⚕️ Providers",
+      "so": "👩‍⚕️ Providers",
+      "vi": "👩‍⚕️ Providers",
+      "zh-Hans": "👩‍⚕️ Providers"
     },
     "nav_vitals": {
       "en": "❤️ Vitals",
       "es": "❤️ Signos vitales",
-      "my": "❤️ အသက်မွေးသံများ"
+      "my": "❤️ အသက်မွေးသံများ",
+      "ar": "❤️ Vitals",
+      "fil": "❤️ Vitals",
+      "fr": "❤️ Vitals",
+      "ht": "❤️ Vitals",
+      "kmr": "❤️ Vitals",
+      "ko": "❤️ Vitals",
+      "pt-BR": "❤️ Vitals",
+      "ru": "❤️ Vitals",
+      "so": "❤️ Vitals",
+      "vi": "❤️ Vitals",
+      "zh-Hans": "❤️ Vitals"
     },
     "new_password_label": {
       "en": "New Password",
       "es": "Nueva contraseña",
-      "my": "စကားဝှက်အသစ်"
+      "my": "စကားဝှက်အသစ်",
+      "ar": "New Password",
+      "fil": "New Password",
+      "fr": "New Password",
+      "ht": "New Password",
+      "kmr": "New Password",
+      "ko": "New Password",
+      "pt-BR": "New Password",
+      "ru": "New Password",
+      "so": "New Password",
+      "vi": "New Password",
+      "zh-Hans": "New Password"
     },
     "not_initialized": {
       "en": "⚠️ Not Initialized - Create Your Vault",
       "es": "⚠️ No inicializado - Crea tu bóveda",
-      "my": "⚠️ မစတင်ရသေးပါ - သင့်ဗေါ့ကို ဖန်တီးပါ"
+      "my": "⚠️ မစတင်ရသေးပါ - သင့်ဗေါ့ကို ဖန်တီးပါ",
+      "ar": "⚠️ Not Initialized - Create Your Vault",
+      "fil": "⚠️ Not Initialized - Create Your Vault",
+      "fr": "⚠️ Not Initialized - Create Your Vault",
+      "ht": "⚠️ Not Initialized - Create Your Vault",
+      "kmr": "⚠️ Not Initialized - Create Your Vault",
+      "ko": "⚠️ Not Initialized - Create Your Vault",
+      "pt-BR": "⚠️ Not Initialized - Create Your Vault",
+      "ru": "⚠️ Not Initialized - Create Your Vault",
+      "so": "⚠️ Not Initialized - Create Your Vault",
+      "vi": "⚠️ Not Initialized - Create Your Vault",
+      "zh-Hans": "⚠️ Not Initialized - Create Your Vault"
     },
     "optional_modules_heading": {
       "en": "Optional Modules",
       "es": "Módulos opcionales",
-      "my": "အလိုအလျောက် မော်ဂျူလ်များ"
+      "my": "အလိုအလျောက် မော်ဂျူလ်များ",
+      "ar": "Optional Modules",
+      "fil": "Optional Modules",
+      "fr": "Optional Modules",
+      "ht": "Optional Modules",
+      "kmr": "Optional Modules",
+      "ko": "Optional Modules",
+      "pt-BR": "Optional Modules",
+      "ru": "Optional Modules",
+      "so": "Optional Modules",
+      "vi": "Optional Modules",
+      "zh-Hans": "Optional Modules"
     },
     "optional_modules_subtitle": {
       "en": "Enable specialized tracking modules as needed",
       "es": "Activa módulos de seguimiento especializados según sea necesario",
-      "my": "လိုအပ်သလို အထူး ကြည့်ရှုစောင့်ကြည့် မော်ဂျူလ်များကို ဖွင့်ပါ"
+      "my": "လိုအပ်သလို အထူး ကြည့်ရှုစောင့်ကြည့် မော်ဂျူလ်များကို ဖွင့်ပါ",
+      "ar": "Enable specialized tracking modules as needed",
+      "fil": "Enable specialized tracking modules as needed",
+      "fr": "Enable specialized tracking modules as needed",
+      "ht": "Enable specialized tracking modules as needed",
+      "kmr": "Enable specialized tracking modules as needed",
+      "ko": "Enable specialized tracking modules as needed",
+      "pt-BR": "Enable specialized tracking modules as needed",
+      "ru": "Enable specialized tracking modules as needed",
+      "so": "Enable specialized tracking modules as needed",
+      "vi": "Enable specialized tracking modules as needed",
+      "zh-Hans": "Enable specialized tracking modules as needed"
     },
     "password_label": {
       "en": "Password",
       "es": "Contraseña",
-      "my": "စကားဝှက်"
+      "my": "စကားဝှက်",
+      "ar": "Password",
+      "fil": "Password",
+      "fr": "Password",
+      "ht": "Password",
+      "kmr": "Password",
+      "ko": "Password",
+      "pt-BR": "Password",
+      "ru": "Password",
+      "so": "Password",
+      "vi": "Password",
+      "zh-Hans": "Password"
     },
     "password_modal_title": {
       "en": "Set Encryption Password",
       "es": "Establecer contraseña de cifrado",
-      "my": "ကုဒ်ထည့် စကားဝှက် သတ်မှတ်ပါ"
+      "my": "ကုဒ်ထည့် စကားဝှက် သတ်မှတ်ပါ",
+      "ar": "Set Encryption Password",
+      "fil": "Set Encryption Password",
+      "fr": "Set Encryption Password",
+      "ht": "Set Encryption Password",
+      "kmr": "Set Encryption Password",
+      "ko": "Set Encryption Password",
+      "pt-BR": "Set Encryption Password",
+      "ru": "Set Encryption Password",
+      "so": "Set Encryption Password",
+      "vi": "Set Encryption Password",
+      "zh-Hans": "Set Encryption Password"
     },
     "print_summary_button": {
       "en": "🖨️ Printable Care Summary",
       "es": "🖨️ Resumen imprimible de cuidados",
-      "my": "🖨️ ပုံနှိပ်နိုင်သော အကြောင်းအရာ အနှစ်ချုပ်"
+      "my": "🖨️ ပုံနှိပ်နိုင်သော အကြောင်းအရာ အနှစ်ချုပ်",
+      "ar": "🖨️ Printable Care Summary",
+      "fil": "🖨️ Printable Care Summary",
+      "fr": "🖨️ Printable Care Summary",
+      "ht": "🖨️ Printable Care Summary",
+      "kmr": "🖨️ Printable Care Summary",
+      "ko": "🖨️ Printable Care Summary",
+      "pt-BR": "🖨️ Printable Care Summary",
+      "ru": "🖨️ Printable Care Summary",
+      "so": "🖨️ Printable Care Summary",
+      "vi": "🖨️ Printable Care Summary",
+      "zh-Hans": "🖨️ Printable Care Summary"
     },
     "privacy_level_1": {
       "en": "Level 1: Full Information",
       "es": "Nivel 1: Información completa",
-      "my": "အဆင့် ၁: အချက်အလက်အပြည့်အစုံ"
+      "my": "အဆင့် ၁: အချက်အလက်အပြည့်အစုံ",
+      "ar": "Level 1: Full Information",
+      "fil": "Level 1: Full Information",
+      "fr": "Level 1: Full Information",
+      "ht": "Level 1: Full Information",
+      "kmr": "Level 1: Full Information",
+      "ko": "Level 1: Full Information",
+      "pt-BR": "Level 1: Full Information",
+      "ru": "Level 1: Full Information",
+      "so": "Level 1: Full Information",
+      "vi": "Level 1: Full Information",
+      "zh-Hans": "Level 1: Full Information"
     },
     "privacy_level_2": {
       "en": "Level 2: Hide Sensitive Sections",
       "es": "Nivel 2: Ocultar secciones sensibles",
-      "my": "အဆင့် ၂: အထူးလွှဲတင်ရမည့် အပိုင်းများ ဖုံးဖျက်"
+      "my": "အဆင့် ၂: အထူးလွှဲတင်ရမည့် အပိုင်းများ ဖုံးဖျက်",
+      "ar": "Level 2: Hide Sensitive Sections",
+      "fil": "Level 2: Hide Sensitive Sections",
+      "fr": "Level 2: Hide Sensitive Sections",
+      "ht": "Level 2: Hide Sensitive Sections",
+      "kmr": "Level 2: Hide Sensitive Sections",
+      "ko": "Level 2: Hide Sensitive Sections",
+      "pt-BR": "Level 2: Hide Sensitive Sections",
+      "ru": "Level 2: Hide Sensitive Sections",
+      "so": "Level 2: Hide Sensitive Sections",
+      "vi": "Level 2: Hide Sensitive Sections",
+      "zh-Hans": "Level 2: Hide Sensitive Sections"
     },
     "privacy_level_3": {
       "en": "Level 3: Emergency Only",
       "es": "Nivel 3: Solo emergencia",
-      "my": "အဆင့် ၃: အရေးပေါ်အတွက်သာ"
+      "my": "အဆင့် ၃: အရေးပေါ်အတွက်သာ",
+      "ar": "Level 3: Emergency Only",
+      "fil": "Level 3: Emergency Only",
+      "fr": "Level 3: Emergency Only",
+      "ht": "Level 3: Emergency Only",
+      "kmr": "Level 3: Emergency Only",
+      "ko": "Level 3: Emergency Only",
+      "pt-BR": "Level 3: Emergency Only",
+      "ru": "Level 3: Emergency Only",
+      "so": "Level 3: Emergency Only",
+      "vi": "Level 3: Emergency Only",
+      "zh-Hans": "Level 3: Emergency Only"
     },
     "privacy_level_4": {
       "en": "Level 4: Custom",
       "es": "Nivel 4: Personalizado",
-      "my": "အဆင့် ၄: စိတ်ကြိုက်"
+      "my": "အဆင့် ၄: စိတ်ကြိုက်",
+      "ar": "Level 4: Custom",
+      "fil": "Level 4: Custom",
+      "fr": "Level 4: Custom",
+      "ht": "Level 4: Custom",
+      "kmr": "Level 4: Custom",
+      "ko": "Level 4: Custom",
+      "pt-BR": "Level 4: Custom",
+      "ru": "Level 4: Custom",
+      "so": "Level 4: Custom",
+      "vi": "Level 4: Custom",
+      "zh-Hans": "Level 4: Custom"
     },
     "privacy_levels": {
       "en": "Privacy Levels",
       "es": "Niveles de privacidad",
-      "my": "လုံခြုံရေး အဆင့်များ"
+      "my": "လုံခြုံရေး အဆင့်များ",
+      "ar": "Privacy Levels",
+      "fil": "Privacy Levels",
+      "fr": "Privacy Levels",
+      "ht": "Privacy Levels",
+      "kmr": "Privacy Levels",
+      "ko": "Privacy Levels",
+      "pt-BR": "Privacy Levels",
+      "ru": "Privacy Levels",
+      "so": "Privacy Levels",
+      "vi": "Privacy Levels",
+      "zh-Hans": "Privacy Levels"
     },
     "save_button_create": {
       "en": "Create Encrypted Vault",
       "es": "Crear bóveda cifrada",
-      "my": "ကုဒ်ဖြင့်ဗေါ့ ဖန်တီးပါ"
+      "my": "ကုဒ်ဖြင့်ဗေါ့ ဖန်တီးပါ",
+      "ar": "Create Encrypted Vault",
+      "fil": "Create Encrypted Vault",
+      "fr": "Create Encrypted Vault",
+      "ht": "Create Encrypted Vault",
+      "kmr": "Create Encrypted Vault",
+      "ko": "Create Encrypted Vault",
+      "pt-BR": "Create Encrypted Vault",
+      "ru": "Create Encrypted Vault",
+      "so": "Create Encrypted Vault",
+      "vi": "Create Encrypted Vault",
+      "zh-Hans": "Create Encrypted Vault"
     },
     "save_vault_submit": {
       "en": "Save Vault",
       "es": "Guardar bóveda",
-      "my": "ဗေါ့ကို သိမ်းပါ"
+      "my": "ဗေါ့ကို သိမ်းပါ",
+      "ar": "Save Vault",
+      "fil": "Save Vault",
+      "fr": "Save Vault",
+      "ht": "Save Vault",
+      "kmr": "Save Vault",
+      "ko": "Save Vault",
+      "pt-BR": "Save Vault",
+      "ru": "Save Vault",
+      "so": "Save Vault",
+      "vi": "Save Vault",
+      "zh-Hans": "Save Vault"
     },
     "save_vault_title": {
       "en": "Save Vault",
       "es": "Guardar bóveda",
-      "my": "ဗေါ့ကို သိမ်းပါ"
+      "my": "ဗေါ့ကို သိမ်းပါ",
+      "ar": "Save Vault",
+      "fil": "Save Vault",
+      "fr": "Save Vault",
+      "ht": "Save Vault",
+      "kmr": "Save Vault",
+      "ko": "Save Vault",
+      "pt-BR": "Save Vault",
+      "ru": "Save Vault",
+      "so": "Save Vault",
+      "vi": "Save Vault",
+      "zh-Hans": "Save Vault"
     },
     "settings_button": {
       "en": "⚙️ Settings",
       "es": "⚙️ Configuración",
-      "my": "⚙️ ဆက်တင်များ"
+      "my": "⚙️ ဆက်တင်များ",
+      "ar": "⚙️ Settings",
+      "fil": "⚙️ Settings",
+      "fr": "⚙️ Settings",
+      "ht": "⚙️ Settings",
+      "kmr": "⚙️ Settings",
+      "ko": "⚙️ Settings",
+      "pt-BR": "⚙️ Settings",
+      "ru": "⚙️ Settings",
+      "so": "⚙️ Settings",
+      "vi": "⚙️ Settings",
+      "zh-Hans": "⚙️ Settings"
     },
     "settings_cancel": {
       "en": "Cancel",
       "es": "Cancelar",
-      "my": "ပယ်ဖျက်ပါ"
+      "my": "ပယ်ဖျက်ပါ",
+      "ar": "Cancel",
+      "fil": "Cancel",
+      "fr": "Cancel",
+      "ht": "Cancel",
+      "kmr": "Cancel",
+      "ko": "Cancel",
+      "pt-BR": "Cancel",
+      "ru": "Cancel",
+      "so": "Cancel",
+      "vi": "Cancel",
+      "zh-Hans": "Cancel"
     },
     "settings_save": {
       "en": "Save Settings",
       "es": "Guardar configuración",
-      "my": "ဆက်တင်များ သိမ်းဆည်းပါ"
+      "my": "ဆက်တင်များ သိမ်းဆည်းပါ",
+      "ar": "Save Settings",
+      "fil": "Save Settings",
+      "fr": "Save Settings",
+      "ht": "Save Settings",
+      "kmr": "Save Settings",
+      "ko": "Save Settings",
+      "pt-BR": "Save Settings",
+      "ru": "Save Settings",
+      "so": "Save Settings",
+      "vi": "Save Settings",
+      "zh-Hans": "Save Settings"
     },
     "settings_title": {
       "en": "⚙️ Settings & Modules",
       "es": "⚙️ Configuración y módulos",
-      "my": "⚙️ ဆက်တင်များနှင့် မော်ဂျူလ်များ"
+      "my": "⚙️ ဆက်တင်များနှင့် မော်ဂျူလ်များ",
+      "ar": "⚙️ Settings & Modules",
+      "fil": "⚙️ Settings & Modules",
+      "fr": "⚙️ Settings & Modules",
+      "ht": "⚙️ Settings & Modules",
+      "kmr": "⚙️ Settings & Modules",
+      "ko": "⚙️ Settings & Modules",
+      "pt-BR": "⚙️ Settings & Modules",
+      "ru": "⚙️ Settings & Modules",
+      "so": "⚙️ Settings & Modules",
+      "vi": "⚙️ Settings & Modules",
+      "zh-Hans": "⚙️ Settings & Modules"
     },
     "status_not_initialized": {
       "en": "⚠️ Not Initialized - Create Your Vault",
       "es": "⚠️ No inicializado - Crea tu bóveda",
-      "my": "⚠️ မစတင်ရသေးပါ - သင့်ဗေါ့ကို ဖန်တီးပါ"
+      "my": "⚠️ မစတင်ရသေးပါ - သင့်ဗေါ့ကို ဖန်တီးပါ",
+      "ar": "⚠️ Not Initialized - Create Your Vault",
+      "fil": "⚠️ Not Initialized - Create Your Vault",
+      "fr": "⚠️ Not Initialized - Create Your Vault",
+      "ht": "⚠️ Not Initialized - Create Your Vault",
+      "kmr": "⚠️ Not Initialized - Create Your Vault",
+      "ko": "⚠️ Not Initialized - Create Your Vault",
+      "pt-BR": "⚠️ Not Initialized - Create Your Vault",
+      "ru": "⚠️ Not Initialized - Create Your Vault",
+      "so": "⚠️ Not Initialized - Create Your Vault",
+      "vi": "⚠️ Not Initialized - Create Your Vault",
+      "zh-Hans": "⚠️ Not Initialized - Create Your Vault"
     },
     "status_saved": {
       "en": "✓ Data Encrypted in This Vault (.ehv)",
       "es": "✓ Datos cifrados en esta bóveda (.ehv)",
-      "my": "✓ ဤဗေါ့ (.ehv) တွင် ဒေတာများကို ကုဒ်ထည့်ထားပြီး"
+      "my": "✓ ဤဗေါ့ (.ehv) တွင် ဒေတာများကို ကုဒ်ထည့်ထားပြီး",
+      "ar": "✓ Data Encrypted in This Vault (.ehv)",
+      "fil": "✓ Data Encrypted in This Vault (.ehv)",
+      "fr": "✓ Data Encrypted in This Vault (.ehv)",
+      "ht": "✓ Data Encrypted in This Vault (.ehv)",
+      "kmr": "✓ Data Encrypted in This Vault (.ehv)",
+      "ko": "✓ Data Encrypted in This Vault (.ehv)",
+      "pt-BR": "✓ Data Encrypted in This Vault (.ehv)",
+      "ru": "✓ Data Encrypted in This Vault (.ehv)",
+      "so": "✓ Data Encrypted in This Vault (.ehv)",
+      "vi": "✓ Data Encrypted in This Vault (.ehv)",
+      "zh-Hans": "✓ Data Encrypted in This Vault (.ehv)"
     },
     "status_unsaved": {
       "en": "⚠️ Unsaved Changes - Download Updated Vault (.ehv)",
       "es": "⚠️ Cambios sin guardar - Descarga la bóveda actualizada (.ehv)",
-      "my": "⚠️ မသိမ်းရသေးသော ပြင်ဆင်မှုများ - အပ်ဒိတ်ဗေါ့ (.ehv) ကို ဒေါင်းလုဒ်ဆွဲပါ"
+      "my": "⚠️ မသိမ်းရသေးသော ပြင်ဆင်မှုများ - အပ်ဒိတ်ဗေါ့ (.ehv) ကို ဒေါင်းလုဒ်ဆွဲပါ",
+      "ar": "⚠️ Unsaved Changes - Download Updated Vault (.ehv)",
+      "fil": "⚠️ Unsaved Changes - Download Updated Vault (.ehv)",
+      "fr": "⚠️ Unsaved Changes - Download Updated Vault (.ehv)",
+      "ht": "⚠️ Unsaved Changes - Download Updated Vault (.ehv)",
+      "kmr": "⚠️ Unsaved Changes - Download Updated Vault (.ehv)",
+      "ko": "⚠️ Unsaved Changes - Download Updated Vault (.ehv)",
+      "pt-BR": "⚠️ Unsaved Changes - Download Updated Vault (.ehv)",
+      "ru": "⚠️ Unsaved Changes - Download Updated Vault (.ehv)",
+      "so": "⚠️ Unsaved Changes - Download Updated Vault (.ehv)",
+      "vi": "⚠️ Unsaved Changes - Download Updated Vault (.ehv)",
+      "zh-Hans": "⚠️ Unsaved Changes - Download Updated Vault (.ehv)"
     },
     "totp_backup": {
       "en": "Backup Codes (Save These!)",
       "es": "Códigos de respaldo (¡Guárdalos!)",
-      "my": "အရန်ကုဒ်များ (ဒီများကို သိမ်းပါ!)"
+      "my": "အရန်ကုဒ်များ (ဒီများကို သိမ်းပါ!)",
+      "ar": "Backup Codes (Save These!)",
+      "fil": "Backup Codes (Save These!)",
+      "fr": "Backup Codes (Save These!)",
+      "ht": "Backup Codes (Save These!)",
+      "kmr": "Backup Codes (Save These!)",
+      "ko": "Backup Codes (Save These!)",
+      "pt-BR": "Backup Codes (Save These!)",
+      "ru": "Backup Codes (Save These!)",
+      "so": "Backup Codes (Save These!)",
+      "vi": "Backup Codes (Save These!)",
+      "zh-Hans": "Backup Codes (Save These!)"
     },
     "totp_cancel": {
       "en": "Cancel",
       "es": "Cancelar",
-      "my": "ပယ်ဖျက်ပါ"
+      "my": "ပယ်ဖျက်ပါ",
+      "ar": "Cancel",
+      "fil": "Cancel",
+      "fr": "Cancel",
+      "ht": "Cancel",
+      "kmr": "Cancel",
+      "ko": "Cancel",
+      "pt-BR": "Cancel",
+      "ru": "Cancel",
+      "so": "Cancel",
+      "vi": "Cancel",
+      "zh-Hans": "Cancel"
     },
     "totp_manual_prompt": {
       "en": "Or enter this secret manually:",
       "es": "O introduce este código manualmente:",
-      "my": "သို့မဟုတ် ဤလျှို့ဝှက်ကုဒ်ကို ကိုယ်တိုင် ရိုက်ထည့်ပါ:"
+      "my": "သို့မဟုတ် ဤလျှို့ဝှက်ကုဒ်ကို ကိုယ်တိုင် ရိုက်ထည့်ပါ:",
+      "ar": "Or enter this secret manually:",
+      "fil": "Or enter this secret manually:",
+      "fr": "Or enter this secret manually:",
+      "ht": "Or enter this secret manually:",
+      "kmr": "Or enter this secret manually:",
+      "ko": "Or enter this secret manually:",
+      "pt-BR": "Or enter this secret manually:",
+      "ru": "Or enter this secret manually:",
+      "so": "Or enter this secret manually:",
+      "vi": "Or enter this secret manually:",
+      "zh-Hans": "Or enter this secret manually:"
     },
     "totp_scan_prompt": {
       "en": "Scan this QR code with your authenticator app:",
       "es": "Escanea este código QR con tu app autenticadora:",
-      "my": "သင့် အတည်ပြုအပ်ကို အသုံးပြု၍ ဤ QR ကုဒ်ကို စကင်ဖတ်ပါ:"
+      "my": "သင့် အတည်ပြုအပ်ကို အသုံးပြု၍ ဤ QR ကုဒ်ကို စကင်ဖတ်ပါ:",
+      "ar": "Scan this QR code with your authenticator app:",
+      "fil": "Scan this QR code with your authenticator app:",
+      "fr": "Scan this QR code with your authenticator app:",
+      "ht": "Scan this QR code with your authenticator app:",
+      "kmr": "Scan this QR code with your authenticator app:",
+      "ko": "Scan this QR code with your authenticator app:",
+      "pt-BR": "Scan this QR code with your authenticator app:",
+      "ru": "Scan this QR code with your authenticator app:",
+      "so": "Scan this QR code with your authenticator app:",
+      "vi": "Scan this QR code with your authenticator app:",
+      "zh-Hans": "Scan this QR code with your authenticator app:"
     },
     "totp_setup_title": {
       "en": "🔐 Setup Two-Factor Authentication",
       "es": "🔐 Configurar autenticación en dos factores",
-      "my": "🔐 နှစ်ဆင့်အတည်ပြုခြင်း စတင်သန့်ရှင်းခြင်း"
+      "my": "🔐 နှစ်ဆင့်အတည်ပြုခြင်း စတင်သန့်ရှင်းခြင်း",
+      "ar": "🔐 Setup Two-Factor Authentication",
+      "fil": "🔐 Setup Two-Factor Authentication",
+      "fr": "🔐 Setup Two-Factor Authentication",
+      "ht": "🔐 Setup Two-Factor Authentication",
+      "kmr": "🔐 Setup Two-Factor Authentication",
+      "ko": "🔐 Setup Two-Factor Authentication",
+      "pt-BR": "🔐 Setup Two-Factor Authentication",
+      "ru": "🔐 Setup Two-Factor Authentication",
+      "so": "🔐 Setup Two-Factor Authentication",
+      "vi": "🔐 Setup Two-Factor Authentication",
+      "zh-Hans": "🔐 Setup Two-Factor Authentication"
     },
     "totp_status_subtitle": {
       "en": "Enhanced security using time-based codes",
       "es": "Seguridad reforzada con códigos basados en tiempo",
-      "my": "အချိန်အခြေပြု ကုဒ်များ အသုံးပြု၍ လုံခြုံရေး တိုးတက်စေသည်"
+      "my": "အချိန်အခြေပြု ကုဒ်များ အသုံးပြု၍ လုံခြုံရေး တိုးတက်စေသည်",
+      "ar": "Enhanced security using time-based codes",
+      "fil": "Enhanced security using time-based codes",
+      "fr": "Enhanced security using time-based codes",
+      "ht": "Enhanced security using time-based codes",
+      "kmr": "Enhanced security using time-based codes",
+      "ko": "Enhanced security using time-based codes",
+      "pt-BR": "Enhanced security using time-based codes",
+      "ru": "Enhanced security using time-based codes",
+      "so": "Enhanced security using time-based codes",
+      "vi": "Enhanced security using time-based codes",
+      "zh-Hans": "Enhanced security using time-based codes"
     },
     "totp_status_title": {
       "en": "🔐 Two-Factor Authentication Status",
       "es": "🔐 Estado de la autenticación en dos factores",
-      "my": "🔐 နှစ်ဆင့်အတည်ပြုခြင်း အခြေအနေ"
+      "my": "🔐 နှစ်ဆင့်အတည်ပြုခြင်း အခြေအနေ",
+      "ar": "🔐 Two-Factor Authentication Status",
+      "fil": "🔐 Two-Factor Authentication Status",
+      "fr": "🔐 Two-Factor Authentication Status",
+      "ht": "🔐 Two-Factor Authentication Status",
+      "kmr": "🔐 Two-Factor Authentication Status",
+      "ko": "🔐 Two-Factor Authentication Status",
+      "pt-BR": "🔐 Two-Factor Authentication Status",
+      "ru": "🔐 Two-Factor Authentication Status",
+      "so": "🔐 Two-Factor Authentication Status",
+      "vi": "🔐 Two-Factor Authentication Status",
+      "zh-Hans": "🔐 Two-Factor Authentication Status"
     },
     "totp_verify": {
       "en": "Verify & Enable",
       "es": "Verificar y habilitar",
-      "my": "အတည်ပြုပြီး ဖွင့်ပါ"
+      "my": "အတည်ပြုပြီး ဖွင့်ပါ",
+      "ar": "Verify & Enable",
+      "fil": "Verify & Enable",
+      "fr": "Verify & Enable",
+      "ht": "Verify & Enable",
+      "kmr": "Verify & Enable",
+      "ko": "Verify & Enable",
+      "pt-BR": "Verify & Enable",
+      "ru": "Verify & Enable",
+      "so": "Verify & Enable",
+      "vi": "Verify & Enable",
+      "zh-Hans": "Verify & Enable"
     },
     "totp_verify_label": {
       "en": "Verify code from your app:",
       "es": "Verifica el código de tu app:",
-      "my": "သင့်အပ်မှ ကုဒ်ကို အတည်ပြုပါ:"
+      "my": "သင့်အပ်မှ ကုဒ်ကို အတည်ပြုပါ:",
+      "ar": "Verify code from your app:",
+      "fil": "Verify code from your app:",
+      "fr": "Verify code from your app:",
+      "ht": "Verify code from your app:",
+      "kmr": "Verify code from your app:",
+      "ko": "Verify code from your app:",
+      "pt-BR": "Verify code from your app:",
+      "ru": "Verify code from your app:",
+      "so": "Verify code from your app:",
+      "vi": "Verify code from your app:",
+      "zh-Hans": "Verify code from your app:"
     },
     "two_fa_note": {
       "en": "Two-factor authentication stays connected—your existing authenticator codes will continue to work after changing your password.",
       "es": "La autenticación en dos factores seguirá conectada: tus códigos actuales seguirán funcionando tras cambiar la contraseña.",
-      "my": "နှစ်ဆင့်အတည်ပြုခြင်းသည် ဆက်လက် အသုံးပြုနိုင်ပါသည် — သင်၏ လက်ရှိ အတည်ပြုကုဒ်များသည် စကားဝှက်ပြောင်းလဲပြီးနောက်တွင် သက်ဆိုင်ပါမည်။"
+      "my": "နှစ်ဆင့်အတည်ပြုခြင်းသည် ဆက်လက် အသုံးပြုနိုင်ပါသည် — သင်၏ လက်ရှိ အတည်ပြုကုဒ်များသည် စကားဝှက်ပြောင်းလဲပြီးနောက်တွင် သက်ဆိုင်ပါမည်။",
+      "ar": "Two-factor authentication stays connected—your existing authenticator codes will continue to work after changing your password.",
+      "fil": "Two-factor authentication stays connected—your existing authenticator codes will continue to work after changing your password.",
+      "fr": "Two-factor authentication stays connected—your existing authenticator codes will continue to work after changing your password.",
+      "ht": "Two-factor authentication stays connected—your existing authenticator codes will continue to work after changing your password.",
+      "kmr": "Two-factor authentication stays connected—your existing authenticator codes will continue to work after changing your password.",
+      "ko": "Two-factor authentication stays connected—your existing authenticator codes will continue to work after changing your password.",
+      "pt-BR": "Two-factor authentication stays connected—your existing authenticator codes will continue to work after changing your password.",
+      "ru": "Two-factor authentication stays connected—your existing authenticator codes will continue to work after changing your password.",
+      "so": "Two-factor authentication stays connected—your existing authenticator codes will continue to work after changing your password.",
+      "vi": "Two-factor authentication stays connected—your existing authenticator codes will continue to work after changing your password.",
+      "zh-Hans": "Two-factor authentication stays connected—your existing authenticator codes will continue to work after changing your password."
     },
     "unlock_action": {
       "en": "🔓 Lock",
       "es": "🔓 Bloquear",
-      "my": "🔓 ပိတ်ပါ"
+      "my": "🔓 ပိတ်ပါ",
+      "ar": "🔓 Lock",
+      "fil": "🔓 Lock",
+      "fr": "🔓 Lock",
+      "ht": "🔓 Lock",
+      "kmr": "🔓 Lock",
+      "ko": "🔓 Lock",
+      "pt-BR": "🔓 Lock",
+      "ru": "🔓 Lock",
+      "so": "🔓 Lock",
+      "vi": "🔓 Lock",
+      "zh-Hans": "🔓 Lock"
     },
     "unlock_button": {
       "en": "Unlock Vault",
       "es": "Desbloquear bóveda",
-      "my": "ဗေါ့ဖွင့်ပါ"
+      "my": "ဗေါ့ဖွင့်ပါ",
+      "ar": "Unlock Vault",
+      "fil": "Unlock Vault",
+      "fr": "Unlock Vault",
+      "ht": "Unlock Vault",
+      "kmr": "Unlock Vault",
+      "ko": "Unlock Vault",
+      "pt-BR": "Unlock Vault",
+      "ru": "Unlock Vault",
+      "so": "Unlock Vault",
+      "vi": "Unlock Vault",
+      "zh-Hans": "Unlock Vault"
     },
     "unlock_footer": {
       "en": "This vault file (.ehv) contains your encrypted data. Save it after making changes.",
       "es": "Este archivo de bóveda (.ehv) contiene tus datos cifrados. Guárdalo después de realizar cambios.",
-      "my": "ဤဗေါ့ဖိုင် (.ehv) တွင် သင်၏ ကုဒ်ဖြင့်လုံခြုံထားသော ဒေတာများ ပါဝင်သည်။ ပြင်ဆင်ချက်များ ပြုလုပ်ပြီးနောက် သိမ်းဆည်းပါ။"
+      "my": "ဤဗေါ့ဖိုင် (.ehv) တွင် သင်၏ ကုဒ်ဖြင့်လုံခြုံထားသော ဒေတာများ ပါဝင်သည်။ ပြင်ဆင်ချက်များ ပြုလုပ်ပြီးနောက် သိမ်းဆည်းပါ။",
+      "ar": "This vault file (.ehv) contains your encrypted data. Save it after making changes.",
+      "fil": "This vault file (.ehv) contains your encrypted data. Save it after making changes.",
+      "fr": "This vault file (.ehv) contains your encrypted data. Save it after making changes.",
+      "ht": "This vault file (.ehv) contains your encrypted data. Save it after making changes.",
+      "kmr": "This vault file (.ehv) contains your encrypted data. Save it after making changes.",
+      "ko": "This vault file (.ehv) contains your encrypted data. Save it after making changes.",
+      "pt-BR": "This vault file (.ehv) contains your encrypted data. Save it after making changes.",
+      "ru": "This vault file (.ehv) contains your encrypted data. Save it after making changes.",
+      "so": "This vault file (.ehv) contains your encrypted data. Save it after making changes.",
+      "vi": "This vault file (.ehv) contains your encrypted data. Save it after making changes.",
+      "zh-Hans": "This vault file (.ehv) contains your encrypted data. Save it after making changes."
     },
     "unlock_password_placeholder": {
       "en": "Enter password",
       "es": "Introduce la contraseña",
-      "my": "စကားဝှက်ထည့်ပါ"
+      "my": "စကားဝှက်ထည့်ပါ",
+      "ar": "Enter password",
+      "fil": "Enter password",
+      "fr": "Enter password",
+      "ht": "Enter password",
+      "kmr": "Enter password",
+      "ko": "Enter password",
+      "pt-BR": "Enter password",
+      "ru": "Enter password",
+      "so": "Enter password",
+      "vi": "Enter password",
+      "zh-Hans": "Enter password"
     },
     "unlock_subtitle": {
       "en": "This .ehv vault file contains encrypted medical records",
       "es": "Este archivo .ehv contiene historias clínicas cifradas",
-      "my": "ဤ .ehv ဗေါ့ဖိုင်တွင် ကုသမှတ်တမ်းများကို ကုတ်လုံခြုံထားပါသည်"
+      "my": "ဤ .ehv ဗေါ့ဖိုင်တွင် ကုသမှတ်တမ်းများကို ကုတ်လုံခြုံထားပါသည်",
+      "ar": "This .ehv vault file contains encrypted medical records",
+      "fil": "This .ehv vault file contains encrypted medical records",
+      "fr": "This .ehv vault file contains encrypted medical records",
+      "ht": "This .ehv vault file contains encrypted medical records",
+      "kmr": "This .ehv vault file contains encrypted medical records",
+      "ko": "This .ehv vault file contains encrypted medical records",
+      "pt-BR": "This .ehv vault file contains encrypted medical records",
+      "ru": "This .ehv vault file contains encrypted medical records",
+      "so": "This .ehv vault file contains encrypted medical records",
+      "vi": "This .ehv vault file contains encrypted medical records",
+      "zh-Hans": "This .ehv vault file contains encrypted medical records"
     },
     "unlock_title": {
       "en": "🔒 Health Vault Locked",
       "es": "🔒 Bóveda de salud bloqueada",
-      "my": "🔒 ကျန်းမာရေးဗေါ့ ပိတ်ထားသည်"
+      "my": "🔒 ကျန်းမာရေးဗေါ့ ပိတ်ထားသည်",
+      "ar": "🔒 Health Vault Locked",
+      "fil": "🔒 Health Vault Locked",
+      "fr": "🔒 Health Vault Locked",
+      "ht": "🔒 Health Vault Locked",
+      "kmr": "🔒 Health Vault Locked",
+      "ko": "🔒 Health Vault Locked",
+      "pt-BR": "🔒 Health Vault Locked",
+      "ru": "🔒 Health Vault Locked",
+      "so": "🔒 Health Vault Locked",
+      "vi": "🔒 Health Vault Locked",
+      "zh-Hans": "🔒 Health Vault Locked"
     },
     "unlock_totp_placeholder": {
       "en": "6-digit code",
       "es": "Código de 6 dígitos",
-      "my": "၆ လုံးကိန်းကုဒ်"
+      "my": "၆ လုံးကိန်းကုဒ်",
+      "ar": "6-digit code",
+      "fil": "6-digit code",
+      "fr": "6-digit code",
+      "ht": "6-digit code",
+      "kmr": "6-digit code",
+      "ko": "6-digit code",
+      "pt-BR": "6-digit code",
+      "ru": "6-digit code",
+      "so": "6-digit code",
+      "vi": "6-digit code",
+      "zh-Hans": "6-digit code"
     },
     "vault_notice": {
       "en": "This vault file (.ehv) will contain your encrypted data. Always download and save the updated .ehv file after making changes.",
       "es": "Este archivo de bóveda (.ehv) contendrá tus datos cifrados. Descarga y guarda siempre el archivo .ehv actualizado después de realizar cambios.",
-      "my": "ဤဗေါ့ဖိုင် (.ehv) တွင် သင်၏ ကုဒ်ဖြင့်လုံခြုံထားသော ဒေတာများ ပါဝင်ပါမည်။ ပြင်ဆင်မှုများ ပြုလုပ်ပြီးတိုင်း အပ်ဒိတ် .ehv ဖိုင်ကို ဒေါင်းလုဒ်ဆွဲပြီး သိမ်းဆည်းပါ။"
+      "my": "ဤဗေါ့ဖိုင် (.ehv) တွင် သင်၏ ကုဒ်ဖြင့်လုံခြုံထားသော ဒေတာများ ပါဝင်ပါမည်။ ပြင်ဆင်မှုများ ပြုလုပ်ပြီးတိုင်း အပ်ဒိတ် .ehv ဖိုင်ကို ဒေါင်းလုဒ်ဆွဲပြီး သိမ်းဆည်းပါ။",
+      "ar": "This vault file (.ehv) will contain your encrypted data. Always download and save the updated .ehv file after making changes.",
+      "fil": "This vault file (.ehv) will contain your encrypted data. Always download and save the updated .ehv file after making changes.",
+      "fr": "This vault file (.ehv) will contain your encrypted data. Always download and save the updated .ehv file after making changes.",
+      "ht": "This vault file (.ehv) will contain your encrypted data. Always download and save the updated .ehv file after making changes.",
+      "kmr": "This vault file (.ehv) will contain your encrypted data. Always download and save the updated .ehv file after making changes.",
+      "ko": "This vault file (.ehv) will contain your encrypted data. Always download and save the updated .ehv file after making changes.",
+      "pt-BR": "This vault file (.ehv) will contain your encrypted data. Always download and save the updated .ehv file after making changes.",
+      "ru": "This vault file (.ehv) will contain your encrypted data. Always download and save the updated .ehv file after making changes.",
+      "so": "This vault file (.ehv) will contain your encrypted data. Always download and save the updated .ehv file after making changes.",
+      "vi": "This vault file (.ehv) will contain your encrypted data. Always download and save the updated .ehv file after making changes.",
+      "zh-Hans": "This vault file (.ehv) will contain your encrypted data. Always download and save the updated .ehv file after making changes."
     }
   }
 }
