@@ -3969,9 +3969,6 @@
                 // Generate initial vault identity
                 this.vaultIdentity = this.generateVaultName();
                 
-                // Check for embedded data
-                this.checkInitialization();
-                
                 // Initialize state
                 this.hasUnsavedChanges = false;
                 this.sessionPassword = null;
@@ -3999,6 +3996,10 @@
                 // Application version metadata
                 this.version = APP_VERSION;
                 this.lastUpdated = APP_LAST_UPDATED;
+
+                // Check for embedded data
+                this.checkInitialization();
+
                 this.applyVersionMetadata();
 
                 // Initialize
