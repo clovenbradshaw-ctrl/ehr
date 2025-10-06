@@ -3988,7 +3988,29 @@
 
                 if (dataContent && dataContent !== '') {
                     try {
-                        const vaultData = JSON.parse(dataContent);
+                        let vaultData = JSON.parse(dataContent);
+
+                        if (vaultData.compressed && vaultData.data) {
+                            const pakoInstance = this.getCompressionLibrary();
+
+                            if (pakoInstance && typeof pakoInstance.inflate === 'function') {
+                                try {
+                                    const binary = atob(vaultData.data);
+                                    const bytes = new Uint8Array(binary.length);
+                                    for (let i = 0; i < binary.length; i++) {
+                                        bytes[i] = binary.charCodeAt(i);
+                                    }
+
+                                    const decompressed = pakoInstance.inflate(bytes, { to: 'string' });
+                                    vaultData = JSON.parse(decompressed);
+                                } catch (error) {
+                                    console.error('Failed to decompress vault data', error);
+                                    throw new Error('Unable to decompress vault file. File may be corrupted.');
+                                }
+                            } else {
+                                throw new Error('Compression library not available. Cannot open compressed vault.');
+                            }
+                        }
                         this.isInitialized = vaultData.initialized;
                         this.encryptedData = vaultData.data;
                         this.savedModules = vaultData.modules;
@@ -4554,6 +4576,27 @@
                     parsedVault = JSON.parse(embeddedText);
                 } catch (error) {
                     throw new Error('The selected file contains unreadable encrypted vault data.');
+                }
+
+                if (parsedVault.compressed && parsedVault.data) {
+                    const pakoInstance = this.getCompressionLibrary();
+
+                    if (pakoInstance && typeof pakoInstance.inflate === 'function') {
+                        try {
+                            const binary = atob(parsedVault.data);
+                            const bytes = new Uint8Array(binary.length);
+                            for (let i = 0; i < binary.length; i++) {
+                                bytes[i] = binary.charCodeAt(i);
+                            }
+
+                            const decompressed = pakoInstance.inflate(bytes, { to: 'string' });
+                            parsedVault = JSON.parse(decompressed);
+                        } catch (error) {
+                            throw new Error('Failed to decompress imported vault data.');
+                        }
+                    } else {
+                        throw new Error('Compression library unavailable. Cannot import compressed vault.');
+                    }
                 }
 
                 if (!parsedVault || typeof parsedVault !== 'object' || !parsedVault.data) {
@@ -5591,7 +5634,7 @@
                     this.temporaryAccess = null;
                 }
 
-                dataScript.textContent = JSON.stringify({
+                const vaultData = {
                     initialized: true,
                     encrypted: true,
                     version: schemaManager.currentVersion,
@@ -5604,7 +5647,28 @@
                     vaultIdentity: this.vaultIdentity,
                     emergencyAccess: emergencyAccess,
                     temporaryAccess: this.temporaryAccess || null
-                });
+                };
+
+                const vaultJSON = JSON.stringify(vaultData);
+                const pakoInstance = this.getCompressionLibrary();
+
+                if (pakoInstance && typeof pakoInstance.deflate === 'function') {
+                    try {
+                        const compressed = pakoInstance.deflate(vaultJSON, { level: 9 });
+                        const binary = String.fromCharCode(...compressed);
+                        const base64 = btoa(binary);
+
+                        dataScript.textContent = JSON.stringify({
+                            compressed: true,
+                            data: base64
+                        });
+                    } catch (error) {
+                        console.warn('Vault compression failed, storing uncompressed', error);
+                        dataScript.textContent = JSON.stringify(vaultData);
+                    }
+                } else {
+                    dataScript.textContent = JSON.stringify(vaultData);
+                }
 
                 this.emergencyAccessConfig = emergencyAccess;
                 this.pendingTemporaryAccessRemoval = false;
@@ -6690,11 +6754,11 @@
                                 let finalBytes = bytes;
                                 let isCompressed = false;
 
-                                if (compress && bytes.length > 1024) {
+                                if (compress && bytes.length > 10240) {
                                     const pakoInstance = this.getCompressionLibrary();
                                     if (pakoInstance && typeof pakoInstance.deflate === 'function') {
                                         try {
-                                            const compressed = pakoInstance.deflate(bytes, { level: 6 });
+                                            const compressed = pakoInstance.deflate(bytes, { level: 9 });
                                             if (compressed && compressed.length < bytes.length) {
                                                 finalBytes = compressed;
                                                 isCompressed = true;
