@@ -5593,7 +5593,7 @@
                     vaultIdentity: this.vaultIdentity,
                     emergencyAccess: emergencyAccess,
                     temporaryAccess: this.temporaryAccess || null
-                }, null, 2);
+                });
 
                 this.emergencyAccessConfig = emergencyAccess;
                 this.pendingTemporaryAccessRemoval = false;
@@ -8243,26 +8243,43 @@
                     const salt = crypto.getRandomValues(new Uint8Array(16));
                     const iv = crypto.getRandomValues(new Uint8Array(12));
                     const key = await this.deriveKey(password, salt);
-                    
+
                     const encrypted = await crypto.subtle.encrypt(
                         { name: 'AES-GCM', iv: iv },
                         key,
                         encoder.encode(JSON.stringify(data))
                     );
-                    
+
+                    const arrayToBase64 = (arr) => {
+                        let binary = '';
+                        arr.forEach(byte => {
+                            binary += String.fromCharCode(byte);
+                        });
+                        return btoa(binary);
+                    };
+
                     return {
-                        salt: Array.from(salt),
-                        iv: Array.from(iv),
-                        data: Array.from(new Uint8Array(encrypted))
+                        salt: arrayToBase64(salt),
+                        iv: arrayToBase64(iv),
+                        data: arrayToBase64(new Uint8Array(encrypted))
                     };
                 },
-                
+
                 async decrypt(encryptedData, password) {
-                    const salt = new Uint8Array(encryptedData.salt);
-                    const iv = new Uint8Array(encryptedData.iv);
-                    const data = new Uint8Array(encryptedData.data);
+                    const base64ToArray = (b64) => {
+                        const binary = atob(b64);
+                        const arr = new Uint8Array(binary.length);
+                        for (let i = 0; i < binary.length; i++) {
+                            arr[i] = binary.charCodeAt(i);
+                        }
+                        return arr;
+                    };
+
+                    const salt = base64ToArray(encryptedData.salt);
+                    const iv = base64ToArray(encryptedData.iv);
+                    const data = base64ToArray(encryptedData.data);
                     const key = await this.deriveKey(password, salt);
-                    
+
                     const decrypted = await crypto.subtle.decrypt(
                         { name: 'AES-GCM', iv: iv },
                         key,
