@@ -185,10 +185,29 @@
             background: #3b82f6;
             color: white;
         }
-        
+
         .btn-start:hover {
             background: #2563eb;
             transform: translateY(-2px);
+        }
+
+        .btn-import {
+            background: #f8fafc;
+            color: #1e293b;
+            border: 1px solid #cbd5f5;
+        }
+
+        .btn-import:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+
+        #vaultFileInput {
+            opacity: 0;
+            position: absolute;
+            width: 0;
+            height: 0;
+            pointer-events: none;
         }
         
         .security-bar {
@@ -1974,7 +1993,11 @@
             <button class="btn-start" onclick="app.startSetup()">
                 Get Started
             </button>
+            <button class="btn-import" id="openVaultBtn">
+                Open Existing Vault
+            </button>
         </div>
+        <input type="file" id="vaultFileInput" accept=".html,.htm,.xhtml" />
     </div>
 
     <!-- Main Content -->
@@ -3448,6 +3471,8 @@
                 document.getElementById('settingsBtn').addEventListener('click', () => this.openSettings());
                 document.getElementById('exportBtn').addEventListener('click', () => this.openExportOptions());
                 document.getElementById('lockBtn')?.addEventListener('click', () => this.toggleLock());
+                document.getElementById('openVaultBtn')?.addEventListener('click', () => this.promptVaultImport());
+                document.getElementById('vaultFileInput')?.addEventListener('change', (event) => this.handleVaultFileSelect(event));
 
                 document.getElementById('printSummaryBtn')?.addEventListener('click', () => {
                     this.closeExportOptions();
@@ -3576,7 +3601,131 @@
                 this.refreshProviderOptions();
                 this.refreshAllNoteTagSelectors();
             }
-            
+
+            promptVaultImport() {
+                const fileInput = document.getElementById('vaultFileInput');
+                if (!(fileInput instanceof HTMLInputElement)) {
+                    return;
+                }
+
+                fileInput.value = '';
+                fileInput.click();
+            }
+
+            async handleVaultFileSelect(event) {
+                const input = event?.target;
+                if (!(input instanceof HTMLInputElement)) {
+                    return;
+                }
+
+                const [file] = input.files || [];
+                if (!file) {
+                    return;
+                }
+
+                try {
+                    const fileText = await file.text();
+                    await this.importVaultFromHTML(fileText);
+                } catch (error) {
+                    console.error('Failed to import vault file', error);
+                    const message = error instanceof Error
+                        ? error.message
+                        : 'Unable to import the selected file. Please choose a valid encrypted vault.';
+                    alert(message);
+                } finally {
+                    input.value = '';
+                }
+            }
+
+            async importVaultFromHTML(fileContent) {
+                if (typeof fileContent !== 'string') {
+                    throw new Error('Invalid file content.');
+                }
+
+                if (typeof DOMParser === 'undefined') {
+                    throw new Error('This browser does not support opening encrypted vault files.');
+                }
+
+                const parser = new DOMParser();
+                const parsedDocument = parser.parseFromString(fileContent, 'text/html');
+
+                if (parsedDocument.querySelector('parsererror')) {
+                    throw new Error('The selected file could not be read as a valid HTML document.');
+                }
+
+                const embeddedScript = parsedDocument.getElementById('embedded-vault-data');
+                if (!embeddedScript) {
+                    throw new Error('The selected file does not contain any vault data to import.');
+                }
+
+                const embeddedText = embeddedScript.textContent?.trim();
+                if (!embeddedText) {
+                    throw new Error('The selected file does not contain encrypted vault data.');
+                }
+
+                let parsedVault;
+                try {
+                    parsedVault = JSON.parse(embeddedText);
+                } catch (error) {
+                    throw new Error('The selected file contains unreadable encrypted vault data.');
+                }
+
+                if (!parsedVault || typeof parsedVault !== 'object' || !parsedVault.data) {
+                    throw new Error('The selected file does not contain encrypted vault data.');
+                }
+
+                const targetScript = document.getElementById('embedded-vault-data');
+                if (!(targetScript instanceof HTMLScriptElement)) {
+                    throw new Error('Unable to prepare the application for the imported vault.');
+                }
+
+                const previousContent = targetScript.textContent;
+
+                try {
+                    targetScript.textContent = embeddedText;
+
+                    this.checkInitialization();
+
+                    if (!this.encryptedData) {
+                        throw new Error('No encrypted vault payload was detected in the selected file.');
+                    }
+
+                    this.sessionPassword = null;
+                    this.totpSecret = null;
+                    this.currentTOTPSecret = null;
+                    this.hasUnsavedChanges = false;
+                    this.isLocked = true;
+                    this.pendingSchemaNotice = null;
+
+                    const passwordInput = document.getElementById('unlock-password');
+                    if (passwordInput instanceof HTMLInputElement) {
+                        passwordInput.value = '';
+                        passwordInput.focus();
+                    }
+
+                    const totpInput = document.getElementById('totp-code');
+                    if (totpInput instanceof HTMLInputElement) {
+                        totpInput.value = '';
+                    }
+
+                    const lockBtn = document.getElementById('lockBtn');
+                    if (lockBtn) {
+                        lockBtn.style.display = 'none';
+                        lockBtn.innerHTML = '🔓 Lock';
+                    }
+
+                    this.updateSaveStatus();
+                } catch (error) {
+                    targetScript.textContent = previousContent || '';
+                    try {
+                        this.checkInitialization();
+                    } catch (restoreError) {
+                        console.error('Failed to restore previous vault after import error', restoreError);
+                    }
+                    throw error;
+                }
+            }
+
             startSetup() {
                 const identityHTML = `
                     <div id="vaultIdentityBlock" style="margin: 20px 0; padding: 20px; background: #eff6ff; border-radius: 8px; text-align: center;">
