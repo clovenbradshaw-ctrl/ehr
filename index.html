@@ -2861,77 +2861,78 @@
         <!-- Gender Affirming Care Module (Hidden by default) -->
         <div class="section module-section" id="gac-section" style="display: none;">
             <div class="section-header module">
-                <h2>🏳️‍⚧️ Gender Affirming Care</h2>
+                <h2 data-i18n-key="gac_section_title">🏳️‍⚧️ Gender Affirming Care</h2>
             </div>
             <div class="section-content">
-                <h3>Hormone Therapy</h3>
+                <h3 data-i18n-key="gac_hormone_heading">Hormone Therapy</h3>
                 <div class="grid-2">
                     <div class="field">
-                        <label>HRT Status</label>
+                        <label data-i18n-key="hrt_status_label">HRT Status</label>
                         <select class="form-data" data-field="hrtStatus">
-                            <option value="">Select...</option>
-                            <option>Not Started</option>
-                            <option>Active</option>
-                            <option>Paused</option>
-                            <option>Discontinued</option>
+                            <option value="" data-i18n-key="option_select_placeholder">Select...</option>
+                            <option data-i18n-key="hrt_status_option_not_started">Not Started</option>
+                            <option data-i18n-key="hrt_status_option_active">Active</option>
+                            <option data-i18n-key="hrt_status_option_paused">Paused</option>
+                            <option data-i18n-key="hrt_status_option_discontinued">Discontinued</option>
                         </select>
                     </div>
                     <div class="field">
-                        <label>HRT Start Date</label>
+                        <label data-i18n-key="hrt_start_date_label">HRT Start Date</label>
                         <input type="date" class="form-data" data-field="hrtStartDate" />
                     </div>
                 </div>
                 
                 <div class="field">
-                    <label>Current Hormone Regimen</label>
+                    <label data-i18n-key="current_hormone_regimen_label">Current Hormone Regimen</label>
                     <textarea rows="3" class="form-data" data-field="hormoneRegimen"></textarea>
                 </div>
                 
-                <h3>Gender-Affirming Procedures</h3>
+                <h3 data-i18n-key="gac_procedures_heading">Gender-Affirming Procedures</h3>
                 <div id="gac-procedures-container"></div>
-                <button class="add-btn no-print" id="addGACProcedureBtn">+ Add Procedure</button>
+                <button class="add-btn no-print" id="addGACProcedureBtn" data-i18n-key="add_procedure_button">+ Add Procedure</button>
 
-                <h3>Gender-Affirming Care Notes</h3>
+                <h3 data-i18n-key="gac_notes_heading">Gender-Affirming Care Notes</h3>
                 <div class="info-box">
-                    Track care plans, provider feedback, goals, and milestones that are specific to gender-affirming care. Each note supports optional event dates, provider tagging, and reusable tags for quick filtering.
+                    <p data-i18n-key="gac_notes_info_line1">Track care plans, provider feedback, goals, and milestones that are specific to gender-affirming care.</p>
+                    <p data-i18n-key="gac_notes_info_line2">Each note supports optional event dates, provider tagging, and reusable tags for quick filtering.</p>
                 </div>
                 <div id="gac-notes-container"></div>
-                <button class="add-btn no-print" id="addGACNoteBtn">+ Add GAC Note</button>
+                <button class="add-btn no-print" id="addGACNoteBtn" data-i18n-key="add_gac_note_button">+ Add GAC Note</button>
             </div>
         </div>
 
         <!-- Mental Health Module (Hidden by default) -->
         <div class="section module-section" id="mental-section" style="display: none;">
             <div class="section-header module">
-                <h2>🧠 Mental Health</h2>
+                <h2 data-i18n-key="mental_section_title">🧠 Mental Health</h2>
             </div>
             
             <div class="section-content">
-                <h3>Current Mental Health</h3>
+                <h3 data-i18n-key="mental_current_heading">Current Mental Health</h3>
                 <div class="field">
-                    <label>Diagnoses</label>
+                    <label data-i18n-key="mental_diagnoses_label">Diagnoses</label>
                     <textarea rows="2" class="form-data" data-field="mentalDiagnoses"></textarea>
                 </div>
-                
+
                 <div class="grid-2">
                     <div class="field">
-                        <label>Therapist/Counselor</label>
+                        <label data-i18n-key="therapist_label">Therapist/Counselor</label>
                         <input type="text" class="form-data" data-field="therapist" />
                     </div>
                     <div class="field">
-                        <label>Psychiatrist</label>
+                        <label data-i18n-key="psychiatrist_label">Psychiatrist</label>
                         <input type="text" class="form-data" data-field="psychiatrist" />
                     </div>
                 </div>
-                
-                <h3>Crisis Resources</h3>
+
+                <h3 data-i18n-key="mental_crisis_heading">Crisis Resources</h3>
                 <div class="field">
-                    <label>Crisis Contacts</label>
-                    <textarea rows="3" class="form-data" data-field="crisisContacts" placeholder="988 Suicide & Crisis Lifeline&#10;Crisis text line: Text HOME to 741741"></textarea>
+                    <label data-i18n-key="crisis_contacts_label">Crisis Contacts</label>
+                    <textarea rows="3" class="form-data" data-field="crisisContacts" data-i18n-placeholder="crisis_contacts_placeholder" placeholder="988 Suicide &amp; Crisis Lifeline&#10;Crisis text line: Text HOME to 741741"></textarea>
                 </div>
-                
+
                 <div class="field">
-                    <label>Safety Plan</label>
+                    <label data-i18n-key="safety_plan_label">Safety Plan</label>
                     <textarea rows="4" class="form-data" data-field="safetyPlan"></textarea>
                 </div>
             </div>
@@ -2940,47 +2941,47 @@
         <!-- Chronic Disease Module (Hidden by default) -->
         <div class="section module-section" id="chronic-section" style="display: none;">
             <div class="section-header module">
-                <h2>📊 Chronic Disease Management</h2>
+                <h2 data-i18n-key="chronic_section_title">📊 Chronic Disease Management</h2>
             </div>
             <div class="section-content">
-                <h3>Diabetes Management</h3>
+                <h3 data-i18n-key="diabetes_management_heading">Diabetes Management</h3>
                 <div class="checkbox-item">
                     <input type="checkbox" id="has-diabetes" class="form-data" data-field="hasDiabetes">
-                    <label for="has-diabetes">I have diabetes</label>
+                    <label for="has-diabetes" data-i18n-key="have_diabetes_label">I have diabetes</label>
                 </div>
-                
+
                 <div id="diabetesFields" style="display: none; margin-top: 15px;">
                     <div class="grid-3">
                         <div class="field">
-                            <label>Type</label>
+                            <label data-i18n-key="diabetes_type_label">Type</label>
                             <select class="form-data" data-field="diabetesType">
-                                <option value="">Select...</option>
-                                <option>Type 1</option>
-                                <option>Type 2</option>
-                                <option>Gestational</option>
-                                <option>Other</option>
+                                <option value="" data-i18n-key="option_select_placeholder">Select...</option>
+                                <option data-i18n-key="diabetes_type_option_1">Type 1</option>
+                                <option data-i18n-key="diabetes_type_option_2">Type 2</option>
+                                <option data-i18n-key="diabetes_type_option_gestational">Gestational</option>
+                                <option data-i18n-key="diabetes_type_option_other">Other</option>
                             </select>
                         </div>
                         <div class="field">
-                            <label>Last A1C</label>
+                            <label data-i18n-key="last_a1c_label">Last A1C</label>
                             <input type="text" class="form-data" data-field="lastA1c" placeholder="7.2" />
                         </div>
                         <div class="field">
-                            <label>A1C Date</label>
+                            <label data-i18n-key="a1c_date_label">A1C Date</label>
                             <input type="date" class="form-data" data-field="a1cDate" />
                         </div>
                     </div>
                 </div>
-                
-                <h3>Blood Pressure Management</h3>
+
+                <h3 data-i18n-key="blood_pressure_management_heading">Blood Pressure Management</h3>
                 <div class="checkbox-item">
                     <input type="checkbox" id="has-hypertension" class="form-data" data-field="hasHypertension">
-                    <label for="has-hypertension">I have hypertension</label>
+                    <label for="has-hypertension" data-i18n-key="have_hypertension_label">I have hypertension</label>
                 </div>
-                
+
                 <div id="hypertensionFields" style="display: none; margin-top: 15px;">
                     <div class="field">
-                        <label>Target Blood Pressure</label>
+                        <label data-i18n-key="target_bp_label">Target Blood Pressure</label>
                         <input type="text" class="form-data" data-field="targetBP" placeholder="< 130/80" />
                     </div>
                 </div>
@@ -2988,9 +2989,9 @@
         </div>
 
     <div class="info-box" style="margin-top: 30px;">
-        <strong>Important:</strong> This vault file (.ehv) contains all your encrypted medical data.
-        After making changes, click "Download Updated Vault (.ehv)" to save the new file.
-        Replace your old file with the new one. Keep backups in secure locations.
+        <strong data-i18n-key="important_notice">Important:</strong> <span data-i18n-key="final_info_line1">This vault file (.ehv) contains all your encrypted medical data.</span>
+        <span data-i18n-key="final_info_line2">After making changes, click "Download Updated Vault (.ehv)" to save the new file.</span>
+        <span data-i18n-key="final_info_line3">Replace your old file with the new one. Keep backups in secure locations.</span>
     </div>
     </div>
 
@@ -3288,6 +3289,7 @@
                 this.languageSelectors = [];
                 this.currentLanguage = 'en';
                 this.fallbackLanguage = 'en';
+                this.allowedLanguages = ['en', 'es'];
             }
 
             async init() {
@@ -3323,6 +3325,13 @@
 
                 if (!this.translations || typeof this.translations !== 'object') {
                     this.translations = { en: {} };
+                }
+
+                if (Array.isArray(this.allowedLanguages) && this.allowedLanguages.length) {
+                    this.translations = Object.fromEntries(
+                        Object.entries(this.translations)
+                            .filter(([lang]) => this.allowedLanguages.includes(lang))
+                    );
                 }
 
                 if (!this.translations.en) {
@@ -3379,8 +3388,26 @@
                     return { en: {} };
                 }
 
+                const allowedLanguageSet = Array.isArray(this.allowedLanguages) && this.allowedLanguages.length
+                    ? new Set(this.allowedLanguages)
+                    : null;
+
                 if (raw.en && typeof raw.en === 'object' && !Array.isArray(raw.en)) {
-                    return raw;
+                    if (!allowedLanguageSet) {
+                        return raw;
+                    }
+                    const filtered = {};
+                    const languages = Object.keys(raw).filter(lang => allowedLanguageSet.has(lang));
+                    if (!languages.length) {
+                        return { en: raw.en };
+                    }
+                    languages.forEach(lang => {
+                        filtered[lang] = raw[lang] || {};
+                    });
+                    if (!filtered.en) {
+                        filtered.en = {};
+                    }
+                    return filtered;
                 }
 
                 const languageKeyPattern = /^[a-z]{2,3}(?:-[A-Za-z]{2,4})?$/;
@@ -3409,8 +3436,17 @@
                     return { en: {} };
                 }
 
+                const filteredLanguages = allowedLanguageSet
+                    ? Array.from(languageSet).filter(lang => allowedLanguageSet.has(lang))
+                    : Array.from(languageSet);
+
+                if (!filteredLanguages.length) {
+                    return { en: {} };
+                }
+
+                const filteredLanguageSet = new Set(filteredLanguages);
                 const result = {};
-                languageSet.forEach(lang => {
+                filteredLanguages.forEach(lang => {
                     result[lang] = {};
                 });
 
@@ -3429,12 +3465,14 @@
                         if (!translationKey) {
                             return;
                         }
-                        keys.forEach(lang => {
-                            if (!result[lang]) {
-                                result[lang] = {};
-                            }
-                            result[lang][translationKey] = node[lang];
-                        });
+                        keys
+                            .filter(lang => filteredLanguageSet.has(lang))
+                            .forEach(lang => {
+                                if (!result[lang]) {
+                                    result[lang] = {};
+                                }
+                                result[lang][translationKey] = node[lang];
+                            });
                         return;
                     }
                     keys.forEach(key => assignTranslations(node[key], [...path, key]));
