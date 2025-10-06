@@ -930,6 +930,64 @@
             font-size: 9pt;
         }
 
+        .attachment-preview-modal {
+            max-width: 900px;
+        }
+
+        .attachment-preview-meta {
+            font-size: 10pt;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .attachment-preview-body {
+            min-height: 240px;
+            max-height: 65vh;
+            overflow-y: auto;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .attachment-preview-body img,
+        .attachment-preview-body video {
+            max-width: 100%;
+            max-height: 60vh;
+            border-radius: 8px;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25);
+        }
+
+        .attachment-preview-body audio {
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        .attachment-preview-text {
+            width: 100%;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Fira Code', 'Consolas', 'Courier New', monospace;
+            font-size: 10pt;
+            line-height: 1.5;
+            color: #0f172a;
+        }
+
+        .attachment-preview-error {
+            margin-top: 16px;
+            color: #dc2626;
+            font-size: 10pt;
+            text-align: center;
+        }
+
+        .attachment-preview-modal .modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
         .attachment-empty {
             font-size: 9pt;
             color: #94a3b8;
@@ -2579,6 +2637,25 @@
             </div>
         </div>
 
+        <div class="modal" id="attachmentPreviewModal">
+            <div class="modal-content attachment-preview-modal">
+                <div class="modal-header">
+                    <div>
+                        <h3 id="attachmentPreviewTitle">Attachment Preview</h3>
+                        <div class="attachment-preview-meta" id="attachmentPreviewMeta"></div>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="attachment-preview-body" id="attachmentPreviewContent"></div>
+                    <div class="attachment-preview-error" id="attachmentPreviewError" style="display: none;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="attachmentPreviewClose">Close</button>
+                    <button class="btn btn-primary" id="attachmentPreviewDownload">Download</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Extended Identity Module (Hidden by default) -->
         <div class="section module-section" id="identity-section" style="display: none;">
             <div class="section-header module">
@@ -3353,6 +3430,8 @@
                 this.schemaVersion = schemaManager.currentVersion;
                 this.pendingSchemaNotice = null;
                 this.attachments = [];
+                this.currentPreviewAttachmentId = null;
+                this.activePreviewObjectUrl = null;
 
                 // Application version metadata
                 this.version = APP_VERSION;
@@ -3708,6 +3787,13 @@
                 const attachmentsContainer = document.getElementById('attachments-container');
                 if (attachmentsContainer) {
                     attachmentsContainer.addEventListener('click', (event) => {
+                        const viewBtn = event.target.closest('button[data-attachment-view]');
+                        if (viewBtn) {
+                            event.preventDefault();
+                            this.viewAttachment(viewBtn.dataset.attachmentView);
+                            return;
+                        }
+
                         const downloadBtn = event.target.closest('button[data-attachment-download]');
                         if (downloadBtn) {
                             event.preventDefault();
@@ -3719,6 +3805,33 @@
                         if (removeBtn) {
                             event.preventDefault();
                             this.removeAttachment(removeBtn.dataset.attachmentRemove);
+                        }
+                    });
+                }
+
+                const attachmentPreviewClose = document.getElementById('attachmentPreviewClose');
+                if (attachmentPreviewClose) {
+                    attachmentPreviewClose.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        this.closeAttachmentPreview();
+                    });
+                }
+
+                const attachmentPreviewDownload = document.getElementById('attachmentPreviewDownload');
+                if (attachmentPreviewDownload) {
+                    attachmentPreviewDownload.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        if (this.currentPreviewAttachmentId) {
+                            this.downloadAttachment(this.currentPreviewAttachmentId);
+                        }
+                    });
+                }
+
+                const attachmentPreviewModal = document.getElementById('attachmentPreviewModal');
+                if (attachmentPreviewModal) {
+                    attachmentPreviewModal.addEventListener('click', (event) => {
+                        if (event.target === attachmentPreviewModal) {
+                            this.closeAttachmentPreview();
                         }
                     });
                 }
@@ -5536,6 +5649,9 @@
                 }
 
                 const id = attachment.id || this.generateAttachmentId();
+                if (!attachment.id) {
+                    attachment.id = id;
+                }
 
                 const item = document.createElement('div');
                 item.className = 'list-item attachment-item';
@@ -5570,6 +5686,13 @@
 
                 const actions = document.createElement('div');
                 actions.className = 'attachment-actions';
+
+                const viewBtn = document.createElement('button');
+                viewBtn.type = 'button';
+                viewBtn.className = 'btn btn-primary no-print';
+                viewBtn.textContent = 'View';
+                viewBtn.dataset.attachmentView = id;
+                actions.appendChild(viewBtn);
 
                 const downloadBtn = document.createElement('button');
                 downloadBtn.type = 'button';
@@ -5679,6 +5802,181 @@
                 this.attachments.splice(index, 1);
                 this.renderAttachmentList();
                 this.updateAttachmentStorage();
+            }
+
+            cleanupAttachmentPreview() {
+                if (this.activePreviewObjectUrl) {
+                    URL.revokeObjectURL(this.activePreviewObjectUrl);
+                    this.activePreviewObjectUrl = null;
+                }
+
+                const content = document.getElementById('attachmentPreviewContent');
+                if (content) {
+                    content.innerHTML = '';
+                }
+
+                const errorEl = document.getElementById('attachmentPreviewError');
+                if (errorEl) {
+                    errorEl.textContent = '';
+                    errorEl.style.display = 'none';
+                }
+
+                const metaEl = document.getElementById('attachmentPreviewMeta');
+                if (metaEl) {
+                    metaEl.textContent = '';
+                }
+
+                const downloadBtn = document.getElementById('attachmentPreviewDownload');
+                if (downloadBtn) {
+                    downloadBtn.disabled = true;
+                }
+            }
+
+            closeAttachmentPreview() {
+                const modal = document.getElementById('attachmentPreviewModal');
+                if (modal) {
+                    modal.classList.remove('active');
+                }
+
+                this.currentPreviewAttachmentId = null;
+                this.cleanupAttachmentPreview();
+            }
+
+            isTextPreviewType(mimeType) {
+                if (typeof mimeType !== 'string' || !mimeType) {
+                    return false;
+                }
+
+                if (mimeType.startsWith('text/')) {
+                    return true;
+                }
+
+                const normalized = mimeType.toLowerCase();
+                return normalized.endsWith('+json')
+                    || normalized.endsWith('+xml')
+                    || [
+                        'application/json',
+                        'application/xml',
+                        'application/x-yaml',
+                        'application/yaml',
+                        'application/javascript',
+                        'application/ecmascript',
+                        'application/sql'
+                    ].includes(normalized);
+            }
+
+            viewAttachment(id) {
+                if (!id) {
+                    return;
+                }
+
+                const attachment = Array.isArray(this.attachments)
+                    ? this.attachments.find(item => item.id === id)
+                    : null;
+
+                if (!attachment) {
+                    alert('Attachment not found.');
+                    return;
+                }
+
+                const modal = document.getElementById('attachmentPreviewModal');
+                const content = document.getElementById('attachmentPreviewContent');
+                const titleEl = document.getElementById('attachmentPreviewTitle');
+                const metaEl = document.getElementById('attachmentPreviewMeta');
+                const errorEl = document.getElementById('attachmentPreviewError');
+                const downloadBtn = document.getElementById('attachmentPreviewDownload');
+
+                if (!modal || !content || !titleEl || !metaEl || !errorEl || !downloadBtn) {
+                    this.downloadAttachment(id);
+                    return;
+                }
+
+                this.cleanupAttachmentPreview();
+
+                this.currentPreviewAttachmentId = id;
+                titleEl.textContent = attachment.name || 'Attachment';
+                metaEl.textContent = `${this.formatFileSize(attachment.size)} • ${(attachment.type || 'application/octet-stream')}`;
+                downloadBtn.disabled = false;
+
+                const mimeType = (attachment.type || 'application/octet-stream').toLowerCase();
+
+                try {
+                    const blob = this.base64ToBlob(attachment.data, attachment.type);
+
+                    if (mimeType.startsWith('image/')) {
+                        const url = URL.createObjectURL(blob);
+                        this.activePreviewObjectUrl = url;
+                        const img = document.createElement('img');
+                        img.src = url;
+                        img.alt = attachment.name || 'Attachment preview';
+                        content.appendChild(img);
+                        modal.classList.add('active');
+                        return;
+                    }
+
+                    if (mimeType.startsWith('video/')) {
+                        const url = URL.createObjectURL(blob);
+                        this.activePreviewObjectUrl = url;
+                        const video = document.createElement('video');
+                        video.controls = true;
+                        video.src = url;
+                        video.style.width = '100%';
+                        video.style.maxHeight = '60vh';
+                        content.appendChild(video);
+                        modal.classList.add('active');
+                        return;
+                    }
+
+                    if (mimeType.startsWith('audio/')) {
+                        const url = URL.createObjectURL(blob);
+                        this.activePreviewObjectUrl = url;
+                        const audio = document.createElement('audio');
+                        audio.controls = true;
+                        audio.src = url;
+                        content.appendChild(audio);
+                        modal.classList.add('active');
+                        return;
+                    }
+
+                    if (this.isTextPreviewType(mimeType)) {
+                        const loading = document.createElement('p');
+                        loading.textContent = 'Loading preview...';
+                        loading.style.textAlign = 'center';
+                        loading.style.color = '#64748b';
+                        content.appendChild(loading);
+                        modal.classList.add('active');
+
+                        blob.text().then((text) => {
+                            if (this.currentPreviewAttachmentId !== id) {
+                                return;
+                            }
+                            content.innerHTML = '';
+                            const pre = document.createElement('pre');
+                            pre.className = 'attachment-preview-text';
+                            pre.textContent = text;
+                            content.appendChild(pre);
+                        }).catch((error) => {
+                            console.error('Failed to render text attachment preview', error);
+                            if (this.currentPreviewAttachmentId !== id) {
+                                return;
+                            }
+                            content.innerHTML = '';
+                            errorEl.textContent = 'Unable to display this text attachment. Download to view.';
+                            errorEl.style.display = 'block';
+                        });
+
+                        return;
+                    }
+
+                    errorEl.textContent = 'Preview not available for this file type. Download to view.';
+                    errorEl.style.display = 'block';
+                    modal.classList.add('active');
+                } catch (error) {
+                    console.error('Failed to preview attachment', error);
+                    errorEl.textContent = 'Unable to preview this attachment. Download to view.';
+                    errorEl.style.display = 'block';
+                    modal.classList.add('active');
+                }
             }
 
             downloadAttachment(id) {
