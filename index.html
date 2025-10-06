@@ -346,11 +346,20 @@
             background: #64748b;
             color: white;
         }
-        
+
         .btn-secondary:hover {
             background: #475569;
         }
-        
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
         .btn:disabled {
             background: #94a3b8;
             cursor: not-allowed;
@@ -878,6 +887,57 @@
 
         .note-item {
             background: #f1f5f9;
+        }
+
+        .attachment-item {
+            padding-top: 14px;
+            padding-bottom: 14px;
+        }
+
+        .attachment-name {
+            font-weight: 600;
+            font-size: 10pt;
+            color: #1e293b;
+            margin-bottom: 6px;
+            word-break: break-word;
+        }
+
+        .attachment-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 9pt;
+            color: #475569;
+            margin-bottom: 12px;
+        }
+
+        .attachment-details span {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #e2e8f0;
+            padding: 2px 8px;
+            border-radius: 999px;
+        }
+
+        .attachment-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .attachment-actions .btn {
+            font-size: 9pt;
+        }
+
+        .attachment-empty {
+            font-size: 9pt;
+            color: #94a3b8;
+            background: #f1f5f9;
+            border: 1px dashed #cbd5e1;
+            border-radius: 6px;
+            padding: 16px;
+            text-align: center;
         }
 
         .note-header {
@@ -1771,6 +1831,7 @@
         <div class="tab" data-section="providers">👩‍⚕️ Providers</div>
         <div class="tab" data-section="insurance">🏥 Insurance</div>
         <div class="tab" data-section="notes">📝 Notes</div>
+        <div class="tab" data-section="attachments">📎 Attachments</div>
         <!-- Module tabs added dynamically -->
     </div>
 
@@ -1781,9 +1842,9 @@
                 <h3>⚙️ Settings & Modules</h3>
                 <p class="settings-version">
                     <strong>Version:</strong>
-                    <span id="appVersion">2024.03.29.1700</span>
+                    <span id="appVersion">2024.04.07.1200</span>
                     <span>Schema: <span id="schemaVersionDisplay">v2.0.0</span></span>
-                    <span>(Last updated: <span id="appLastUpdated">Mar 29, 2024 17:00 UTC</span>)</span>
+                    <span>(Last updated: <span id="appLastUpdated">Apr 07, 2024 12:00 UTC</span>)</span>
                 </p>
                 <!-- Update the version number and timestamp above to reflect the latest deployment each time changes are pushed. -->
             </div>
@@ -2503,6 +2564,21 @@
             </div>
         </div>
 
+        <div class="section" id="attachments-section">
+            <div class="section-header">
+                <h2>📎 Encrypted Attachments</h2>
+            </div>
+            <div class="section-content">
+                <div class="info-box">
+                    Securely store lab reports, imaging files, referrals, and other supporting documents directly inside your encrypted vault file.
+                </div>
+                <div id="attachments-container"></div>
+                <button class="add-btn no-print" id="addAttachmentBtn">+ Add Attachment</button>
+                <input type="file" id="attachmentFileInput" accept="*/*" multiple style="display: none;" />
+                <input type="hidden" class="form-data" data-field="attachments" id="attachmentStorage" value="[]" />
+            </div>
+        </div>
+
         <!-- Extended Identity Module (Hidden by default) -->
         <div class="section module-section" id="identity-section" style="display: none;">
             <div class="section-header module">
@@ -2962,8 +3038,8 @@
         };
         
         // Application metadata
-        const APP_VERSION = '2024.03.29.1700';
-        const APP_LAST_UPDATED = '2024-03-29T17:00:00Z';
+        const APP_VERSION = '2024.04.07.1200';
+        const APP_LAST_UPDATED = '2024-04-07T12:00:00Z';
         const DEFAULT_SCHEMA_VERSION = '1.0.0';
 
         class SchemaManager {
@@ -3276,6 +3352,7 @@
                 this.emergencyAccessConfig = null;
                 this.schemaVersion = schemaManager.currentVersion;
                 this.pendingSchemaNotice = null;
+                this.attachments = [];
 
                 // Application version metadata
                 this.version = APP_VERSION;
@@ -3597,6 +3674,7 @@
                 document.getElementById('addLabBtn')?.addEventListener('click', () => this.addLabResult());
                 document.getElementById('addCovidVaccineBtn')?.addEventListener('click', () => this.addCovidVaccine());
                 document.getElementById('addVaccineBtn')?.addEventListener('click', () => this.addVaccine());
+                document.getElementById('addAttachmentBtn')?.addEventListener('click', () => this.promptAttachmentUpload());
 
                 document.getElementById('addNoteTagBtn')?.addEventListener('click', () => this.handleAddNoteTag());
                 const noteTagInput = document.getElementById('noteTagInput');
@@ -3621,6 +3699,29 @@
                 }
 
                 document.getElementById('providers-container')?.addEventListener('input', () => this.refreshProviderOptions());
+
+                const attachmentFileInput = document.getElementById('attachmentFileInput');
+                if (attachmentFileInput) {
+                    attachmentFileInput.addEventListener('change', (event) => this.handleAttachmentSelect(event));
+                }
+
+                const attachmentsContainer = document.getElementById('attachments-container');
+                if (attachmentsContainer) {
+                    attachmentsContainer.addEventListener('click', (event) => {
+                        const downloadBtn = event.target.closest('button[data-attachment-download]');
+                        if (downloadBtn) {
+                            event.preventDefault();
+                            this.downloadAttachment(downloadBtn.dataset.attachmentDownload);
+                            return;
+                        }
+
+                        const removeBtn = event.target.closest('button[data-attachment-remove]');
+                        if (removeBtn) {
+                            event.preventDefault();
+                            this.removeAttachment(removeBtn.dataset.attachmentRemove);
+                        }
+                    });
+                }
 
                 // Track changes
                 const identityFields = new Set(
@@ -3686,6 +3787,7 @@
                 this.restoreNoteTagsFromStorage();
                 this.refreshProviderOptions();
                 this.refreshAllNoteTagSelectors();
+                this.restoreAttachmentsFromStorage();
             }
 
             promptVaultImport() {
@@ -4590,6 +4692,7 @@
                 this.initializeExistingNotes();
                 this.refreshProviderOptions();
                 this.refreshAllNoteTagSelectors();
+                this.restoreAttachmentsFromStorage(normalizedData.attachments);
             }
 
             calculateAge(dobString) {
@@ -5313,6 +5416,317 @@
                 }
             }
 
+            promptAttachmentUpload() {
+                const fileInput = document.getElementById('attachmentFileInput');
+                if (!(fileInput instanceof HTMLInputElement)) {
+                    return;
+                }
+
+                fileInput.value = '';
+                fileInput.click();
+            }
+
+            async handleAttachmentSelect(event) {
+                const input = event?.target;
+                if (!(input instanceof HTMLInputElement) || !input.files) {
+                    return;
+                }
+
+                const files = Array.from(input.files);
+                if (!files.length) {
+                    return;
+                }
+
+                const failures = [];
+
+                for (const file of files) {
+                    try {
+                        const base64 = await this.readFileAsBase64(file);
+                        const attachment = {
+                            id: this.generateAttachmentId(),
+                            name: typeof file.name === 'string' && file.name ? file.name : 'attachment',
+                            type: typeof file.type === 'string' && file.type ? file.type : 'application/octet-stream',
+                            size: typeof file.size === 'number' ? file.size : 0,
+                            lastModified: typeof file.lastModified === 'number' ? file.lastModified : null,
+                            addedAt: new Date().toISOString(),
+                            data: base64
+                        };
+                        this.attachments.push(attachment);
+                    } catch (error) {
+                        console.error('Failed to add attachment', error);
+                        failures.push(file?.name || 'Unnamed file');
+                    }
+                }
+
+                this.renderAttachmentList();
+                this.updateAttachmentStorage();
+
+                input.value = '';
+
+                if (failures.length) {
+                    alert(`Unable to add the following attachments: ${failures.join(', ')}`);
+                }
+            }
+
+            readFileAsBase64(file) {
+                return new Promise((resolve, reject) => {
+                    if (!(file instanceof Blob)) {
+                        reject(new Error('Invalid file'));
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        try {
+                            const result = reader.result;
+                            if (result instanceof ArrayBuffer) {
+                                const bytes = new Uint8Array(result);
+                                const chunkSize = 0x8000;
+                                let binary = '';
+                                for (let i = 0; i < bytes.length; i += chunkSize) {
+                                    const chunk = bytes.subarray(i, i + chunkSize);
+                                    binary += String.fromCharCode(...chunk);
+                                }
+                                resolve(btoa(binary));
+                            } else if (typeof result === 'string') {
+                                const base64Match = result.match(/^data:[^;]+;base64,(.*)$/);
+                                resolve(base64Match ? base64Match[1] : result);
+                            } else {
+                                reject(new Error('Unsupported file data'));
+                            }
+                        } catch (error) {
+                            reject(error instanceof Error ? error : new Error('Failed to read file'));
+                        }
+                    };
+
+                    reader.onerror = () => reject(reader.error || new Error('Failed to read file'));
+                    reader.readAsArrayBuffer(file);
+                });
+            }
+
+            generateAttachmentId() {
+                const random = Math.random().toString(16).substring(2, 10);
+                return `att_${Date.now().toString(36)}_${random}`;
+            }
+
+            renderAttachmentList() {
+                const container = document.getElementById('attachments-container');
+                if (!container) {
+                    return;
+                }
+
+                container.innerHTML = '';
+
+                if (!Array.isArray(this.attachments) || this.attachments.length === 0) {
+                    container.innerHTML = '<div class="attachment-empty">No attachments saved yet. Add files to keep them encrypted with your vault.</div>';
+                    return;
+                }
+
+                this.attachments.forEach((attachment) => {
+                    const element = this.createAttachmentElement(attachment);
+                    if (element) {
+                        container.appendChild(element);
+                    }
+                });
+            }
+
+            createAttachmentElement(attachment) {
+                if (!attachment || typeof attachment !== 'object') {
+                    return null;
+                }
+
+                const id = attachment.id || this.generateAttachmentId();
+
+                const item = document.createElement('div');
+                item.className = 'list-item attachment-item';
+                item.dataset.itemId = id;
+
+                const nameEl = document.createElement('div');
+                nameEl.className = 'attachment-name';
+                nameEl.textContent = attachment.name || 'Attachment';
+                item.appendChild(nameEl);
+
+                const details = document.createElement('div');
+                details.className = 'attachment-details';
+
+                const sizeSpan = document.createElement('span');
+                sizeSpan.textContent = this.formatFileSize(attachment.size);
+                details.appendChild(sizeSpan);
+
+                const typeSpan = document.createElement('span');
+                typeSpan.textContent = attachment.type || 'application/octet-stream';
+                details.appendChild(typeSpan);
+
+                if (attachment.addedAt) {
+                    const formatted = this.formatDateTime(attachment.addedAt);
+                    if (formatted && formatted !== '—') {
+                        const addedSpan = document.createElement('span');
+                        addedSpan.textContent = `Added ${formatted}`;
+                        details.appendChild(addedSpan);
+                    }
+                }
+
+                item.appendChild(details);
+
+                const actions = document.createElement('div');
+                actions.className = 'attachment-actions';
+
+                const downloadBtn = document.createElement('button');
+                downloadBtn.type = 'button';
+                downloadBtn.className = 'btn btn-secondary no-print';
+                downloadBtn.textContent = 'Download';
+                downloadBtn.dataset.attachmentDownload = id;
+                actions.appendChild(downloadBtn);
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'btn btn-danger no-print';
+                removeBtn.textContent = 'Remove';
+                removeBtn.dataset.attachmentRemove = id;
+                actions.appendChild(removeBtn);
+
+                item.appendChild(actions);
+
+                return item;
+            }
+
+            updateAttachmentStorage(options = {}) {
+                const storageInput = document.getElementById('attachmentStorage');
+                if (!storageInput) {
+                    return;
+                }
+
+                const sanitized = Array.isArray(this.attachments)
+                    ? this.attachments.map((attachment) => ({
+                        id: attachment.id,
+                        name: attachment.name,
+                        type: attachment.type,
+                        size: attachment.size,
+                        lastModified: attachment.lastModified,
+                        addedAt: attachment.addedAt,
+                        data: attachment.data
+                    }))
+                    : [];
+
+                storageInput.value = JSON.stringify(sanitized);
+                if (!options.silent) {
+                    this.markAsChanged();
+                }
+            }
+
+            restoreAttachmentsFromStorage(raw = null) {
+                const storageInput = document.getElementById('attachmentStorage');
+                if (!storageInput) {
+                    return;
+                }
+
+                let source = raw;
+                if (source === null || source === undefined) {
+                    source = storageInput.value;
+                }
+
+                let parsed = [];
+
+                if (Array.isArray(source)) {
+                    parsed = source;
+                } else if (typeof source === 'string' && source.trim() !== '') {
+                    try {
+                        parsed = JSON.parse(source);
+                    } catch (error) {
+                        console.warn('Failed to parse stored attachments', error);
+                        parsed = [];
+                    }
+                }
+
+                if (!Array.isArray(parsed)) {
+                    parsed = [];
+                }
+
+                const sanitized = parsed
+                    .filter(item => item && typeof item === 'object' && typeof item.data === 'string')
+                    .map(item => ({
+                        id: item.id || this.generateAttachmentId(),
+                        name: item.name || 'Attachment',
+                        type: item.type || 'application/octet-stream',
+                        size: typeof item.size === 'number' ? item.size : 0,
+                        lastModified: typeof item.lastModified === 'number' ? item.lastModified : null,
+                        addedAt: item.addedAt || new Date().toISOString(),
+                        data: item.data
+                    }));
+
+                this.attachments = sanitized;
+                this.renderAttachmentList();
+                this.updateAttachmentStorage({ silent: true });
+            }
+
+            removeAttachment(id) {
+                if (!id) {
+                    return;
+                }
+
+                const index = Array.isArray(this.attachments)
+                    ? this.attachments.findIndex(attachment => attachment.id === id)
+                    : -1;
+
+                if (index === -1) {
+                    return;
+                }
+
+                if (!confirm('Remove this attachment from your vault?')) {
+                    return;
+                }
+
+                this.attachments.splice(index, 1);
+                this.renderAttachmentList();
+                this.updateAttachmentStorage();
+            }
+
+            downloadAttachment(id) {
+                if (!id) {
+                    return;
+                }
+
+                const attachment = Array.isArray(this.attachments)
+                    ? this.attachments.find(item => item.id === id)
+                    : null;
+
+                if (!attachment) {
+                    alert('Attachment not found.');
+                    return;
+                }
+
+                try {
+                    const blob = this.base64ToBlob(attachment.data, attachment.type);
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = attachment.name || 'attachment';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                } catch (error) {
+                    console.error('Failed to download attachment', error);
+                    alert('Unable to download this attachment. Please try again.');
+                }
+            }
+
+            base64ToBlob(base64, mimeType = 'application/octet-stream') {
+                const clean = typeof base64 === 'string' ? base64.trim() : '';
+                if (!clean) {
+                    throw new Error('Attachment data is empty.');
+                }
+
+                const binary = atob(clean);
+                const length = binary.length;
+                const bytes = new Uint8Array(length);
+                for (let i = 0; i < length; i++) {
+                    bytes[i] = binary.charCodeAt(i);
+                }
+
+                return new Blob([bytes], { type: mimeType || 'application/octet-stream' });
+            }
+
             initializeExistingNotes() {
                 document.querySelectorAll('.note-item').forEach(noteEl => this.initializeNoteElement(noteEl));
             }
@@ -5851,6 +6265,20 @@
                     });
                     return entry;
                 });
+            }
+
+            formatFileSize(bytes) {
+                const size = typeof bytes === 'number' && Number.isFinite(bytes) && bytes >= 0 ? bytes : 0;
+
+                if (size === 0) {
+                    return '0 B';
+                }
+
+                const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+                const exponent = Math.min(Math.floor(Math.log(size) / Math.log(1024)), units.length - 1);
+                const value = size / Math.pow(1024, exponent);
+
+                return `${value.toFixed(exponent === 0 ? 0 : 1)} ${units[exponent]}`;
             }
 
             formatValue(value) {
