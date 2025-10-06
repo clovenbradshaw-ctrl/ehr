@@ -1651,14 +1651,14 @@
     <div class="unlock-screen" id="unlockScreen" style="display: none;">
         <div class="unlock-container">
             <h2>🔒 Health Vault Locked</h2>
-            <p>This file contains encrypted medical records</p>
+            <p>This .ehv vault file contains encrypted medical records</p>
             <input type="password" id="unlock-password" placeholder="Enter password">
             <div id="totpField" style="display: none;">
                 <input type="text" id="totp-code" placeholder="6-digit code" maxlength="6">
             </div>
             <button onclick="app.attemptUnlock()">Unlock Vault</button>
             <p style="margin-top: 15px; font-size: 9pt; color: #94a3b8;">
-                This HTML file contains your encrypted data.
+                This vault file (.ehv) contains your encrypted data.
                 Save it after making changes.
             </p>
         </div>
@@ -1898,8 +1898,8 @@
                     <input type="password" id="modalConfirmPassword" placeholder="Confirm password">
                 </div>
                 <div class="warning-box">
-                    <strong>Important:</strong> This HTML file will contain your encrypted data. 
-                    Always download and save the updated file after making changes.
+                    <strong>Important:</strong> This vault file (.ehv) will contain your encrypted data.
+                    Always download and save the updated .ehv file after making changes.
                 </div>
             </div>
             <div class="modal-footer">
@@ -1977,14 +1977,14 @@
     <div class="welcome-screen" id="welcomeScreen" style="display: none;">
         <h1>🏥 Personal Health Vault</h1>
         <p>
-            Welcome to your secure, self-contained medical record system. 
-            This single HTML file will become your encrypted health vault.
+            Welcome to your secure, self-contained medical record system.
+            This single .ehv vault file will become your encrypted health vault.
         </p>
         <div class="info-box" style="text-align: left;">
             <strong>How it works:</strong>
             <ul style="margin-top: 10px; margin-left: 20px;">
                 <li>All data is encrypted with your password</li>
-                <li>This HTML file contains everything - no separate data files</li>
+                <li>This .ehv vault file contains everything - no separate data files</li>
                 <li>Works offline, no internet required</li>
                 <li>Your data never leaves your device</li>
             </ul>
@@ -1997,7 +1997,7 @@
                 Open Existing Vault
             </button>
         </div>
-        <input type="file" id="vaultFileInput" accept=".html,.htm,.xhtml" />
+        <input type="file" id="vaultFileInput" accept=".ehv" />
     </div>
 
     <!-- Main Content -->
@@ -2595,8 +2595,8 @@
         </div>
 
     <div class="info-box" style="margin-top: 30px;">
-        <strong>Important:</strong> This HTML file contains all your encrypted medical data.
-        After making changes, click "Download Updated Vault" to save the new file.
+        <strong>Important:</strong> This vault file (.ehv) contains all your encrypted medical data.
+        After making changes, click "Download Updated Vault (.ehv)" to save the new file.
         Replace your old file with the new one. Keep backups in secure locations.
     </div>
     </div>
@@ -3623,21 +3623,28 @@
                     return;
                 }
 
+                const fileName = typeof file.name === 'string' ? file.name.toLowerCase() : '';
+                if (!fileName.endsWith('.ehv')) {
+                    alert('Please select a .ehv vault file created by this application.');
+                    input.value = '';
+                    return;
+                }
+
                 try {
                     const fileText = await file.text();
-                    await this.importVaultFromHTML(fileText);
+                    await this.importVaultFromVaultFile(file, fileText);
                 } catch (error) {
                     console.error('Failed to import vault file', error);
                     const message = error instanceof Error
                         ? error.message
-                        : 'Unable to import the selected file. Please choose a valid encrypted vault.';
+                        : 'Unable to import the selected file. Please choose a valid .ehv encrypted vault.';
                     alert(message);
                 } finally {
                     input.value = '';
                 }
             }
 
-            async importVaultFromHTML(fileContent) {
+            async importVaultFromVaultFile(file, fileContent) {
                 if (typeof fileContent !== 'string') {
                     throw new Error('Invalid file content.');
                 }
@@ -3646,11 +3653,16 @@
                     throw new Error('This browser does not support opening encrypted vault files.');
                 }
 
+                const fileName = typeof file?.name === 'string' ? file.name.toLowerCase() : '';
+                if (fileName && !fileName.endsWith('.ehv')) {
+                    throw new Error('The selected file is not a supported .ehv vault file.');
+                }
+
                 const parser = new DOMParser();
                 const parsedDocument = parser.parseFromString(fileContent, 'text/html');
 
                 if (parsedDocument.querySelector('parsererror')) {
-                    throw new Error('The selected file could not be read as a valid HTML document.');
+                    throw new Error('The selected .ehv file could not be read as a valid vault document.');
                 }
 
                 const embeddedScript = parsedDocument.getElementById('embedded-vault-data');
@@ -4087,13 +4099,13 @@
                     saveBtn.className = 'btn btn-save';
                 } else if (this.hasUnsavedChanges) {
                     statusEl.className = 'save-status unsaved';
-                    statusEl.innerHTML = '⚠️ Unsaved Changes - Download Updated HTML';
-                    saveBtn.innerHTML = 'Download Updated Vault';
+                    statusEl.innerHTML = '⚠️ Unsaved Changes - Download Updated Vault (.ehv)';
+                    saveBtn.innerHTML = 'Download Updated Vault (.ehv)';
                     saveBtn.className = 'btn btn-save';
                 } else {
                     statusEl.className = 'save-status saved';
-                    statusEl.innerHTML = '✓ Data Encrypted in This File';
-                    saveBtn.innerHTML = 'Download Current Vault';
+                    statusEl.innerHTML = '✓ Data Encrypted in This Vault (.ehv)';
+                    saveBtn.innerHTML = 'Download Current Vault (.ehv)';
                     saveBtn.className = 'btn btn-save saved';
                 }
             }
@@ -4310,11 +4322,11 @@
 
                 const htmlString = '<!DOCTYPE html>\n' + htmlDoc.outerHTML;
                 
-                const blob = new Blob([htmlString], { type: 'text/html' });
+                const blob = new Blob([htmlString], { type: 'application/octet-stream' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `health_vault_${this.vaultIdentity}_${new Date().toISOString().split('T')[0]}.html`;
+                a.download = `health_vault_${this.vaultIdentity}_${new Date().toISOString().split('T')[0]}.ehv`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -4331,17 +4343,17 @@
                 if (isFirstSave) {
                     alert('✅ Your health vault has been saved!\n\n' +
                           '📁 IMPORTANT INSTRUCTIONS:\n' +
-                          '1. The downloaded HTML file contains all your encrypted data\n' +
+                          '1. The downloaded .ehv file contains all your encrypted data\n' +
                           '2. Store this file in a safe location\n' +
                           '3. Make backups on different devices or cloud storage\n' +
                           '4. You can open this file in any web browser\n\n' +
                           '🔐 Remember:\n' +
                           '• Your password is NOT recoverable if lost\n' +
                           '• Each save creates a new file - replace the old one\n' +
-                          '• The file works completely offline');
+                          '• The vault file works completely offline');
                 } else {
                     alert('✅ Vault updated and downloaded!\n\n' +
-                          'Replace your previous vault file with this new version.');
+                          'Replace your previous .ehv vault file with this new version.');
                 }
             }
             
