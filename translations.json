@@ -3232,6 +3232,46 @@
       "zh-Hans": "欢迎",
       "my": "ကြိုဆိုပါသည်"
     },
+    "welcome_screen_title": {
+      "en": "🏥 Personal Health Vault",
+      "es": "🏥 Bóveda de Salud Personal"
+    },
+    "welcome_screen_intro_line1": {
+      "en": "Welcome to your secure, self-contained medical record system.",
+      "es": "Bienvenido a tu sistema de historial médico seguro e independiente."
+    },
+    "welcome_screen_intro_line2": {
+      "en": "This single .ehv vault file will become your encrypted health vault.",
+      "es": "Este único archivo de bóveda .ehv se convertirá en tu bóveda de salud cifrada."
+    },
+    "welcome_screen_how_it_works": {
+      "en": "How it works:",
+      "es": "Cómo funciona:"
+    },
+    "welcome_screen_bullet_encrypted": {
+      "en": "All data is encrypted with your password",
+      "es": "Todos los datos se cifran con tu contraseña"
+    },
+    "welcome_screen_bullet_contains_all": {
+      "en": "This .ehv vault file contains everything - no separate data files",
+      "es": "Este archivo de bóveda .ehv contiene todo; no hay archivos de datos separados"
+    },
+    "welcome_screen_bullet_offline": {
+      "en": "Works offline, no internet required",
+      "es": "Funciona sin conexión; no se necesita internet"
+    },
+    "welcome_screen_bullet_data_local": {
+      "en": "Your data never leaves your device",
+      "es": "Tus datos nunca salen de tu dispositivo"
+    },
+    "welcome_screen_get_started": {
+      "en": "Get Started",
+      "es": "Comenzar"
+    },
+    "welcome_screen_open_existing": {
+      "en": "Open Existing Vault",
+      "es": "Abrir bóveda existente"
+    },
     "yes": {
       "ar": "نعم",
       "en": "Yes",

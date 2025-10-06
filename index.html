@@ -2335,18 +2335,19 @@
 
     <!-- Welcome Screen (shown for new files) -->
     <div class="welcome-screen" id="welcomeScreen" style="display: none;">
-        <h1>🏥 Personal Health Vault</h1>
+        <h1 data-i18n-key="welcome_screen_title">🏥 Personal Health Vault</h1>
         <p>
-            Welcome to your secure, self-contained medical record system.
-            This single .ehv vault file will become your encrypted health vault.
+            <span data-i18n-key="welcome_screen_intro_line1">Welcome to your secure, self-contained medical record system.</span>
+            <br>
+            <span data-i18n-key="welcome_screen_intro_line2">This single .ehv vault file will become your encrypted health vault.</span>
         </p>
         <div class="info-box" style="text-align: left;">
-            <strong>How it works:</strong>
+            <strong data-i18n-key="welcome_screen_how_it_works">How it works:</strong>
             <ul style="margin-top: 10px; margin-left: 20px;">
-                <li>All data is encrypted with your password</li>
-                <li>This .ehv vault file contains everything - no separate data files</li>
-                <li>Works offline, no internet required</li>
-                <li>Your data never leaves your device</li>
+                <li data-i18n-key="welcome_screen_bullet_encrypted">All data is encrypted with your password</li>
+                <li data-i18n-key="welcome_screen_bullet_contains_all">This .ehv vault file contains everything - no separate data files</li>
+                <li data-i18n-key="welcome_screen_bullet_offline">Works offline, no internet required</li>
+                <li data-i18n-key="welcome_screen_bullet_data_local">Your data never leaves your device</li>
             </ul>
         </div>
         <div class="warning-box" data-i18n-key="trusted_device_warning">
@@ -2354,10 +2355,10 @@
             private or incognito mode.
         </div>
         <div class="welcome-actions">
-            <button class="btn-start" onclick="app?.startSetup()">
+            <button class="btn-start" onclick="app?.startSetup()" data-i18n-key="welcome_screen_get_started">
                 Get Started
             </button>
-            <button class="btn-import" id="openVaultBtn">
+            <button class="btn-import" id="openVaultBtn" data-i18n-key="welcome_screen_open_existing">
                 Open Existing Vault
             </button>
         </div>
