@@ -3339,6 +3339,7 @@
                 this.hasUnsavedChanges = false;
                 this.sessionPassword = null;
                 this.currentTOTPSecret = null;
+                this.totpSetupContext = null;
                 this.requires2FA = false;
                 this.isLocked = false;
                 this.modules = {
@@ -4416,11 +4417,12 @@
 
                 if (enable2FA) {
                     this.requires2FA = true;
+                    this.totpSetupContext = 'initial';
                     this.setupTOTP();
                 } else {
                     document.getElementById('mainContent').style.display = 'block';
                     document.getElementById('navTabs').style.display = 'block';
-                    
+
                     this.isInitialized = true;
                     this.hasUnsavedChanges = true;
                     this.updateSaveStatus();
@@ -4899,35 +4901,7 @@
                 document.getElementById('module-mental').checked = this.modules.mental;
                 document.getElementById('module-chronic').checked = this.modules.chronic;
                 
-                const statusDiv = document.getElementById('totpStatus');
-                if (this.requires2FA) {
-                    statusDiv.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 20pt;">✅</span>
-                            <div>
-                                <strong style="color: #22c55e;">Two-Factor Authentication Enabled</strong><br>
-                                <span style="font-size: 9pt; color: #64748b;">
-                                    Your vault requires password + authenticator code
-                                </span>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    statusDiv.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 20pt;">🔓</span>
-                            <div>
-                                <strong>Two-Factor Authentication Disabled</strong><br>
-                                <span style="font-size: 9pt; color: #64748b;">
-                                    Your vault is protected by password only
-                                </span>
-                            </div>
-                        </div>
-                        <p style="margin-top: 10px; font-size: 9pt; color: #94a3b8;">
-                            To enable 2FA, create a new vault with the option selected.
-                        </p>
-                    `;
-                }
+                this.renderTOTPStatus();
 
                 this.updateEmergencySettingsVisibility();
             }
@@ -4939,7 +4913,7 @@
             saveSettings() {
                 this.closeSettings();
             }
-            
+
             setupTOTP() {
                 const secret = this.generateTOTPSecret();
                 this.currentTOTPSecret = secret;
@@ -4971,7 +4945,62 @@
                 `;
                 document.getElementById('backupCodes').parentElement.innerHTML = backupNote;
             }
-            
+
+            renderTOTPStatus() {
+                const statusDiv = document.getElementById('totpStatus');
+
+                if (!statusDiv) {
+                    return;
+                }
+
+                if (this.requires2FA) {
+                    statusDiv.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 20pt;">✅</span>
+                            <div>
+                                <strong style="color: #22c55e;">Two-Factor Authentication Enabled</strong><br>
+                                <span style="font-size: 9pt; color: #64748b;">
+                                    Your vault requires password + authenticator code
+                                </span>
+                            </div>
+                        </div>
+                        <p style="margin-top: 10px; font-size: 9pt; color: #94a3b8;">
+                            Use your authenticator app when unlocking this vault.
+                            Download a fresh vault whenever you save updates.
+                        </p>
+                    `;
+                } else {
+                    statusDiv.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 20pt;">🔓</span>
+                            <div>
+                                <strong>Two-Factor Authentication Disabled</strong><br>
+                                <span style="font-size: 9pt; color: #64748b;">
+                                    Your vault is protected by password only
+                                </span>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-save" id="enableTOTPButton" style="margin-top: 15px;">
+                            Enable Two-Factor Authentication
+                        </button>
+                        <p style="margin-top: 10px; font-size: 9pt; color: #94a3b8;">
+                            Add authenticator codes at any time.
+                            After enabling, download a new encrypted vault to lock in the change.
+                        </p>
+                    `;
+
+                    const enableButton = document.getElementById('enableTOTPButton');
+                    if (enableButton) {
+                        enableButton.addEventListener('click', () => this.beginTOTPSetup());
+                    }
+                }
+            }
+
+            beginTOTPSetup() {
+                this.totpSetupContext = this.isInitialized ? 'upgrade' : 'initial';
+                this.setupTOTP();
+            }
+
             generateTOTPSecret() {
                 const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
                 let secret = '';
@@ -4994,35 +5023,55 @@
                 }
                 
                 const isValid = await TOTP.verifyTOTP(this.currentTOTPSecret, code);
-                
+
                 if (!isValid) {
                     alert('Invalid code. Please make sure you\'ve added the secret to your authenticator app and try the current code shown.');
                     return;
                 }
-                
+
                 this.totpSecret = this.currentTOTPSecret;
-                
+                this.requires2FA = true;
+
+                const wasUpgrade = this.totpSetupContext === 'upgrade';
+                this.totpSetupContext = null;
+
                 document.getElementById('totpModal').classList.remove('active');
                 document.getElementById('mainContent').style.display = 'block';
                 document.getElementById('navTabs').style.display = 'block';
-                
+                const totpField = document.getElementById('totpField');
+                if (totpField) {
+                    totpField.style.display = 'block';
+                }
+
                 this.isInitialized = true;
                 this.hasUnsavedChanges = true;
                 this.updateSaveStatus();
-                
-                alert(`✅ Two-factor authentication enabled!\n\n` +
-                      `Your vault "${this.vaultIdentity}" is ready to use.\n\n` +
-                      `• Enter your medical information\n` +
-                      `• Click "Download Encrypted Vault" when ready to save\n` +
-                      `• You'll need both password AND authenticator code to unlock`);
-                
+
+                if (document.getElementById('totpStatus')) {
+                    this.renderTOTPStatus();
+                }
+
+                const successMessage = wasUpgrade
+                    ? '✅ Two-factor authentication enabled!\n\n' +
+                        'Your vault now requires both your password and a 6-digit authenticator code to unlock.\n\n' +
+                        '⚠️ Important: Download a new encrypted vault file before closing to preserve this change.'
+                    : '✅ Two-factor authentication enabled!\n\n' +
+                        `Your vault "${this.vaultIdentity}" is ready to use.\n\n` +
+                        '• Enter your medical information\n' +
+                        '• Click "Download Encrypted Vault" when ready to save\n' +
+                        '• You\'ll need both password AND authenticator code to unlock';
+
+                alert(successMessage);
+
                 this.currentTOTPSecret = null;
             }
-            
+
             cancelTOTP() {
                 this.currentTOTPSecret = null;
+                const wasUpgrade = this.totpSetupContext === 'upgrade';
+                this.totpSetupContext = null;
                 document.getElementById('totpModal').classList.remove('active');
-                
+
                 if (!this.isInitialized) {
                     this.requires2FA = false;
                     document.getElementById('mainContent').style.display = 'block';
@@ -5037,6 +5086,11 @@
                           `• Enter your medical information\n` +
                           `• Click "Download Encrypted Vault" when ready to save\n` +
                           `• Keep your password safe - there's no recovery without it`);
+                } else if (wasUpgrade) {
+                    this.requires2FA = false;
+                    if (document.getElementById('totpStatus')) {
+                        this.renderTOTPStatus();
+                    }
                 }
             }
             
