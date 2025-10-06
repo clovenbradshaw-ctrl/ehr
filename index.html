@@ -7,6 +7,7 @@
     <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="expires" content="0">
     <link rel="icon" type="image/x-icon" href="https://storage.googleapis.com/intelechia-content/favicon.ico">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js" integrity="sha512-5Y3OVd9VVKa70BxZ0JItNaJ+uwOxa7Xpu8aHf36JI3hLN3PTTr7X6KhoORmvK+jEbwSwrgPWSlhBu7/52iKR2w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <title>Personal Health Vault - Secure Medical Record</title>
     <style>
         @page {
@@ -320,7 +321,56 @@
             flex-grow: 0;
             flex-shrink: 0;
         }
-        
+
+        .language-selector {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+            margin-right: 20px;
+            color: #0f172a;
+        }
+
+        .language-selector label {
+            font-size: 9pt;
+            color: #64748b;
+        }
+
+        .language-selector select {
+            padding: 6px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 10pt;
+            min-width: 150px;
+        }
+
+        .unlock-language {
+            text-align: left;
+            margin-bottom: 15px;
+        }
+
+        .unlock-language label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #1e293b;
+        }
+
+        .unlock-language select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 10pt;
+        }
+
+        .unlock-language small {
+            display: block;
+            margin-top: 6px;
+            font-size: 9pt;
+            color: #64748b;
+        }
+
         .btn {
             padding: 5px 12px;
             border: none;
@@ -944,6 +994,64 @@
 
         .attachment-actions .btn {
             font-size: 9pt;
+        }
+
+        .attachment-preview-modal {
+            max-width: 900px;
+        }
+
+        .attachment-preview-meta {
+            font-size: 10pt;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .attachment-preview-body {
+            min-height: 240px;
+            max-height: 65vh;
+            overflow-y: auto;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .attachment-preview-body img,
+        .attachment-preview-body video {
+            max-width: 100%;
+            max-height: 60vh;
+            border-radius: 8px;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25);
+        }
+
+        .attachment-preview-body audio {
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        .attachment-preview-text {
+            width: 100%;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Fira Code', 'Consolas', 'Courier New', monospace;
+            font-size: 10pt;
+            line-height: 1.5;
+            color: #0f172a;
+        }
+
+        .attachment-preview-error {
+            margin-top: 16px;
+            color: #dc2626;
+            font-size: 10pt;
+            text-align: center;
+        }
+
+        .attachment-preview-modal .modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .attachment-empty {
@@ -1790,6 +1898,15 @@
             .demo-field {
                 min-width: 100%;
             }
+
+            .language-selector {
+                width: 100%;
+                margin-right: 0;
+            }
+
+            .language-selector select {
+                width: 100%;
+            }
         }
         
         .hidden {
@@ -1800,11 +1917,18 @@
 <body>
     <div class="unlock-screen" id="unlockScreen" style="display: none;">
         <div class="unlock-container">
-            <h2>🔒 Health Vault Locked</h2>
-            <p>This .ehv vault file contains encrypted medical records</p>
-            <input type="password" id="unlock-password" placeholder="Enter password">
+            <h2 data-i18n-key="unlock_title">🔒 Health Vault Locked</h2>
+            <p data-i18n-key="unlock_subtitle">This .ehv vault file contains encrypted medical records</p>
+            <div class="unlock-language">
+                <label for="unlockLanguageSelect" data-i18n-key="default_language_label">Default language</label>
+                <select id="unlockLanguageSelect" data-language-selector data-default-selector="true"></select>
+                <small data-i18n-key="default_language_hint">Use this language automatically when opening the vault.</small>
+            </div>
+            <input type="password" id="unlock-password" placeholder="Enter password" data-i18n-placeholder="unlock_password_placeholder">
             <div id="totpField" style="display: none;">
-                <input type="text" id="totp-code" placeholder="6-digit code" maxlength="6">
+                <input type="text" id="totp-code" placeholder="6-digit code" maxlength="6" data-i18n-placeholder="unlock_totp_placeholder">
+            </div>
+            <div id="temporaryAccessHint" style="display: none; font-size: 9pt; color: #f97316; margin: 10px 0 0 0; text-align: left;">
             </div>
             <button onclick="app.attemptUnlock()">Unlock Vault</button>
             <p style="margin-top: 15px; font-size: 9pt; color: #94a3b8;">
@@ -1818,7 +1942,7 @@
         <div class="emergency-banner-content">
             <h2>🚨 EMERGENCY MEDICAL INFORMATION</h2>
             <div class="emergency-data-display" id="emergencyDataDisplay"></div>
-            <button class="btn btn-primary" onclick="app.proceedToUnlock()">
+            <button class="btn btn-primary" onclick="app?.proceedToUnlock()">
                 Access Full Medical Record (Password Required)
             </button>
         </div>
@@ -1830,33 +1954,35 @@
         </div>
         <div class="security-status">
             <div class="status-icon"></div>
-            <span id="securityText">Always Encrypted</span>
+            <span id="securityText" data-i18n-key="always_encrypted">Always Encrypted</span>
             <span id="lockTimer"></span>
         </div>
-        <div class="save-status never-saved" id="saveStatus">
-            ⚠️ Not Initialized - Create Your Vault
+        <div class="save-status never-saved" id="saveStatus" data-i18n-key="not_initialized">⚠️ Not Initialized - Create Your Vault</div>
+        <div class="language-selector no-print">
+            <label for="languageSelect" data-i18n-key="language_label">Language</label>
+            <select id="languageSelect" data-language-selector></select>
         </div>
         <div class="save-metadata" id="payloadStats" aria-live="polite"></div>
         <div class="action-buttons">
-            <button class="btn btn-secondary" id="settingsBtn">⚙️ Settings</button>
-            <button class="btn btn-lock" id="lockBtn" style="display: none;">🔓 Lock</button>
-            <button class="btn btn-secondary" id="exportBtn">Export/Print</button>
-            <button class="btn btn-save" id="saveBtn">Create Encrypted Vault</button>
+            <button class="btn btn-secondary" id="settingsBtn" data-i18n-key="settings_button">⚙️ Settings</button>
+            <button class="btn btn-lock" id="lockBtn" style="display: none;" data-i18n-key="unlock_action">🔓 Lock</button>
+            <button class="btn btn-secondary" id="exportBtn" data-i18n-key="export_button">Export/Print</button>
+            <button class="btn btn-save" id="saveBtn" data-i18n-key="save_button_create">Create Encrypted Vault</button>
         </div>
     </div>
 
     <div class="nav-tabs no-print" id="navTabs" style="display: none;">
-        <div class="tab active" data-section="demographics">📋 Demographics</div>
-        <div class="tab" data-section="emergency">🆘 Emergency</div>
-        <div class="tab" data-section="medications">💊 Medications</div>
-        <div class="tab" data-section="history">🩺 History</div>
-        <div class="tab" data-section="vitals">❤️ Vitals</div>
-        <div class="tab" data-section="immunizations">💉 Vaccines</div>
-        <div class="tab" data-section="labs">🔬 Lab Results</div>
-        <div class="tab" data-section="providers">👩‍⚕️ Providers</div>
-        <div class="tab" data-section="insurance">🏥 Insurance</div>
-        <div class="tab" data-section="notes">📝 Notes</div>
-        <div class="tab" data-section="attachments">📎 Attachments</div>
+        <div class="tab active" data-section="demographics" data-i18n-key="nav_demographics">📋 Demographics</div>
+        <div class="tab" data-section="emergency" data-i18n-key="nav_emergency">🆘 Emergency</div>
+        <div class="tab" data-section="medications" data-i18n-key="nav_medications">💊 Medications</div>
+        <div class="tab" data-section="history" data-i18n-key="nav_history">🩺 History</div>
+        <div class="tab" data-section="vitals" data-i18n-key="nav_vitals">❤️ Vitals</div>
+        <div class="tab" data-section="immunizations" data-i18n-key="nav_immunizations">💉 Vaccines</div>
+        <div class="tab" data-section="labs" data-i18n-key="nav_labs">🔬 Lab Results</div>
+        <div class="tab" data-section="providers" data-i18n-key="nav_providers">👩‍⚕️ Providers</div>
+        <div class="tab" data-section="insurance" data-i18n-key="nav_insurance">🏥 Insurance</div>
+        <div class="tab" data-section="notes" data-i18n-key="nav_notes">📝 Notes</div>
+        <div class="tab" data-section="attachments" data-i18n-key="nav_attachments">📎 Attachments</div>
         <!-- Module tabs added dynamically -->
     </div>
 
@@ -1864,7 +1990,7 @@
     <div class="modal" id="settingsModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>⚙️ Settings & Modules</h3>
+                <h3 data-i18n-key="settings_title">⚙️ Settings &amp; Modules</h3>
                 <p class="settings-version">
                     <strong>Version:</strong>
                     <span id="appVersion">2024.04.07.1200</span>
@@ -1876,15 +2002,15 @@
             <div class="modal-body">
                 <div class="settings-grid">
                     <div class="settings-section">
-                        <h4>Optional Modules</h4>
-                        <p style="font-size: 9pt; color: #64748b; margin-bottom: 15px;">
+                        <h4 data-i18n-key="optional_modules_heading">Optional Modules</h4>
+                        <p style="font-size: 9pt; color: #64748b; margin-bottom: 15px;" data-i18n-key="optional_modules_subtitle">
                             Enable specialized tracking modules as needed
                         </p>
                         
                         <div class="module-toggle">
                             <div class="module-info">
-                                <div class="module-name">Extended Identity</div>
-                                <div class="module-desc">Pronouns, chosen names, context-specific usage</div>
+                                <div class="module-name" data-i18n-key="module_identity_name">Extended Identity</div>
+                                <div class="module-desc" data-i18n-key="module_identity_desc">Pronouns, chosen names, context-specific usage</div>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" id="module-identity">
@@ -1894,8 +2020,8 @@
                         
                         <div class="module-toggle">
                             <div class="module-info">
-                                <div class="module-name">Gender Affirming Care</div>
-                                <div class="module-desc">HRT tracking, surgeries, specialized providers</div>
+                                <div class="module-name" data-i18n-key="module_gac_name">Gender Affirming Care</div>
+                                <div class="module-desc" data-i18n-key="module_gac_desc">HRT tracking, surgeries, specialized providers</div>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" id="module-gac">
@@ -1905,8 +2031,8 @@
                         
                         <div class="module-toggle">
                             <div class="module-info">
-                                <div class="module-name">Mental Health</div>
-                                <div class="module-desc">Mood tracking, therapy notes, crisis resources</div>
+                                <div class="module-name" data-i18n-key="module_mental_name">Mental Health</div>
+                                <div class="module-desc" data-i18n-key="module_mental_desc">Mood tracking, therapy notes, crisis resources</div>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" id="module-mental">
@@ -1916,8 +2042,8 @@
                         
                         <div class="module-toggle">
                             <div class="module-info">
-                                <div class="module-name">Chronic Disease</div>
-                                <div class="module-desc">Diabetes, hypertension, pain management</div>
+                                <div class="module-name" data-i18n-key="module_chronic_name">Chronic Disease</div>
+                                <div class="module-desc" data-i18n-key="module_chronic_desc">Diabetes, hypertension, pain management</div>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" id="module-chronic">
@@ -1927,8 +2053,8 @@
                     </div>
                     
                     <div class="settings-section" id="totpSettings">
-                        <h4>🔐 Two-Factor Authentication Status</h4>
-                        <p style="font-size: 9pt; color: #64748b; margin-bottom: 15px;">
+                        <h4 data-i18n-key="totp_status_title">🔐 Two-Factor Authentication Status</h4>
+                        <p style="font-size: 9pt; color: #64748b; margin-bottom: 15px;" data-i18n-key="totp_status_subtitle">
                             Enhanced security using time-based codes
                         </p>
                         <div id="totpStatus" style="padding: 15px; background: #f8fafc; border-radius: 6px;">
@@ -1937,41 +2063,41 @@
                     </div>
 
                     <div class="settings-section">
-                        <h4>Emergency Access (No Password Required)</h4>
-                        <p style="font-size: 9pt; color: #64748b; margin-bottom: 15px;">
+                        <h4 data-i18n-key="emergency_access_title">Emergency Access (No Password Required)</h4>
+                        <p style="font-size: 9pt; color: #64748b; margin-bottom: 15px;" data-i18n-key="emergency_access_subtitle">
                             Select information visible to anyone who opens this file, even without the password.
                             Useful for first responders or emergency situations.
                         </p>
 
                         <div class="checkbox-item">
                             <input type="checkbox" id="emergency-enabled" class="form-data" data-field="emergencyAccessEnabled">
-                            <label for="emergency-enabled"><strong>Enable Emergency Access</strong></label>
+                            <label for="emergency-enabled"><strong data-i18n-key="emergency_enable">Enable Emergency Access</strong></label>
                         </div>
 
                         <div id="emergencyOptions" style="margin-left: 20px; margin-top: 10px; display: none;">
                             <div class="checkbox-item">
                                 <input type="checkbox" id="emergency-blood" class="form-data" data-field="showBloodType">
-                                <label for="emergency-blood">Blood Type</label>
+                                <label for="emergency-blood" data-i18n-key="emergency_blood">Blood Type</label>
                             </div>
                             <div class="checkbox-item">
                                 <input type="checkbox" id="emergency-allergies" class="form-data" data-field="showCriticalAllergies">
-                                <label for="emergency-allergies">Critical Allergies</label>
+                                <label for="emergency-allergies" data-i18n-key="emergency_allergies">Critical Allergies</label>
                             </div>
                             <div class="checkbox-item">
                                 <input type="checkbox" id="emergency-contacts" class="form-data" data-field="showEmergencyContacts">
-                                <label for="emergency-contacts">Emergency Contacts</label>
+                                <label for="emergency-contacts" data-i18n-key="emergency_contacts">Emergency Contacts</label>
                             </div>
                             <div class="checkbox-item">
                                 <input type="checkbox" id="emergency-conditions" class="form-data" data-field="showCriticalConditions">
-                                <label for="emergency-conditions">Critical Medical Conditions</label>
+                                <label for="emergency-conditions" data-i18n-key="emergency_conditions">Critical Medical Conditions</label>
                             </div>
                             <div class="checkbox-item">
                                 <input type="checkbox" id="emergency-directive" class="form-data" data-field="showAdvanceDirective">
-                                <label for="emergency-directive">Advance Directive Status</label>
+                                <label for="emergency-directive" data-i18n-key="emergency_directive">Advance Directive Status</label>
                             </div>
                             <div class="checkbox-item">
                                 <input type="checkbox" id="emergency-medications" class="form-data" data-field="showCriticalMedications">
-                                <label for="emergency-medications">Critical Medications</label>
+                                <label for="emergency-medications" data-i18n-key="emergency_medications">Critical Medications</label>
                             </div>
                         </div>
 
@@ -1983,19 +2109,19 @@
                     </div>
 
                     <div class="settings-section">
-                        <h4>Privacy Levels</h4>
+                        <h4 data-i18n-key="privacy_levels">Privacy Levels</h4>
                         <select id="privacyLevel" class="form-data" data-field="privacyLevel">
-                            <option value="1">Level 1: Full Information</option>
-                            <option value="2">Level 2: Hide Sensitive Sections</option>
-                            <option value="3">Level 3: Emergency Only</option>
-                            <option value="4">Level 4: Custom</option>
+                            <option value="1" data-i18n-key="privacy_level_1">Level 1: Full Information</option>
+                            <option value="2" data-i18n-key="privacy_level_2">Level 2: Hide Sensitive Sections</option>
+                            <option value="3" data-i18n-key="privacy_level_3">Level 3: Emergency Only</option>
+                            <option value="4" data-i18n-key="privacy_level_4">Level 4: Custom</option>
                         </select>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="app.closeSettings()">Cancel</button>
-                <button class="btn btn-primary" onclick="app.saveSettings()">Save Settings</button>
+                <button class="btn btn-secondary" onclick="app?.closeSettings()" data-i18n-key="settings_cancel">Cancel</button>
+                <button class="btn btn-primary" onclick="app?.saveSettings()" data-i18n-key="settings_save">Save Settings</button>
             </div>
         </div>
     </div>
@@ -2004,29 +2130,29 @@
     <div class="modal" id="totpModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>🔐 Setup Two-Factor Authentication</h3>
+                <h3 data-i18n-key="totp_setup_title">🔐 Setup Two-Factor Authentication</h3>
             </div>
             <div class="modal-body">
                 <div class="totp-setup">
-                    <p>Scan this QR code with your authenticator app:</p>
+                    <p data-i18n-key="totp_scan_prompt">Scan this QR code with your authenticator app:</p>
                     <div class="totp-qr" id="totpQR"></div>
-                    <p style="margin-top: 10px;">Or enter this secret manually:</p>
+                    <p style="margin-top: 10px;" data-i18n-key="totp_manual_prompt">Or enter this secret manually:</p>
                     <code id="totpSecret" style="font-size: 12pt; background: #f0f0f0; padding: 8px; border-radius: 4px;"></code>
-                    
+
                     <div style="margin-top: 20px;">
-                        <label>Verify code from your app:</label>
+                        <label data-i18n-key="totp_verify_label">Verify code from your app:</label>
                         <input type="text" id="verifyTOTP" placeholder="000000" maxlength="6" style="width: 150px; text-align: center; font-size: 14pt;">
                     </div>
-                    
+
                     <div class="warning-box" style="margin-top: 20px;">
-                        <strong>Backup Codes (Save These!):</strong>
+                        <strong data-i18n-key="totp_backup">Backup Codes (Save These!)</strong>
                         <div class="backup-codes" id="backupCodes"></div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="app.cancelTOTP()">Cancel</button>
-                <button class="btn btn-primary" onclick="app.verifyTOTP()">Verify & Enable</button>
+                <button class="btn btn-secondary" onclick="app?.cancelTOTP()" data-i18n-key="totp_cancel">Cancel</button>
+                <button class="btn btn-primary" onclick="app?.verifyTOTP()" data-i18n-key="totp_verify">Verify &amp; Enable</button>
             </div>
         </div>
     </div>
@@ -2035,12 +2161,12 @@
     <div class="modal" id="passwordModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 id="modalTitle">Set Encryption Password</h3>
+                <h3 id="modalTitle" data-i18n-key="password_modal_title">Set Encryption Password</h3>
             </div>
             <div class="modal-body">
                 <div class="field">
-                    <label>Password</label>
-                    <input type="password" id="modalPassword" placeholder="Enter password">
+                    <label data-i18n-key="password_label">Password</label>
+                    <input type="password" id="modalPassword" placeholder="Enter password" data-i18n-placeholder="unlock_password_placeholder">
                     <div class="password-strength" id="passwordStrength" style="display: none;">
                         <div class="strength-bar" id="strength1"></div>
                         <div class="strength-bar" id="strength2"></div>
@@ -2049,17 +2175,17 @@
                     </div>
                 </div>
                 <div class="field" id="confirmPasswordField">
-                    <label>Confirm Password</label>
-                    <input type="password" id="modalConfirmPassword" placeholder="Confirm password">
+                    <label data-i18n-key="confirm_password_label">Confirm Password</label>
+                    <input type="password" id="modalConfirmPassword" placeholder="Confirm password" data-i18n-placeholder="confirm_password_placeholder">
                 </div>
                 <div class="warning-box">
-                    <strong>Important:</strong> This vault file (.ehv) will contain your encrypted data.
-                    Always download and save the updated .ehv file after making changes.
+                    <strong data-i18n-key="important_notice">Important:</strong> <span data-i18n-key="vault_notice">This vault file (.ehv) will contain your encrypted data.
+                    Always download and save the updated .ehv file after making changes.</span>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" id="modalCancel">Cancel</button>
-                <button class="btn btn-primary" id="modalSubmit">Continue</button>
+                <button class="btn btn-secondary" id="modalCancel" data-i18n-key="modal_cancel">Cancel</button>
+                <button class="btn btn-primary" id="modalSubmit" data-i18n-key="modal_continue">Continue</button>
             </div>
         </div>
     </div>
@@ -2068,41 +2194,77 @@
     <div class="modal" id="passwordUpdateModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Save Vault</h3>
+                <h3 data-i18n-key="save_vault_title">Save Vault</h3>
             </div>
             <div class="modal-body">
                 <div class="password-update-option">
                     <label>
                         <input type="radio" name="passwordUpdateChoice" value="keep" checked>
-                        Keep current password
+                        <span data-i18n-key="keep_password_option">Keep current password</span>
                     </label>
-                    <p>
+                    <p data-i18n-key="keep_password_desc">
                         Your vault will be encrypted with the password you unlocked it with.
                     </p>
                 </div>
                 <div class="password-update-option">
                     <label>
                         <input type="radio" name="passwordUpdateChoice" value="change">
-                        Set a new password before saving
+                        <span data-i18n-key="change_password_option">Set a new password before saving</span>
                     </label>
                     <div class="password-update-fields" id="passwordUpdateFields" style="display: none;">
                         <div class="field">
-                            <label>New Password</label>
-                            <input type="password" id="updateNewPassword" placeholder="Enter new password">
+                            <label data-i18n-key="new_password_label">New Password</label>
+                            <input type="password" id="updateNewPassword" placeholder="Enter new password" data-i18n-placeholder="new_password_label">
                         </div>
                         <div class="field">
-                            <label>Confirm New Password</label>
-                            <input type="password" id="updateConfirmPassword" placeholder="Confirm new password">
+                            <label data-i18n-key="confirm_new_password_label">Confirm New Password</label>
+                            <input type="password" id="updateConfirmPassword" placeholder="Confirm new password" data-i18n-placeholder="confirm_new_password_label">
                         </div>
                     </div>
                 </div>
-                <p class="password-update-note" id="passwordUpdate2FANote" style="display: none;">
+                <p class="password-update-note" id="passwordUpdate2FANote" style="display: none;" data-i18n-key="two_fa_note">
                     Two-factor authentication stays connected—your existing authenticator codes will continue to work after changing your password.
                 </p>
+                <div class="password-update-option" id="temporaryAccessSection" style="margin-top: 20px; display: none;">
+                    <h4 style="margin-bottom: 8px;">Temporary TOTP-Only Access</h4>
+                    <p style="font-size: 9pt; color: #64748b; margin-bottom: 12px;">
+                        Allow a trusted person to unlock this vault using only a current authenticator code for a limited time. They will not need the password while access is active.
+                    </p>
+                    <div class="warning-box" id="existingTemporaryAccess" style="display: none; margin-bottom: 12px;">
+                        <strong id="temporaryAccessSummary"></strong>
+                        <button type="button" class="btn btn-secondary" id="revokeTemporaryAccess" style="margin-top: 10px;">Revoke temporary access</button>
+                    </div>
+                    <label class="checkbox-item" style="align-items: flex-start; gap: 10px;">
+                        <input type="checkbox" id="enableTemporaryAccess">
+                        <div>
+                            <strong>Enable new temporary access</strong>
+                            <div style="font-size: 9pt; color: #64748b;">Requires a current code from your authenticator app.</div>
+                        </div>
+                    </label>
+                    <div id="temporaryAccessOptions" style="display: none; margin: 12px 0 0 26px; flex-direction: column; gap: 12px;">
+                        <div class="field">
+                            <label>Access duration</label>
+                            <select id="temporaryAccessDuration">
+                                <option value="15">15 minutes</option>
+                                <option value="30">30 minutes</option>
+                                <option value="45" selected>45 minutes</option>
+                                <option value="60">1 hour</option>
+                                <option value="120">2 hours</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Authenticator code</label>
+                            <input type="text" id="temporaryAccessCode" placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+                            <p style="font-size: 9pt; color: #f97316; margin-top: 6px;">
+                                Share this code and the new .ehv file. The recipient can unlock without the password until the timer expires.
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" id="passwordUpdateCancel">Cancel</button>
-                <button class="btn btn-primary" id="passwordUpdateSubmit">Save Vault</button>
+                <button class="btn btn-secondary" id="passwordUpdateCancel" data-i18n-key="modal_cancel">Cancel</button>
+                <button class="btn btn-primary" id="passwordUpdateSubmit" data-i18n-key="save_vault_submit">Save Vault</button>
             </div>
         </div>
     </div>
@@ -2111,14 +2273,14 @@
     <div class="modal" id="exportModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>📄 Export &amp; Share</h3>
+                <h3 data-i18n-key="export_title">📄 Export &amp; Share</h3>
             </div>
             <div class="modal-body">
-                <p>Select how you'd like to share or archive this record.</p>
+                <p data-i18n-key="export_prompt">Select how you'd like to share or archive this record.</p>
                 <div class="export-options">
-                    <button class="btn btn-primary" id="printSummaryBtn">🖨️ Printable Care Summary</button>
+                    <button class="btn btn-primary" id="printSummaryBtn" data-i18n-key="print_summary_button">🖨️ Printable Care Summary</button>
                 </div>
-                <p class="export-note">
+                <p class="export-note" data-i18n-key="export_note">
                     The printable summary reformats your record into an easy-to-read care handoff that can be printed or saved as a PDF for sharing.
                 </p>
             </div>
@@ -2145,7 +2307,7 @@
             </ul>
         </div>
         <div class="welcome-actions">
-            <button class="btn-start" onclick="app.startSetup()">
+            <button class="btn-start" onclick="app?.startSetup()">
                 Get Started
             </button>
             <button class="btn-import" id="openVaultBtn">
@@ -2601,6 +2763,25 @@
                 <button class="add-btn no-print" id="addAttachmentBtn">+ Add Attachment</button>
                 <input type="file" id="attachmentFileInput" accept="*/*" multiple style="display: none;" />
                 <input type="hidden" class="form-data" data-field="attachments" id="attachmentStorage" value="[]" />
+            </div>
+        </div>
+
+        <div class="modal" id="attachmentPreviewModal">
+            <div class="modal-content attachment-preview-modal">
+                <div class="modal-header">
+                    <div>
+                        <h3 id="attachmentPreviewTitle">Attachment Preview</h3>
+                        <div class="attachment-preview-meta" id="attachmentPreviewMeta"></div>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="attachment-preview-body" id="attachmentPreviewContent"></div>
+                    <div class="attachment-preview-error" id="attachmentPreviewError" style="display: none;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="attachmentPreviewClose">Close</button>
+                    <button class="btn btn-primary" id="attachmentPreviewDownload">Download</button>
+                </div>
             </div>
         </div>
 
@@ -3067,6 +3248,212 @@
         const APP_LAST_UPDATED = '2024-04-07T12:00:00Z';
         const DEFAULT_SCHEMA_VERSION = '1.0.0';
 
+        class LocalizationManager {
+            constructor() {
+                this.translations = {};
+                this.availableLanguages = [];
+                this.languageSelectors = [];
+                this.currentLanguage = 'en';
+                this.fallbackLanguage = 'en';
+            }
+
+            async init() {
+                await this.loadTranslations();
+                this.languageSelectors = Array.from(document.querySelectorAll('[data-language-selector]'));
+                if (!this.availableLanguages.includes(this.currentLanguage)) {
+                    this.currentLanguage = this.fallbackLanguage;
+                }
+                this.populateSelectors();
+                this.applyTranslations();
+
+                this.languageSelectors.forEach(select => {
+                    select.addEventListener('change', event => {
+                        this.setLanguage(event.target.value, { persist: true });
+                    });
+                });
+            }
+
+            async loadTranslations() {
+                try {
+                    const response = await fetch('translations.json', { cache: 'no-store' });
+                    if (!response.ok) {
+                        throw new Error(`Failed to load translations: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    if (data && typeof data === 'object') {
+                        this.translations = data;
+                    }
+                } catch (error) {
+                    console.error('[Localization] Unable to load translations.json', error);
+                    this.translations = { en: {} };
+                }
+
+                if (!this.translations || typeof this.translations !== 'object') {
+                    this.translations = { en: {} };
+                }
+
+                if (!this.translations.en) {
+                    this.translations.en = {};
+                }
+
+                this.availableLanguages = Object.keys(this.translations);
+                if (this.availableLanguages.length === 0) {
+                    this.availableLanguages = ['en'];
+                }
+
+                this.fallbackLanguage = this.translations.en ? 'en' : this.availableLanguages[0];
+
+                const stored = this.safeGet('preferredLanguage');
+                const browser = this.detectBrowserLanguage();
+                const defaultLang = this.availableLanguages.includes(stored)
+                    ? stored
+                    : (browser && this.availableLanguages.includes(browser) ? browser : this.fallbackLanguage);
+
+                this.currentLanguage = defaultLang;
+                document.documentElement.setAttribute('lang', this.currentLanguage);
+                this.safeSet('preferredLanguage', this.currentLanguage);
+            }
+
+            populateSelectors() {
+                if (!this.languageSelectors.length) {
+                    return;
+                }
+
+                const optionsHtml = this.availableLanguages
+                    .map(code => `<option value="${code}">${this.getLanguageName(code)}</option>`)
+                    .join('');
+
+                this.languageSelectors.forEach(select => {
+                    const previous = select.value;
+                    select.innerHTML = optionsHtml;
+                    select.value = this.availableLanguages.includes(previous) ? previous : this.currentLanguage;
+                });
+            }
+
+            detectBrowserLanguage() {
+                const languages = Array.isArray(navigator.languages) && navigator.languages.length
+                    ? navigator.languages
+                    : [navigator.language];
+                if (!languages) {
+                    return null;
+                }
+                const normalized = languages
+                    .map(code => (code || '').toLowerCase())
+                    .map(code => code.split('-')[0]);
+                return normalized.find(code => this.availableLanguages.includes(code)) || null;
+            }
+
+            getLanguageName(code) {
+                const lookup = {
+                    en: 'English',
+                    es: 'Español',
+                    my: 'မြန်မာ',
+                };
+
+                if (lookup[code]) {
+                    return lookup[code];
+                }
+
+                try {
+                    const display = new Intl.DisplayNames([this.currentLanguage, 'en'], { type: 'language' });
+                    return display.of(code) || code;
+                } catch (error) {
+                    return code;
+                }
+            }
+
+            setLanguage(language, { persist = true } = {}) {
+                if (!this.translations[language]) {
+                    language = this.fallbackLanguage;
+                }
+
+                this.currentLanguage = language;
+                document.documentElement.setAttribute('lang', language);
+
+                if (persist) {
+                    this.safeSet('preferredLanguage', language);
+                }
+
+                this.updateSelectors();
+                this.applyTranslations();
+            }
+
+            updateSelectors() {
+                if (!this.languageSelectors.length) {
+                    return;
+                }
+
+                this.languageSelectors.forEach(select => {
+                    if (select.value !== this.currentLanguage) {
+                        select.value = this.currentLanguage;
+                    }
+                });
+            }
+
+            applyTranslations() {
+                const active = this.translations[this.currentLanguage] || {};
+                const fallback = this.translations[this.fallbackLanguage] || {};
+
+                document.querySelectorAll('[data-i18n-key]').forEach(element => {
+                    const key = element.getAttribute('data-i18n-key');
+                    if (!key) {
+                        return;
+                    }
+                    const prefix = element.dataset.i18nPrefix || '';
+                    const suffix = element.dataset.i18nSuffix || '';
+                    const translation = active[key] ?? fallback[key];
+                    if (translation === undefined) {
+                        return;
+                    }
+                    if (element.dataset.i18nHtml === 'true') {
+                        element.innerHTML = `${prefix}${translation}${suffix}`;
+                    } else {
+                        element.textContent = `${prefix}${translation}${suffix}`;
+                    }
+                });
+
+                document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+                    const key = element.getAttribute('data-i18n-placeholder');
+                    if (!key) {
+                        return;
+                    }
+                    const translation = active[key] ?? fallback[key];
+                    if (translation !== undefined) {
+                        element.setAttribute('placeholder', translation);
+                    }
+                });
+
+                document.title = this.t('app_title', document.title);
+            }
+
+            t(key, fallback) {
+                if (!key) {
+                    return fallback ?? '';
+                }
+                return this.translations[this.currentLanguage]?.[key]
+                    ?? this.translations[this.fallbackLanguage]?.[key]
+                    ?? fallback
+                    ?? key;
+            }
+
+            safeGet(key) {
+                try {
+                    return localStorage.getItem(key);
+                } catch (error) {
+                    console.warn('[Localization] Unable to read localStorage', error);
+                    return null;
+                }
+            }
+
+            safeSet(key, value) {
+                try {
+                    localStorage.setItem(key, value);
+                } catch (error) {
+                    console.warn('[Localization] Unable to persist preference', error);
+                }
+            }
+        }
+
         class SchemaManager {
             constructor(currentVersion, migrations = []) {
                 this.currentVersion = this.normalizeVersion(currentVersion);
@@ -3364,7 +3751,10 @@
                 this.hasUnsavedChanges = false;
                 this.sessionPassword = null;
                 this.currentTOTPSecret = null;
+                this.totpSetupContext = null;
                 this.requires2FA = false;
+                this.temporaryAccess = null;
+                this.pendingTemporaryAccessRemoval = false;
                 this.isLocked = false;
                 this.modules = {
                     identity: false,
@@ -3378,6 +3768,8 @@
                 this.schemaVersion = schemaManager.currentVersion;
                 this.pendingSchemaNotice = null;
                 this.attachments = [];
+                this.currentPreviewAttachmentId = null;
+                this.activePreviewObjectUrl = null;
 
                 // Application version metadata
                 this.version = APP_VERSION;
@@ -3496,6 +3888,8 @@
                         this.vaultIdentity = vaultData.vaultIdentity;
                         this.lastSaved = vaultData.savedDate;
                         this.emergencyAccessConfig = vaultData.emergencyAccess || null;
+                        this.temporaryAccess = vaultData.temporaryAccess || null;
+                        this.pendingTemporaryAccessRemoval = false;
                         this.version = vaultData.appVersion || this.version || APP_VERSION;
 
                         const embeddedSchemaVersion = vaultData.schemaVersion || vaultData.version;
@@ -3509,12 +3903,21 @@
                         const unlockScreen = document.getElementById('unlockScreen');
                         const unlockContainer = unlockScreen.querySelector('.unlock-container');
 
+                        const tempAccessExpiry = this.getTemporaryAccessExpiry();
+                        const formattedExpiry = tempAccessExpiry ? this.escapeHTML(tempAccessExpiry.toLocaleString()) : '';
+                        const tempAccessNotice = this.temporaryAccess
+                            ? this.isTemporaryAccessActive() && tempAccessExpiry
+                                ? `<p style="margin: 10px 0 0 0; color: #f97316; font-size: 9pt;">Temporary TOTP-only access active until ${formattedExpiry}.</p>`
+                                : '<p style="margin: 10px 0 0 0; color: #f97316; font-size: 9pt;">Temporary TOTP-only access has expired. Save a new vault to remove or renew it.</p>'
+                            : '';
+
                         const vaultInfoHTML = `
                             <div class="vault-identity-block" style="margin-bottom: 20px; padding: 15px; background: #f0f9ff; border-radius: 8px;">
                                 <h3 style="margin: 0; color: #3b82f6; font-size: 16pt;">🔷 ${this.vaultIdentity}</h3>
                                 <p style="margin: 5px 0 0 0; color: #64748b; font-size: 9pt;">
                                     Last saved: ${this.lastSaved ? new Date(this.lastSaved).toLocaleString() : 'Unknown'}
                                 </p>
+                                ${tempAccessNotice}
                             </div>
                         `;
 
@@ -3537,6 +3940,8 @@
                             document.getElementById('totpField').style.display = 'none';
                         }
 
+                        this.updateTemporaryAccessHint();
+
                         if (this.emergencyAccessConfig && this.emergencyAccessConfig.enabled) {
                             this.showEmergencyAccess(this.emergencyAccessConfig.data || {});
                         }
@@ -3556,6 +3961,9 @@
                     document.getElementById('unlockScreen').style.display = 'none';
                     document.getElementById('navTabs').style.display = 'none';
                     this.emergencyAccessConfig = null;
+                    this.temporaryAccess = null;
+                    this.pendingTemporaryAccessRemoval = false;
+                    this.updateTemporaryAccessHint();
                     this.version = APP_VERSION;
                     this.schemaVersion = schemaManager.currentVersion;
                     this.applyVersionMetadata();
@@ -3685,9 +4093,33 @@
                 this.setupEventListeners();
                 this.updateSaveStatus();
 
-                // Clear any cached data
-                localStorage.clear();
-                sessionStorage.clear();
+                // Clear any cached data while preserving localization preference
+                let preferredLanguage = null;
+                try {
+                    preferredLanguage = localStorage.getItem('preferredLanguage');
+                } catch (error) {
+                    console.warn('Unable to read preferred language from localStorage', error);
+                }
+
+                try {
+                    localStorage.clear();
+                } catch (error) {
+                    console.warn('Unable to clear localStorage', error);
+                }
+
+                if (preferredLanguage) {
+                    try {
+                        localStorage.setItem('preferredLanguage', preferredLanguage);
+                    } catch (error) {
+                        console.warn('Unable to restore preferred language', error);
+                    }
+                }
+
+                try {
+                    sessionStorage.clear();
+                } catch (error) {
+                    console.warn('Unable to clear sessionStorage', error);
+                }
             }
 
             applyVersionMetadata() {
@@ -3815,6 +4247,13 @@
                 const attachmentsContainer = document.getElementById('attachments-container');
                 if (attachmentsContainer) {
                     attachmentsContainer.addEventListener('click', (event) => {
+                        const viewBtn = event.target.closest('button[data-attachment-view]');
+                        if (viewBtn) {
+                            event.preventDefault();
+                            this.viewAttachment(viewBtn.dataset.attachmentView);
+                            return;
+                        }
+
                         const downloadBtn = event.target.closest('button[data-attachment-download]');
                         if (downloadBtn) {
                             event.preventDefault();
@@ -3826,6 +4265,33 @@
                         if (removeBtn) {
                             event.preventDefault();
                             this.removeAttachment(removeBtn.dataset.attachmentRemove);
+                        }
+                    });
+                }
+
+                const attachmentPreviewClose = document.getElementById('attachmentPreviewClose');
+                if (attachmentPreviewClose) {
+                    attachmentPreviewClose.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        this.closeAttachmentPreview();
+                    });
+                }
+
+                const attachmentPreviewDownload = document.getElementById('attachmentPreviewDownload');
+                if (attachmentPreviewDownload) {
+                    attachmentPreviewDownload.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        if (this.currentPreviewAttachmentId) {
+                            this.downloadAttachment(this.currentPreviewAttachmentId);
+                        }
+                    });
+                }
+
+                const attachmentPreviewModal = document.getElementById('attachmentPreviewModal');
+                if (attachmentPreviewModal) {
+                    attachmentPreviewModal.addEventListener('click', (event) => {
+                        if (event.target === attachmentPreviewModal) {
+                            this.closeAttachmentPreview();
                         }
                     });
                 }
@@ -3866,6 +4332,17 @@
                         this.togglePasswordUpdateMode(event.target.value);
                     });
                 });
+                const tempAccessToggle = document.getElementById('enableTemporaryAccess');
+                if (tempAccessToggle) {
+                    tempAccessToggle.addEventListener('change', (event) => this.handleTemporaryAccessToggle(event));
+                }
+                const revokeTempAccess = document.getElementById('revokeTemporaryAccess');
+                if (revokeTempAccess) {
+                    revokeTempAccess.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        this.handleRevokeTemporaryAccess();
+                    });
+                }
                 ['updateNewPassword', 'updateConfirmPassword'].forEach((id) => {
                     const input = document.getElementById(id);
                     if (input) {
@@ -4018,7 +4495,8 @@
                     const lockBtn = document.getElementById('lockBtn');
                     if (lockBtn) {
                         lockBtn.style.display = 'none';
-                        lockBtn.innerHTML = '🔓 Lock';
+                        lockBtn.setAttribute('data-i18n-key', 'unlock_action');
+                        lockBtn.textContent = window.localization?.t('unlock_action', '🔓 Lock');
                     }
 
                     this.updateSaveStatus();
@@ -4072,29 +4550,29 @@
                             <label class="checkbox-item" style="align-items: flex-start; gap: 10px;">
                                 <input type="checkbox" id="setup-module-identity">
                                 <span>
-                                    <strong>Extended Identity</strong><br>
-                                    <span style="font-size: 9pt; color: #64748b;">Pronouns, chosen names, context-specific usage</span>
+                                    <strong data-i18n-key="module_identity_name">Extended Identity</strong><br>
+                                    <span style="font-size: 9pt; color: #64748b;" data-i18n-key="module_identity_desc">Pronouns, chosen names, context-specific usage</span>
                                 </span>
                             </label>
                             <label class="checkbox-item" style="align-items: flex-start; gap: 10px;">
                                 <input type="checkbox" id="setup-module-gac">
                                 <span>
-                                    <strong>Gender Affirming Care</strong><br>
-                                    <span style="font-size: 9pt; color: #64748b;">HRT tracking, surgeries, specialized providers</span>
+                                    <strong data-i18n-key="module_gac_name">Gender Affirming Care</strong><br>
+                                    <span style="font-size: 9pt; color: #64748b;" data-i18n-key="module_gac_desc">HRT tracking, surgeries, specialized providers</span>
                                 </span>
                             </label>
                             <label class="checkbox-item" style="align-items: flex-start; gap: 10px;">
                                 <input type="checkbox" id="setup-module-mental">
                                 <span>
-                                    <strong>Mental Health</strong><br>
-                                    <span style="font-size: 9pt; color: #64748b;">Mood tracking, therapy notes, crisis resources</span>
+                                    <strong data-i18n-key="module_mental_name">Mental Health</strong><br>
+                                    <span style="font-size: 9pt; color: #64748b;" data-i18n-key="module_mental_desc">Mood tracking, therapy notes, crisis resources</span>
                                 </span>
                             </label>
                             <label class="checkbox-item" style="align-items: flex-start; gap: 10px;">
                                 <input type="checkbox" id="setup-module-chronic">
                                 <span>
-                                    <strong>Chronic Disease</strong><br>
-                                    <span style="font-size: 9pt; color: #64748b;">Diabetes, hypertension, pain management</span>
+                                    <strong data-i18n-key="module_chronic_name">Chronic Disease</strong><br>
+                                    <span style="font-size: 9pt; color: #64748b;" data-i18n-key="module_chronic_desc">Diabetes, hypertension, pain management</span>
                                 </span>
                             </label>
                         </div>
@@ -4118,6 +4596,7 @@
                 const confirmField = document.getElementById('confirmPasswordField');
                 if (!document.getElementById('setupModuleSelection')) {
                     confirmField.insertAdjacentHTML('afterend', moduleSelectionHTML);
+                    window.localization?.applyTranslations();
                 }
 
                 ['identity', 'gac', 'mental', 'chronic'].forEach(module => {
@@ -4131,6 +4610,8 @@
                     const insertAfter = document.getElementById('setupModuleSelection') || confirmField;
                     insertAfter.insertAdjacentHTML('afterend', twoFAHTML);
                 }
+
+                window.localization?.applyTranslations();
             }
 
             applySetupModuleSelections() {
@@ -4190,24 +4671,41 @@
                 document.getElementById('vaultName').innerHTML = `🔷 ${this.vaultIdentity}`;
             }
             
-            attemptUnlock() {
-                const password = document.getElementById('unlock-password').value;
-                const totpCode = document.getElementById('totp-code')?.value;
-                
+            async attemptUnlock() {
+                const passwordField = document.getElementById('unlock-password');
+                const totpFieldInput = document.getElementById('totp-code');
+
+                const enteredPassword = passwordField?.value || '';
+                const totpCode = totpFieldInput?.value?.trim() || '';
+
+                let password = enteredPassword;
+                let usedTemporaryAccess = false;
+
+                if (!password && totpCode) {
+                    try {
+                        password = await this.tryUnlockWithTemporaryAccess(totpCode);
+                        usedTemporaryAccess = true;
+                    } catch (error) {
+                        alert(error.message);
+                        return;
+                    }
+                }
+
                 if (!password) {
                     alert('Please enter your password');
                     return;
                 }
-                
-                if (this.requires2FA && !totpCode) {
+
+                if (this.requires2FA && !usedTemporaryAccess && !totpCode) {
                     alert('Please enter your 6-digit authentication code');
                     return;
                 }
-                
-                this.crypto.decrypt(this.encryptedData, password).then(async (decrypted) => {
+
+                try {
+                    const decrypted = await this.crypto.decrypt(this.encryptedData, password);
                     const decryptedPayload = { ...decrypted };
 
-                    if (this.requires2FA && decryptedPayload.totpSecret) {
+                    if (this.requires2FA && !usedTemporaryAccess && decryptedPayload.totpSecret) {
                         const isValidTOTP = await TOTP.verifyTOTP(decryptedPayload.totpSecret, totpCode);
 
                         if (!isValidTOTP) {
@@ -4279,14 +4777,18 @@
                             + 'Review the data carefully and consider updating the application when possible.'
                         );
                     }
+                } catch (error) {
+                    if (usedTemporaryAccess) {
+                        alert('Unable to unlock with the provided temporary access code. It may have expired or been entered incorrectly.');
+                        return;
+                    }
 
-                }).catch(error => {
                     if (this.requires2FA) {
                         alert('Invalid password or authentication code.\n\nMake sure you are using the current 6-digit code from your authenticator app.');
                     } else {
                         alert('Incorrect password');
                     }
-                });
+                }
             }
             
             navigateToSection(e) {
@@ -4346,36 +4848,50 @@
                 existingModuleTabs.forEach(tab => tab.remove());
                 
                 const demographicsTab = navTabs.querySelector('[data-section="demographics"]');
-                
+
                 if (this.modules.identity) {
                     const identityTab = document.createElement('div');
                     identityTab.className = 'tab module-tab';
                     identityTab.setAttribute('data-section', 'identity');
-                    identityTab.innerHTML = '👤 Identity';
+                    identityTab.setAttribute('data-i18n-key', 'module_identity_tab');
+                    identityTab.textContent = (window.localization?.t('module_identity_tab', '👤 Identity'));
                     demographicsTab.after(identityTab);
                 }
-                
+
                 if (this.modules.gac) {
                     const gacTab = document.createElement('div');
                     gacTab.className = 'tab module-tab';
                     gacTab.setAttribute('data-section', 'gac');
-                    gacTab.innerHTML = '🏳️‍⚧️ GAC';
-                    const insertAfter = this.modules.identity ? 
-                        navTabs.querySelector('[data-section="identity"]') : 
+                    gacTab.setAttribute('data-i18n-key', 'module_gac_tab');
+                    gacTab.textContent = (window.localization?.t('module_gac_tab', '🏳️‍⚧️ GAC'));
+                    const insertAfter = this.modules.identity ?
+                        navTabs.querySelector('[data-section="identity"]') :
                         demographicsTab;
                     insertAfter.after(gacTab);
                 }
-                
+
                 if (this.modules.mental) {
-                    navTabs.insertAdjacentHTML('beforeend', '<div class="tab module-tab" data-section="mental">🧠 Mental Health</div>');
+                    const mentalTab = document.createElement('div');
+                    mentalTab.className = 'tab module-tab';
+                    mentalTab.setAttribute('data-section', 'mental');
+                    mentalTab.setAttribute('data-i18n-key', 'module_mental_tab');
+                    mentalTab.textContent = (window.localization?.t('module_mental_tab', '🧠 Mental Health'));
+                    navTabs.appendChild(mentalTab);
                 }
                 if (this.modules.chronic) {
-                    navTabs.insertAdjacentHTML('beforeend', '<div class="tab module-tab" data-section="chronic">📊 Chronic</div>');
+                    const chronicTab = document.createElement('div');
+                    chronicTab.className = 'tab module-tab';
+                    chronicTab.setAttribute('data-section', 'chronic');
+                    chronicTab.setAttribute('data-i18n-key', 'module_chronic_tab');
+                    chronicTab.textContent = (window.localization?.t('module_chronic_tab', '📊 Chronic'));
+                    navTabs.appendChild(chronicTab);
                 }
-                
+
                 navTabs.querySelectorAll('.module-tab').forEach(tab => {
                     tab.addEventListener('click', (e) => this.navigateToSection(e));
                 });
+
+                window.localization?.applyTranslations();
             }
             
             markAsChanged() {
@@ -4389,20 +4905,28 @@
 
                 if (!this.isInitialized) {
                     statusEl.className = 'save-status never-saved';
-                    statusEl.innerHTML = '⚠️ Not Initialized - Create Your Vault';
-                    saveBtn.innerHTML = 'Create Encrypted Vault';
+                    statusEl.setAttribute('data-i18n-key', 'status_not_initialized');
+                    statusEl.textContent = translate('status_not_initialized', '⚠️ Not Initialized - Create Your Vault');
                     saveBtn.className = 'btn btn-save';
+                    saveBtn.setAttribute('data-i18n-key', 'action_create_vault');
+                    saveBtn.textContent = translate('action_create_vault', 'Create Encrypted Vault');
                 } else if (this.hasUnsavedChanges) {
                     statusEl.className = 'save-status unsaved';
-                    statusEl.innerHTML = '⚠️ Unsaved Changes - Download Updated Vault (.ehv)';
-                    saveBtn.innerHTML = 'Download Updated Vault (.ehv)';
+                    statusEl.setAttribute('data-i18n-key', 'status_unsaved');
+                    statusEl.textContent = translate('status_unsaved', '⚠️ Unsaved Changes - Download Updated Vault (.ehv)');
                     saveBtn.className = 'btn btn-save';
+                    saveBtn.setAttribute('data-i18n-key', 'action_download_updated');
+                    saveBtn.textContent = translate('action_download_updated', 'Download Updated Vault (.ehv)');
                 } else {
                     statusEl.className = 'save-status saved';
-                    statusEl.innerHTML = '✓ Data Encrypted in This Vault (.ehv)';
-                    saveBtn.innerHTML = 'Download Current Vault (.ehv)';
+                    statusEl.setAttribute('data-i18n-key', 'status_saved');
+                    statusEl.textContent = translate('status_saved', '✓ Data Encrypted in This Vault (.ehv)');
                     saveBtn.className = 'btn btn-save saved';
+                    saveBtn.setAttribute('data-i18n-key', 'action_download_current');
+                    saveBtn.textContent = translate('action_download_current', 'Download Current Vault (.ehv)');
                 }
+
+                window.localization?.applyTranslations();
             }
 
             formatBytes(bytes) {
@@ -4530,6 +5054,8 @@
                 if (note) {
                     note.style.display = this.requires2FA ? 'block' : 'none';
                 }
+
+                this.prepareTemporaryAccessModalSection();
             }
 
             closePasswordUpdateModal() {
@@ -4540,6 +5066,17 @@
 
                 modal.classList.remove('active');
                 this.togglePasswordUpdateMode('keep');
+                this.pendingTemporaryAccessRemoval = false;
+
+                const toggle = document.getElementById('enableTemporaryAccess');
+                if (toggle) {
+                    toggle.checked = false;
+                }
+
+                const options = document.getElementById('temporaryAccessOptions');
+                if (options) {
+                    options.style.display = 'none';
+                }
             }
 
             togglePasswordUpdateMode(mode) {
@@ -4564,6 +5101,336 @@
                     if (confirmPasswordInput) {
                         confirmPasswordInput.value = '';
                     }
+                }
+            }
+
+            isTemporaryAccessActive() {
+                if (!this.temporaryAccess || !this.temporaryAccess.expiresAt) {
+                    return false;
+                }
+
+                const expires = Date.parse(this.temporaryAccess.expiresAt);
+                if (Number.isNaN(expires)) {
+                    return false;
+                }
+
+                return expires > Date.now();
+            }
+
+            getTemporaryAccessExpiry() {
+                if (!this.temporaryAccess || !this.temporaryAccess.expiresAt) {
+                    return null;
+                }
+
+                const expiry = new Date(this.temporaryAccess.expiresAt);
+                if (Number.isNaN(expiry.getTime())) {
+                    return null;
+                }
+
+                return expiry;
+            }
+
+            updateTemporaryAccessHint() {
+                const hint = document.getElementById('temporaryAccessHint');
+
+                if (!hint) {
+                    return;
+                }
+
+                if (this.temporaryAccess) {
+                    const expiry = this.getTemporaryAccessExpiry();
+
+                    if (this.isTemporaryAccessActive() && expiry) {
+                        hint.style.display = 'block';
+                        hint.textContent = `Temporary TOTP-only access is active until ${expiry.toLocaleString()}. Enter the code provided to you above to unlock without the password.`;
+                    } else {
+                        hint.style.display = 'block';
+                        hint.textContent = 'Temporary TOTP-only access has expired. Save a new vault to remove or renew it.';
+                    }
+                } else {
+                    hint.style.display = 'none';
+                    hint.textContent = '';
+                }
+            }
+
+            prepareTemporaryAccessModalSection() {
+                const section = document.getElementById('temporaryAccessSection');
+
+                if (!section) {
+                    return;
+                }
+
+                const toggle = document.getElementById('enableTemporaryAccess');
+                const options = document.getElementById('temporaryAccessOptions');
+                const codeInput = document.getElementById('temporaryAccessCode');
+                const durationSelect = document.getElementById('temporaryAccessDuration');
+                const existingBox = document.getElementById('existingTemporaryAccess');
+                const summary = document.getElementById('temporaryAccessSummary');
+
+                this.pendingTemporaryAccessRemoval = false;
+
+                if (!this.requires2FA || !this.totpSecret) {
+                    section.style.display = 'none';
+                    if (toggle) {
+                        toggle.checked = false;
+                    }
+                    if (options) {
+                        options.style.display = 'none';
+                    }
+                    return;
+                }
+
+                section.style.display = 'block';
+
+                if (toggle) {
+                    toggle.checked = false;
+                }
+
+                if (options) {
+                    options.style.display = 'none';
+                }
+
+                if (codeInput) {
+                    codeInput.value = '';
+                }
+
+                if (durationSelect) {
+                    durationSelect.value = '45';
+                }
+
+                if (existingBox) {
+                    if (this.temporaryAccess) {
+                        existingBox.style.display = 'block';
+                        if (summary) {
+                            if (this.isTemporaryAccessActive()) {
+                                const expiry = this.getTemporaryAccessExpiry();
+                                summary.textContent = expiry
+                                    ? `Temporary access active until ${expiry.toLocaleString()}.`
+                                    : 'Temporary access is active.';
+                            } else {
+                                summary.textContent = 'Temporary access has expired. Save to remove or create a new one.';
+                            }
+                        }
+                    } else {
+                        existingBox.style.display = 'none';
+                        if (summary) {
+                            summary.textContent = '';
+                        }
+                    }
+                }
+            }
+
+            handleTemporaryAccessToggle(event) {
+                const options = document.getElementById('temporaryAccessOptions');
+                const existingBox = document.getElementById('existingTemporaryAccess');
+
+                if (options) {
+                    options.style.display = event?.target?.checked ? 'flex' : 'none';
+                }
+
+                if (event?.target?.checked) {
+                    this.pendingTemporaryAccessRemoval = false;
+                    if (existingBox && this.temporaryAccess) {
+                        existingBox.style.display = 'none';
+                    }
+                } else if (existingBox && this.temporaryAccess) {
+                    existingBox.style.display = 'block';
+                }
+            }
+
+            handleRevokeTemporaryAccess() {
+                if (!this.temporaryAccess) {
+                    alert('No temporary TOTP-only access is currently active.');
+                    return;
+                }
+
+                this.pendingTemporaryAccessRemoval = true;
+
+                const summary = document.getElementById('temporaryAccessSummary');
+                if (summary) {
+                    summary.textContent = 'Temporary access will be revoked after you save a new vault file.';
+                }
+
+                const existingBox = document.getElementById('existingTemporaryAccess');
+                if (existingBox) {
+                    existingBox.style.display = 'block';
+                }
+
+                const toggle = document.getElementById('enableTemporaryAccess');
+                if (toggle) {
+                    toggle.checked = false;
+                }
+
+                const options = document.getElementById('temporaryAccessOptions');
+                if (options) {
+                    options.style.display = 'none';
+                }
+
+                alert('Temporary access will be revoked after you download and share the newly saved vault.');
+
+                this.markAsChanged();
+            }
+
+            async createTemporaryAccess(password, code, durationMinutes) {
+                if (!this.totpSecret) {
+                    throw new Error('Enable two-factor authentication before configuring temporary access.');
+                }
+
+                if (!/^\d{6}$/.test(code)) {
+                    throw new Error('Enter a 6-digit authenticator code.');
+                }
+
+                const isValid = await TOTP.verifyTOTP(this.totpSecret, code);
+
+                if (!isValid) {
+                    throw new Error('Authenticator code invalid or expired. Enter the current code from your app.');
+                }
+
+                const minutes = Math.max(1, Math.floor(Number(durationMinutes) || 45));
+
+                const salt = crypto.getRandomValues(new Uint8Array(16));
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+                const iterations = 250000;
+                const encoder = new TextEncoder();
+                const keyMaterial = await crypto.subtle.importKey(
+                    'raw',
+                    encoder.encode(code),
+                    'PBKDF2',
+                    false,
+                    ['deriveKey']
+                );
+
+                const key = await crypto.subtle.deriveKey(
+                    {
+                        name: 'PBKDF2',
+                        salt,
+                        iterations,
+                        hash: 'SHA-256'
+                    },
+                    keyMaterial,
+                    { name: 'AES-GCM', length: 256 },
+                    true,
+                    ['encrypt', 'decrypt']
+                );
+
+                const encryptedPassword = await crypto.subtle.encrypt(
+                    { name: 'AES-GCM', iv },
+                    key,
+                    encoder.encode(password)
+                );
+
+                return {
+                    version: 1,
+                    createdAt: new Date().toISOString(),
+                    expiresAt: new Date(Date.now() + minutes * 60 * 1000).toISOString(),
+                    durationMinutes: minutes,
+                    salt: Array.from(salt),
+                    iv: Array.from(iv),
+                    encryptedPassword: Array.from(new Uint8Array(encryptedPassword)),
+                    iterations
+                };
+            }
+
+            async prepareTemporaryAccessForSave(password) {
+                const toggle = document.getElementById('enableTemporaryAccess');
+                const wantsTemporaryAccess = Boolean(toggle?.checked);
+                const result = { temporaryAccess: undefined, clearTemporaryAccess: false };
+
+                if (!this.requires2FA) {
+                    if (this.pendingTemporaryAccessRemoval || this.temporaryAccess) {
+                        result.clearTemporaryAccess = Boolean(this.pendingTemporaryAccessRemoval || this.temporaryAccess);
+                    }
+                    return result;
+                }
+
+                if (wantsTemporaryAccess) {
+                    const codeInput = document.getElementById('temporaryAccessCode');
+                    const code = codeInput?.value?.trim() || '';
+                    const durationSelect = document.getElementById('temporaryAccessDuration');
+                    const parsedDuration = parseInt(durationSelect?.value || '45', 10);
+                    const duration = Number.isNaN(parsedDuration) ? 45 : parsedDuration;
+
+                    if (!/^\d{6}$/.test(code)) {
+                        alert('Enter the 6-digit code from your authenticator app to grant temporary access.');
+                        return null;
+                    }
+
+                    try {
+                        const config = await this.createTemporaryAccess(password, code, duration);
+                        result.temporaryAccess = config;
+                        result.clearTemporaryAccess = false;
+                    } catch (error) {
+                        alert(error.message || 'Unable to enable temporary access. Try again with a fresh code.');
+                        return null;
+                    }
+                } else if (this.pendingTemporaryAccessRemoval) {
+                    result.clearTemporaryAccess = true;
+                }
+
+                if (!wantsTemporaryAccess && !this.pendingTemporaryAccessRemoval && this.temporaryAccess && !this.isTemporaryAccessActive()) {
+                    result.clearTemporaryAccess = true;
+                }
+
+                return result;
+            }
+
+            async tryUnlockWithTemporaryAccess(code) {
+                if (!this.temporaryAccess) {
+                    throw new Error('Temporary access is not enabled for this vault.');
+                }
+
+                if (!/^\d{6}$/.test(code)) {
+                    throw new Error('Enter the 6-digit temporary code provided to you.');
+                }
+
+                if (!this.isTemporaryAccessActive()) {
+                    throw new Error('This temporary access code has expired. Ask the vault owner for a new code.');
+                }
+
+                const { salt: saltArray, iv: ivArray, encryptedPassword: cipherArray } = this.temporaryAccess;
+
+                if (!Array.isArray(saltArray) || !Array.isArray(ivArray) || !Array.isArray(cipherArray)) {
+                    throw new Error('Temporary access data is unavailable. Ask the vault owner for a new code.');
+                }
+
+                const encoder = new TextEncoder();
+                const salt = new Uint8Array(saltArray);
+                const iv = new Uint8Array(ivArray);
+                const encryptedPassword = new Uint8Array(cipherArray);
+                const iterations = this.temporaryAccess.iterations || 250000;
+
+                const keyMaterial = await crypto.subtle.importKey(
+                    'raw',
+                    encoder.encode(code),
+                    'PBKDF2',
+                    false,
+                    ['deriveKey']
+                );
+
+                const key = await crypto.subtle.deriveKey(
+                    {
+                        name: 'PBKDF2',
+                        salt,
+                        iterations,
+                        hash: 'SHA-256'
+                    },
+                    keyMaterial,
+                    { name: 'AES-GCM', length: 256 },
+                    true,
+                    ['decrypt']
+                );
+
+                try {
+                    const decrypted = await crypto.subtle.decrypt(
+                        { name: 'AES-GCM', iv },
+                        key,
+                        encryptedPassword
+                    );
+
+                    const decoder = new TextDecoder();
+                    return decoder.decode(decrypted);
+                } catch (error) {
+                    throw new Error('Incorrect temporary access code.');
                 }
             }
 
@@ -4593,11 +5460,12 @@
 
                 if (enable2FA) {
                     this.requires2FA = true;
+                    this.totpSetupContext = 'initial';
                     this.setupTOTP();
                 } else {
                     document.getElementById('mainContent').style.display = 'block';
                     document.getElementById('navTabs').style.display = 'block';
-                    
+
                     this.isInitialized = true;
                     this.hasUnsavedChanges = true;
                     this.updateSaveStatus();
@@ -4614,40 +5482,52 @@
                 const selectedOption = document.querySelector('input[name="passwordUpdateChoice"]:checked');
                 const choice = selectedOption ? selectedOption.value : 'keep';
 
-                if (choice === 'keep') {
+                if (choice === 'keep' && !this.sessionPassword) {
                     this.closePasswordUpdateModal();
-                    if (this.sessionPassword) {
-                        await this.performSave(this.sessionPassword);
-                    } else {
-                        this.showPasswordModal();
+                    this.showPasswordModal();
+                    return;
+                }
+
+                let passwordToUse = this.sessionPassword;
+
+                if (choice === 'change') {
+                    const newPassword = document.getElementById('updateNewPassword')?.value || '';
+                    const confirmPassword = document.getElementById('updateConfirmPassword')?.value || '';
+
+                    if (!newPassword) {
+                        alert('Please enter a new password');
+                        return;
                     }
+
+                    if (newPassword !== confirmPassword) {
+                        alert('New passwords do not match');
+                        return;
+                    }
+
+                    if (newPassword.length < 8) {
+                        alert('New password must be at least 8 characters');
+                        return;
+                    }
+
+                    passwordToUse = newPassword;
+                }
+
+                const temporaryAccessOptions = await this.prepareTemporaryAccessForSave(passwordToUse);
+
+                if (temporaryAccessOptions === null) {
                     return;
                 }
 
-                const newPassword = document.getElementById('updateNewPassword')?.value || '';
-                const confirmPassword = document.getElementById('updateConfirmPassword')?.value || '';
-
-                if (!newPassword) {
-                    alert('Please enter a new password');
-                    return;
-                }
-
-                if (newPassword !== confirmPassword) {
-                    alert('New passwords do not match');
-                    return;
-                }
-
-                if (newPassword.length < 8) {
-                    alert('New password must be at least 8 characters');
-                    return;
-                }
-
-                this.sessionPassword = newPassword;
                 this.closePasswordUpdateModal();
-                await this.performSave(newPassword);
+
+                if (choice === 'change') {
+                    this.sessionPassword = passwordToUse;
+                }
+
+                await this.performSave(passwordToUse, temporaryAccessOptions);
             }
 
-            async performSave(password) {
+            async performSave(password, options = {}) {
                 this.version = APP_VERSION;
                 this.schemaVersion = schemaManager.currentVersion;
                 this.applyVersionMetadata();
@@ -4672,6 +5552,13 @@
                 }
                 
                 const dataScript = htmlDoc.querySelector('#embedded-vault-data');
+
+                if (options?.temporaryAccess) {
+                    this.temporaryAccess = options.temporaryAccess;
+                } else if (options?.clearTemporaryAccess) {
+                    this.temporaryAccess = null;
+                }
+
                 dataScript.textContent = JSON.stringify({
                     initialized: true,
                     encrypted: true,
@@ -4683,10 +5570,12 @@
                     modules: this.modules,
                     requires2FA: this.requires2FA,
                     vaultIdentity: this.vaultIdentity,
-                    emergencyAccess: emergencyAccess
+                    emergencyAccess: emergencyAccess,
+                    temporaryAccess: this.temporaryAccess || null
                 }, null, 2);
 
                 this.emergencyAccessConfig = emergencyAccess;
+                this.pendingTemporaryAccessRemoval = false;
 
                 const htmlString = '<!DOCTYPE html>\n' + htmlDoc.outerHTML;
                 
@@ -4704,6 +5593,11 @@
                 this.isInitialized = true;
                 this.updateSaveStatus();
                 this.pendingSchemaNotice = null;
+                this.updateTemporaryAccessHint();
+
+                if (document.getElementById('totpStatus')) {
+                    this.renderTOTPStatus();
+                }
 
                 const isFirstSave = !this.hasShownSaveInstructions;
                 this.hasShownSaveInstructions = true;
@@ -5079,35 +5973,7 @@
                 document.getElementById('module-mental').checked = this.modules.mental;
                 document.getElementById('module-chronic').checked = this.modules.chronic;
                 
-                const statusDiv = document.getElementById('totpStatus');
-                if (this.requires2FA) {
-                    statusDiv.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 20pt;">✅</span>
-                            <div>
-                                <strong style="color: #22c55e;">Two-Factor Authentication Enabled</strong><br>
-                                <span style="font-size: 9pt; color: #64748b;">
-                                    Your vault requires password + authenticator code
-                                </span>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    statusDiv.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 20pt;">🔓</span>
-                            <div>
-                                <strong>Two-Factor Authentication Disabled</strong><br>
-                                <span style="font-size: 9pt; color: #64748b;">
-                                    Your vault is protected by password only
-                                </span>
-                            </div>
-                        </div>
-                        <p style="margin-top: 10px; font-size: 9pt; color: #94a3b8;">
-                            To enable 2FA, create a new vault with the option selected.
-                        </p>
-                    `;
-                }
+                this.renderTOTPStatus();
 
                 this.updateEmergencySettingsVisibility();
             }
@@ -5119,7 +5985,7 @@
             saveSettings() {
                 this.closeSettings();
             }
-            
+
             setupTOTP() {
                 const secret = this.generateTOTPSecret();
                 this.currentTOTPSecret = secret;
@@ -5151,7 +6017,74 @@
                 `;
                 document.getElementById('backupCodes').parentElement.innerHTML = backupNote;
             }
-            
+
+            renderTOTPStatus() {
+                const statusDiv = document.getElementById('totpStatus');
+
+                if (!statusDiv) {
+                    return;
+                }
+
+                if (this.requires2FA) {
+                    statusDiv.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 20pt;">✅</span>
+                            <div>
+                                <strong style="color: #22c55e;">Two-Factor Authentication Enabled</strong><br>
+                                <span style="font-size: 9pt; color: #64748b;">
+                                    Your vault requires password + authenticator code
+                                </span>
+                            </div>
+                        </div>
+                        <p style="margin-top: 10px; font-size: 9pt; color: #94a3b8;">
+                            Use your authenticator app when unlocking this vault.
+                            Download a fresh vault whenever you save updates.
+                        </p>
+                    `;
+
+                    if (this.temporaryAccess) {
+                        const expiry = this.getTemporaryAccessExpiry();
+                        const message = this.isTemporaryAccessActive() && expiry
+                            ? `Temporary TOTP-only access active until ${expiry.toLocaleString()}.`
+                            : 'Temporary TOTP-only access expired. Save a new vault to remove or renew it.';
+
+                        statusDiv.insertAdjacentHTML(
+                            'beforeend',
+                            `<div style="margin-top: 12px; padding: 10px; background: #fff7ed; border: 1px solid #fdba74; border-radius: 6px; font-size: 9pt; color: #9a3412;">${this.escapeHTML(message)}</div>`
+                        );
+                    }
+                } else {
+                    statusDiv.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 20pt;">🔓</span>
+                            <div>
+                                <strong>Two-Factor Authentication Disabled</strong><br>
+                                <span style="font-size: 9pt; color: #64748b;">
+                                    Your vault is protected by password only
+                                </span>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-save" id="enableTOTPButton" style="margin-top: 15px;">
+                            Enable Two-Factor Authentication
+                        </button>
+                        <p style="margin-top: 10px; font-size: 9pt; color: #94a3b8;">
+                            Add authenticator codes at any time.
+                            After enabling, download a new encrypted vault to lock in the change.
+                        </p>
+                    `;
+
+                    const enableButton = document.getElementById('enableTOTPButton');
+                    if (enableButton) {
+                        enableButton.addEventListener('click', () => this.beginTOTPSetup());
+                    }
+                }
+            }
+
+            beginTOTPSetup() {
+                this.totpSetupContext = this.isInitialized ? 'upgrade' : 'initial';
+                this.setupTOTP();
+            }
+
             generateTOTPSecret() {
                 const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
                 let secret = '';
@@ -5174,35 +6107,55 @@
                 }
                 
                 const isValid = await TOTP.verifyTOTP(this.currentTOTPSecret, code);
-                
+
                 if (!isValid) {
                     alert('Invalid code. Please make sure you\'ve added the secret to your authenticator app and try the current code shown.');
                     return;
                 }
-                
+
                 this.totpSecret = this.currentTOTPSecret;
-                
+                this.requires2FA = true;
+
+                const wasUpgrade = this.totpSetupContext === 'upgrade';
+                this.totpSetupContext = null;
+
                 document.getElementById('totpModal').classList.remove('active');
                 document.getElementById('mainContent').style.display = 'block';
                 document.getElementById('navTabs').style.display = 'block';
-                
+                const totpField = document.getElementById('totpField');
+                if (totpField) {
+                    totpField.style.display = 'block';
+                }
+
                 this.isInitialized = true;
                 this.hasUnsavedChanges = true;
                 this.updateSaveStatus();
-                
-                alert(`✅ Two-factor authentication enabled!\n\n` +
-                      `Your vault "${this.vaultIdentity}" is ready to use.\n\n` +
-                      `• Enter your medical information\n` +
-                      `• Click "Download Encrypted Vault" when ready to save\n` +
-                      `• You'll need both password AND authenticator code to unlock`);
-                
+
+                if (document.getElementById('totpStatus')) {
+                    this.renderTOTPStatus();
+                }
+
+                const successMessage = wasUpgrade
+                    ? '✅ Two-factor authentication enabled!\n\n' +
+                        'Your vault now requires both your password and a 6-digit authenticator code to unlock.\n\n' +
+                        '⚠️ Important: Download a new encrypted vault file before closing to preserve this change.'
+                    : '✅ Two-factor authentication enabled!\n\n' +
+                        `Your vault "${this.vaultIdentity}" is ready to use.\n\n` +
+                        '• Enter your medical information\n' +
+                        '• Click "Download Encrypted Vault" when ready to save\n' +
+                        '• You\'ll need both password AND authenticator code to unlock';
+
+                alert(successMessage);
+
                 this.currentTOTPSecret = null;
             }
-            
+
             cancelTOTP() {
                 this.currentTOTPSecret = null;
+                const wasUpgrade = this.totpSetupContext === 'upgrade';
+                this.totpSetupContext = null;
                 document.getElementById('totpModal').classList.remove('active');
-                
+
                 if (!this.isInitialized) {
                     this.requires2FA = false;
                     document.getElementById('mainContent').style.display = 'block';
@@ -5217,6 +6170,11 @@
                           `• Enter your medical information\n` +
                           `• Click "Download Encrypted Vault" when ready to save\n` +
                           `• Keep your password safe - there's no recovery without it`);
+                } else if (wasUpgrade) {
+                    this.requires2FA = false;
+                    if (document.getElementById('totpStatus')) {
+                        this.renderTOTPStatus();
+                    }
                 }
             }
             
@@ -5621,7 +6579,7 @@
 
                 for (const file of files) {
                     try {
-                        const base64 = await this.readFileAsBase64(file);
+                        const result = await this.readFileAsBase64(file);
                         const attachment = {
                             id: this.generateAttachmentId(),
                             name: typeof file.name === 'string' && file.name ? file.name : 'attachment',
@@ -5629,8 +6587,18 @@
                             size: typeof file.size === 'number' ? file.size : 0,
                             lastModified: typeof file.lastModified === 'number' ? file.lastModified : null,
                             addedAt: new Date().toISOString(),
-                            data: base64
+                            compressed: !!result?.compressed,
+                            originalSize: typeof result?.originalSize === 'number'
+                                ? result.originalSize
+                                : (typeof file.size === 'number' ? file.size : 0),
+                            compressedSize: typeof result?.compressedSize === 'number'
+                                ? result.compressedSize
+                                : (typeof result?.data === 'string' ? Math.ceil(result.data.length * 3 / 4) : (typeof file.size === 'number' ? file.size : 0)),
+                            data: typeof result?.data === 'string' ? result.data : ''
                         };
+                        if (!attachment.data) {
+                            throw new Error('Attachment data is empty');
+                        }
                         this.attachments.push(attachment);
                     } catch (error) {
                         console.error('Failed to add attachment', error);
@@ -5648,7 +6616,7 @@
                 }
             }
 
-            readFileAsBase64(file) {
+            readFileAsBase64(file, compress = true) {
                 return new Promise((resolve, reject) => {
                     if (!(file instanceof Blob)) {
                         reject(new Error('Invalid file'));
@@ -5661,16 +6629,46 @@
                             const result = reader.result;
                             if (result instanceof ArrayBuffer) {
                                 const bytes = new Uint8Array(result);
+                                let finalBytes = bytes;
+                                let isCompressed = false;
+
+                                if (compress && bytes.length > 1024) {
+                                    const pakoInstance = typeof window !== 'undefined' ? window.pako : null;
+                                    if (pakoInstance && typeof pakoInstance.deflate === 'function') {
+                                        try {
+                                            const compressed = pakoInstance.deflate(bytes, { level: 6 });
+                                            if (compressed && compressed.length < bytes.length) {
+                                                finalBytes = compressed;
+                                                isCompressed = true;
+                                            }
+                                        } catch (compressionError) {
+                                            console.warn('Attachment compression failed, storing uncompressed', compressionError);
+                                        }
+                                    }
+                                }
+
                                 const chunkSize = 0x8000;
                                 let binary = '';
-                                for (let i = 0; i < bytes.length; i += chunkSize) {
-                                    const chunk = bytes.subarray(i, i + chunkSize);
+                                for (let i = 0; i < finalBytes.length; i += chunkSize) {
+                                    const chunk = finalBytes.subarray(i, i + chunkSize);
                                     binary += String.fromCharCode(...chunk);
                                 }
-                                resolve(btoa(binary));
+
+                                resolve({
+                                    data: btoa(binary),
+                                    compressed: isCompressed,
+                                    originalSize: bytes.length,
+                                    compressedSize: finalBytes.length
+                                });
                             } else if (typeof result === 'string') {
                                 const base64Match = result.match(/^data:[^;]+;base64,(.*)$/);
-                                resolve(base64Match ? base64Match[1] : result);
+                                const data = base64Match ? base64Match[1] : result;
+                                resolve({
+                                    data,
+                                    compressed: false,
+                                    originalSize: typeof file.size === 'number' ? file.size : 0,
+                                    compressedSize: typeof file.size === 'number' ? file.size : 0
+                                });
                             } else {
                                 reject(new Error('Unsupported file data'));
                             }
@@ -5716,6 +6714,9 @@
                 }
 
                 const id = attachment.id || this.generateAttachmentId();
+                if (!attachment.id) {
+                    attachment.id = id;
+                }
 
                 const item = document.createElement('div');
                 item.className = 'list-item attachment-item';
@@ -5751,6 +6752,13 @@
                 const actions = document.createElement('div');
                 actions.className = 'attachment-actions';
 
+                const viewBtn = document.createElement('button');
+                viewBtn.type = 'button';
+                viewBtn.className = 'btn btn-primary no-print';
+                viewBtn.textContent = 'View';
+                viewBtn.dataset.attachmentView = id;
+                actions.appendChild(viewBtn);
+
                 const downloadBtn = document.createElement('button');
                 downloadBtn.type = 'button';
                 downloadBtn.className = 'btn btn-secondary no-print';
@@ -5782,9 +6790,12 @@
                         name: attachment.name,
                         type: attachment.type,
                         size: attachment.size,
+                        compressed: !!attachment.compressed,
+                        originalSize: typeof attachment.originalSize === 'number' ? attachment.originalSize : (typeof attachment.size === 'number' ? attachment.size : 0),
+                        compressedSize: typeof attachment.compressedSize === 'number' ? attachment.compressedSize : (typeof attachment.data === 'string' ? Math.ceil(attachment.data.length * 3 / 4) : (typeof attachment.size === 'number' ? attachment.size : 0)),
                         lastModified: attachment.lastModified,
                         addedAt: attachment.addedAt,
-                        data: attachment.data
+                        data: typeof attachment.data === 'string' ? attachment.data : ''
                     }))
                     : [];
 
@@ -5829,9 +6840,16 @@
                         name: item.name || 'Attachment',
                         type: item.type || 'application/octet-stream',
                         size: typeof item.size === 'number' ? item.size : 0,
+                        compressed: !!item.compressed,
+                        originalSize: typeof item.originalSize === 'number'
+                            ? item.originalSize
+                            : (typeof item.size === 'number' ? item.size : 0),
+                        compressedSize: typeof item.compressedSize === 'number'
+                            ? item.compressedSize
+                            : (typeof item.data === 'string' ? Math.ceil(item.data.length * 3 / 4) : (typeof item.size === 'number' ? item.size : 0)),
                         lastModified: typeof item.lastModified === 'number' ? item.lastModified : null,
                         addedAt: item.addedAt || new Date().toISOString(),
-                        data: item.data
+                        data: typeof item.data === 'string' ? item.data : ''
                     }));
 
                 this.attachments = sanitized;
@@ -5861,6 +6879,181 @@
                 this.updateAttachmentStorage();
             }
 
+            cleanupAttachmentPreview() {
+                if (this.activePreviewObjectUrl) {
+                    URL.revokeObjectURL(this.activePreviewObjectUrl);
+                    this.activePreviewObjectUrl = null;
+                }
+
+                const content = document.getElementById('attachmentPreviewContent');
+                if (content) {
+                    content.innerHTML = '';
+                }
+
+                const errorEl = document.getElementById('attachmentPreviewError');
+                if (errorEl) {
+                    errorEl.textContent = '';
+                    errorEl.style.display = 'none';
+                }
+
+                const metaEl = document.getElementById('attachmentPreviewMeta');
+                if (metaEl) {
+                    metaEl.textContent = '';
+                }
+
+                const downloadBtn = document.getElementById('attachmentPreviewDownload');
+                if (downloadBtn) {
+                    downloadBtn.disabled = true;
+                }
+            }
+
+            closeAttachmentPreview() {
+                const modal = document.getElementById('attachmentPreviewModal');
+                if (modal) {
+                    modal.classList.remove('active');
+                }
+
+                this.currentPreviewAttachmentId = null;
+                this.cleanupAttachmentPreview();
+            }
+
+            isTextPreviewType(mimeType) {
+                if (typeof mimeType !== 'string' || !mimeType) {
+                    return false;
+                }
+
+                if (mimeType.startsWith('text/')) {
+                    return true;
+                }
+
+                const normalized = mimeType.toLowerCase();
+                return normalized.endsWith('+json')
+                    || normalized.endsWith('+xml')
+                    || [
+                        'application/json',
+                        'application/xml',
+                        'application/x-yaml',
+                        'application/yaml',
+                        'application/javascript',
+                        'application/ecmascript',
+                        'application/sql'
+                    ].includes(normalized);
+            }
+
+            viewAttachment(id) {
+                if (!id) {
+                    return;
+                }
+
+                const attachment = Array.isArray(this.attachments)
+                    ? this.attachments.find(item => item.id === id)
+                    : null;
+
+                if (!attachment) {
+                    alert('Attachment not found.');
+                    return;
+                }
+
+                const modal = document.getElementById('attachmentPreviewModal');
+                const content = document.getElementById('attachmentPreviewContent');
+                const titleEl = document.getElementById('attachmentPreviewTitle');
+                const metaEl = document.getElementById('attachmentPreviewMeta');
+                const errorEl = document.getElementById('attachmentPreviewError');
+                const downloadBtn = document.getElementById('attachmentPreviewDownload');
+
+                if (!modal || !content || !titleEl || !metaEl || !errorEl || !downloadBtn) {
+                    this.downloadAttachment(id);
+                    return;
+                }
+
+                this.cleanupAttachmentPreview();
+
+                this.currentPreviewAttachmentId = id;
+                titleEl.textContent = attachment.name || 'Attachment';
+                metaEl.textContent = `${this.formatFileSize(attachment.size)} • ${(attachment.type || 'application/octet-stream')}`;
+                downloadBtn.disabled = false;
+
+                const mimeType = (attachment.type || 'application/octet-stream').toLowerCase();
+
+                try {
+                    const blob = this.base64ToBlob(attachment.data, attachment.type, attachment.compressed);
+
+                    if (mimeType.startsWith('image/')) {
+                        const url = URL.createObjectURL(blob);
+                        this.activePreviewObjectUrl = url;
+                        const img = document.createElement('img');
+                        img.src = url;
+                        img.alt = attachment.name || 'Attachment preview';
+                        content.appendChild(img);
+                        modal.classList.add('active');
+                        return;
+                    }
+
+                    if (mimeType.startsWith('video/')) {
+                        const url = URL.createObjectURL(blob);
+                        this.activePreviewObjectUrl = url;
+                        const video = document.createElement('video');
+                        video.controls = true;
+                        video.src = url;
+                        video.style.width = '100%';
+                        video.style.maxHeight = '60vh';
+                        content.appendChild(video);
+                        modal.classList.add('active');
+                        return;
+                    }
+
+                    if (mimeType.startsWith('audio/')) {
+                        const url = URL.createObjectURL(blob);
+                        this.activePreviewObjectUrl = url;
+                        const audio = document.createElement('audio');
+                        audio.controls = true;
+                        audio.src = url;
+                        content.appendChild(audio);
+                        modal.classList.add('active');
+                        return;
+                    }
+
+                    if (this.isTextPreviewType(mimeType)) {
+                        const loading = document.createElement('p');
+                        loading.textContent = 'Loading preview...';
+                        loading.style.textAlign = 'center';
+                        loading.style.color = '#64748b';
+                        content.appendChild(loading);
+                        modal.classList.add('active');
+
+                        blob.text().then((text) => {
+                            if (this.currentPreviewAttachmentId !== id) {
+                                return;
+                            }
+                            content.innerHTML = '';
+                            const pre = document.createElement('pre');
+                            pre.className = 'attachment-preview-text';
+                            pre.textContent = text;
+                            content.appendChild(pre);
+                        }).catch((error) => {
+                            console.error('Failed to render text attachment preview', error);
+                            if (this.currentPreviewAttachmentId !== id) {
+                                return;
+                            }
+                            content.innerHTML = '';
+                            errorEl.textContent = 'Unable to display this text attachment. Download to view.';
+                            errorEl.style.display = 'block';
+                        });
+
+                        return;
+                    }
+
+                    errorEl.textContent = 'Preview not available for this file type. Download to view.';
+                    errorEl.style.display = 'block';
+                    modal.classList.add('active');
+                } catch (error) {
+                    console.error('Failed to preview attachment', error);
+                    errorEl.textContent = 'Unable to preview this attachment. Download to view.';
+                    errorEl.style.display = 'block';
+                    modal.classList.add('active');
+                }
+            }
+
             downloadAttachment(id) {
                 if (!id) {
                     return;
@@ -5876,7 +7069,7 @@
                 }
 
                 try {
-                    const blob = this.base64ToBlob(attachment.data, attachment.type);
+                    const blob = this.base64ToBlob(attachment.data, attachment.type, attachment.compressed);
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
@@ -5898,7 +7091,22 @@
                     throw new Error('Attachment data is empty.');
                 }
 
-                return new Blob([bytes], { type: mimeType || 'application/octet-stream' });
+                let finalBytes = bytes;
+                if (isCompressed) {
+                    const pakoInstance = typeof window !== 'undefined' ? window.pako : null;
+                    if (!pakoInstance || typeof pakoInstance.inflate !== 'function') {
+                        throw new Error('Unable to decompress attachment: compression library unavailable.');
+                    }
+
+                    try {
+                        finalBytes = pakoInstance.inflate(bytes);
+                    } catch (error) {
+                        console.error('Failed to decompress attachment', error);
+                        throw new Error('Failed to decompress attachment data.');
+                    }
+                }
+
+                return new Blob([finalBytes], { type: mimeType || 'application/octet-stream' });
             }
 
             initializeExistingNotes() {
@@ -6901,7 +8109,11 @@
             
             lock() {
                 this.isLocked = true;
-                document.getElementById('lockBtn').innerHTML = '🔒 Unlock';
+                const lockBtn = document.getElementById('lockBtn');
+                if (lockBtn) {
+                    lockBtn.setAttribute('data-i18n-key', 'lock_action');
+                    lockBtn.textContent = window.localization?.t('lock_action', '🔒 Unlock');
+                }
                 document.getElementById('mainContent').style.display = 'none';
                 document.getElementById('navTabs').style.display = 'none';
                 document.getElementById('unlockScreen').style.display = 'flex';
@@ -6915,11 +8127,17 @@
                         document.getElementById('totpField').style.display = 'none';
                     }
                 }
+
+                this.updateTemporaryAccessHint();
             }
 
             unlock() {
                 this.isLocked = false;
-                document.getElementById('lockBtn').innerHTML = '🔓 Lock';
+                const lockBtn = document.getElementById('lockBtn');
+                if (lockBtn) {
+                    lockBtn.setAttribute('data-i18n-key', 'unlock_action');
+                    lockBtn.textContent = window.localization?.t('unlock_action', '🔓 Lock');
+                }
             }
             
             compression = {
@@ -7118,8 +8336,17 @@
             };
         }
         
-        // Initialize app
-        const app = new HealthVaultApp();
+        // Initialize localization and app
+        const localization = new LocalizationManager();
+        window.localization = localization;
+
+        localization.init()
+            .catch(error => {
+                console.error('[Localization] Initialization error', error);
+            })
+            .finally(() => {
+                window.app = new HealthVaultApp();
+            });
     </script>
 </body>
 </html>
