@@ -20,7 +20,19 @@
             margin: 0;
             padding: 0;
         }
-        
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
             font-size: 11pt;
@@ -318,6 +330,10 @@
         .language-selector label {
             font-size: 9pt;
             color: #64748b;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
         }
 
         .language-selector select {
@@ -338,6 +354,20 @@
             font-weight: 600;
             margin-bottom: 6px;
             color: #1e293b;
+        }
+
+        .language-label-toggle .language-label-text {
+            display: none;
+        }
+
+        .language-label-toggle:hover .language-label-icon,
+        .language-selector:focus-within .language-label-toggle .language-label-icon {
+            display: none;
+        }
+
+        .language-label-toggle:hover .language-label-text,
+        .language-selector:focus-within .language-label-toggle .language-label-text {
+            display: inline;
         }
 
         .unlock-language select {
@@ -1933,7 +1963,11 @@
         </div>
         <div class="save-status never-saved" id="saveStatus" data-i18n-key="not_initialized">⚠️ Not Initialized - Create Your Vault</div>
         <div class="language-selector no-print">
-            <label for="languageSelect" data-i18n-key="language_label">Language</label>
+            <label for="languageSelect" class="language-label-toggle">
+                <span class="sr-only" data-i18n-key="language_label">Language Selector</span>
+                <span class="language-label-icon" aria-hidden="true">🌐</span>
+                <span class="language-label-text" data-i18n-key="language_label" aria-hidden="true">Language Selector</span>
+            </label>
             <select id="languageSelect" data-language-selector></select>
         </div>
         <div class="action-buttons">
