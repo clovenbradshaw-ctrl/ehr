@@ -494,6 +494,31 @@
             font-size: 26px;
             font-weight: 600;
             text-transform: uppercase;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .patient-avatar img {
+            display: none;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .patient-avatar.has-photo {
+            background: #0f172a;
+        }
+
+        .patient-avatar.has-photo img {
+            display: block;
+        }
+
+        .patient-avatar-initials {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
         }
 
         .patient-overview {
@@ -523,6 +548,31 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 12px;
+        }
+
+        .avatar-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .avatar-actions .btn {
+            padding: 6px 14px;
+        }
+
+        .link-button {
+            background: none;
+            border: none;
+            color: #3b82f6;
+            cursor: pointer;
+            font-size: 10pt;
+            text-decoration: underline;
+            padding: 0;
+        }
+
+        .link-button:hover {
+            color: #2563eb;
         }
 
         .patient-info-grid {
@@ -2032,7 +2082,16 @@
             <div class="patient-demographics">
                 <div class="patient-summary">
                     <div class="patient-profile">
-                        <div class="patient-avatar" id="patientAvatar">👤</div>
+                        <div class="patient-avatar" id="patientAvatar">
+                            <img id="patientAvatarImage" alt="Patient photo" />
+                            <span id="patientAvatarInitials" class="patient-avatar-initials">👤</span>
+                        </div>
+                        <input type="hidden" class="form-data" data-field="profilePhoto" id="profilePhotoData" />
+                        <div class="avatar-actions">
+                            <input type="file" id="profilePhotoInput" accept="image/*" style="display: none;" />
+                            <button type="button" class="btn btn-secondary" id="uploadPhotoBtn">Upload Photo</button>
+                            <button type="button" class="link-button" id="removePhotoBtn" style="display: none;">Remove Photo</button>
+                        </div>
                         <div class="patient-overview">
                             <div class="patient-display-name" id="patientDisplayName">Enter patient name</div>
                             <div class="patient-display-meta" id="patientDisplayMeta">Add DOB, sex, and MRN for quick reference.</div>
@@ -3150,6 +3209,7 @@
             { key: 'middleInitial', label: 'Middle Initial', aliases: ['middleNameInitial'] },
             { key: 'chosenName', label: 'Chosen Name', aliases: ['preferredName'] },
             { key: 'pronouns', label: 'Pronouns', aliases: ['preferredPronouns'] },
+            { key: 'profilePhoto', label: 'Profile Photo' },
             { key: 'mrn', label: 'Medical Record Number' },
             { key: 'biologicalSex', label: 'Biological Sex', aliases: ['sexAtBirth'] },
             { key: 'dateOfBirth', label: 'Date of Birth', aliases: ['dob'] },
@@ -3492,6 +3552,13 @@
                 document.getElementById('lockBtn')?.addEventListener('click', () => this.toggleLock());
                 document.getElementById('openVaultBtn')?.addEventListener('click', () => this.promptVaultImport());
                 document.getElementById('vaultFileInput')?.addEventListener('change', (event) => this.handleVaultFileSelect(event));
+                document.getElementById('uploadPhotoBtn')?.addEventListener('click', () => this.promptProfilePhoto());
+                document.getElementById('removePhotoBtn')?.addEventListener('click', () => this.removeProfilePhoto());
+
+                const profilePhotoInput = document.getElementById('profilePhotoInput');
+                if (profilePhotoInput) {
+                    profilePhotoInput.addEventListener('change', (event) => this.handleProfilePhotoSelect(event));
+                }
 
                 document.getElementById('printSummaryBtn')?.addEventListener('click', () => {
                     this.closeExportOptions();
@@ -4545,11 +4612,10 @@
             }
 
             updatePatientSummaryDisplay() {
-                const avatarEl = document.getElementById('patientAvatar');
                 const nameEl = document.getElementById('patientDisplayName');
                 const metaEl = document.getElementById('patientDisplayMeta');
 
-                if (!avatarEl || !nameEl || !metaEl) {
+                if (!nameEl || !metaEl) {
                     return;
                 }
 
@@ -4569,7 +4635,6 @@
                 nameEl.textContent = displayName || 'Enter patient name';
 
                 const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.trim().toUpperCase();
-                avatarEl.textContent = initials || (firstName.charAt(0).toUpperCase() || lastName.charAt(0).toUpperCase() || '👤');
 
                 const metaParts = [];
                 if (dob) {
@@ -4590,6 +4655,124 @@
                 }
 
                 metaEl.textContent = metaParts.length ? metaParts.join(' • ') : 'Add DOB, sex, and MRN for quick reference.';
+                this.renderPatientAvatar(initials);
+            }
+
+            renderPatientAvatar(initials = '') {
+                const avatarEl = document.getElementById('patientAvatar');
+                const avatarImage = document.getElementById('patientAvatarImage');
+                const avatarInitials = document.getElementById('patientAvatarInitials');
+                const removeBtn = document.getElementById('removePhotoBtn');
+                const storedPhoto = this.getFieldValue('profilePhoto', { includeEmpty: true }) || '';
+                const hasPhoto = typeof storedPhoto === 'string' && storedPhoto.trim() !== '';
+
+                if (!avatarEl || !avatarImage || !avatarInitials) {
+                    if (removeBtn) {
+                        removeBtn.style.display = hasPhoto ? 'inline' : 'none';
+                    }
+                    return;
+                }
+
+                if (hasPhoto) {
+                    avatarEl.classList.add('has-photo');
+                    avatarImage.src = storedPhoto;
+                    avatarImage.style.display = 'block';
+                    avatarImage.setAttribute('aria-hidden', 'false');
+                    avatarInitials.textContent = '';
+                    avatarInitials.style.display = 'none';
+                    if (removeBtn) {
+                        removeBtn.style.display = 'inline';
+                    }
+                } else {
+                    avatarEl.classList.remove('has-photo');
+                    avatarImage.removeAttribute('src');
+                    avatarImage.style.display = 'none';
+                    avatarImage.setAttribute('aria-hidden', 'true');
+                    avatarInitials.textContent = initials || '👤';
+                    avatarInitials.style.display = 'flex';
+                    if (removeBtn) {
+                        removeBtn.style.display = 'none';
+                    }
+                }
+            }
+
+            promptProfilePhoto() {
+                const input = document.getElementById('profilePhotoInput');
+                if (input) {
+                    input.click();
+                }
+            }
+
+            handleProfilePhotoSelect(event) {
+                const input = event?.target;
+                const file = input?.files && input.files[0];
+
+                if (!file) {
+                    return;
+                }
+
+                if (!file.type.startsWith('image/')) {
+                    alert('Please choose an image file.');
+                    input.value = '';
+                    return;
+                }
+
+                const maxSize = 5 * 1024 * 1024; // 5 MB
+                if (file.size > maxSize) {
+                    alert('Image is too large. Please choose a file under 5 MB.');
+                    input.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const result = typeof reader.result === 'string' ? reader.result : '';
+                    if (result && result.startsWith('data:image')) {
+                        this.applyProfilePhotoData(result);
+                    } else {
+                        alert('Unable to read image data. Please try a different file.');
+                    }
+                    input.value = '';
+                };
+
+                reader.onerror = () => {
+                    alert('Failed to load image. Please try again.');
+                    input.value = '';
+                };
+
+                reader.readAsDataURL(file);
+            }
+
+            applyProfilePhotoData(dataUrl) {
+                const hiddenInput = document.getElementById('profilePhotoData');
+                if (!hiddenInput) {
+                    return;
+                }
+
+                hiddenInput.value = dataUrl;
+                this.markAsChanged();
+                this.updatePatientSummaryDisplay();
+            }
+
+            removeProfilePhoto() {
+                const hiddenInput = document.getElementById('profilePhotoData');
+                if (!hiddenInput) {
+                    return;
+                }
+
+                if (!hiddenInput.value) {
+                    return;
+                }
+
+                hiddenInput.value = '';
+
+                const fileInput = document.getElementById('profilePhotoInput');
+                if (fileInput) {
+                    fileInput.value = '';
+                }
+
+                this.markAsChanged();
+                this.updatePatientSummaryDisplay();
             }
 
             updateEmergencySettingsVisibility() {
