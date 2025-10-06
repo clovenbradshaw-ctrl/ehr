@@ -7,7 +7,7 @@
     <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="expires" content="0">
     <link rel="icon" type="image/x-icon" href="https://storage.googleapis.com/intelechia-content/favicon.ico">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js" integrity="sha512-5Y3OVd9VVKa70BxZ0JItNaJ+uwOxa7Xpu8aHf36JI3hLN3PTTr7X6KhoORmvK+jEbwSwrgPWSlhBu7/52iKR2w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js" integrity="sha512-g2TeAWw5GPnX7z0Kn8nFbYfeHcvAu/tx6d6mrLe/90mkCxO+RcptyYpksUz35EO337F83bZwcmUyHiHamspkfg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <title>Personal Health Vault - Secure Medical Record</title>
     <style>
         @page {
@@ -1021,6 +1021,11 @@
             background: #e2e8f0;
             padding: 2px 8px;
             border-radius: 999px;
+        }
+
+        .attachment-details .attachment-compression {
+            background: #d1fae5;
+            color: #047857;
         }
 
         .attachment-actions {
@@ -6589,6 +6594,32 @@
                 }
             }
 
+            getCompressionLibrary() {
+                if (this._compressionLibrary && typeof this._compressionLibrary.deflate === 'function' && typeof this._compressionLibrary.inflate === 'function') {
+                    return this._compressionLibrary;
+                }
+
+                const scopes = [
+                    typeof globalThis !== 'undefined' ? globalThis : undefined,
+                    typeof window !== 'undefined' ? window : undefined,
+                    typeof self !== 'undefined' ? self : undefined
+                ];
+
+                for (const scope of scopes) {
+                    if (scope && scope.pako && typeof scope.pako.deflate === 'function' && typeof scope.pako.inflate === 'function') {
+                        this._compressionLibrary = scope.pako;
+                        return this._compressionLibrary;
+                    }
+                }
+
+                if (typeof pako !== 'undefined' && typeof pako.deflate === 'function' && typeof pako.inflate === 'function') {
+                    this._compressionLibrary = pako;
+                    return this._compressionLibrary;
+                }
+
+                return null;
+            }
+
             readFileAsBase64(file, compress = true) {
                 return new Promise((resolve, reject) => {
                     if (!(file instanceof Blob)) {
@@ -6606,7 +6637,7 @@
                                 let isCompressed = false;
 
                                 if (compress && bytes.length > 1024) {
-                                    const pakoInstance = typeof window !== 'undefined' ? window.pako : null;
+                                    const pakoInstance = this.getCompressionLibrary();
                                     if (pakoInstance && typeof pakoInstance.deflate === 'function') {
                                         try {
                                             const compressed = pakoInstance.deflate(bytes, { level: 6 });
@@ -6710,6 +6741,25 @@
                 const typeSpan = document.createElement('span');
                 typeSpan.textContent = attachment.type || 'application/octet-stream';
                 details.appendChild(typeSpan);
+
+                const originalSize = typeof attachment.originalSize === 'number'
+                    ? attachment.originalSize
+                    : (typeof attachment.size === 'number' ? attachment.size : 0);
+                const compressedSize = typeof attachment.compressedSize === 'number'
+                    ? attachment.compressedSize
+                    : (typeof attachment.size === 'number' ? attachment.size : 0);
+
+                if (attachment.compressed && compressedSize > 0 && originalSize > compressedSize) {
+                    const savedPercentRaw = (1 - (compressedSize / originalSize)) * 100;
+                    const savedPercentLabel = savedPercentRaw >= 1
+                        ? `${Math.round(savedPercentRaw)}%`
+                        : '<1%';
+
+                    const compressionSpan = document.createElement('span');
+                    compressionSpan.className = 'attachment-compression';
+                    compressionSpan.textContent = `Compression saved ${savedPercentLabel} (${this.formatFileSize(originalSize)} → ${this.formatFileSize(compressedSize)})`;
+                    details.appendChild(compressionSpan);
+                }
 
                 if (attachment.addedAt) {
                     const formatted = this.formatDateTime(attachment.addedAt);
@@ -7072,7 +7122,7 @@
 
                 let finalBytes = bytes;
                 if (isCompressed) {
-                    const pakoInstance = typeof window !== 'undefined' ? window.pako : null;
+                    const pakoInstance = this.getCompressionLibrary();
                     if (!pakoInstance || typeof pakoInstance.inflate !== 'function') {
                         throw new Error('Unable to decompress attachment: compression library unavailable.');
                     }
