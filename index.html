@@ -1840,6 +1840,8 @@
             <div id="totpField" style="display: none;">
                 <input type="text" id="totp-code" placeholder="6-digit code" maxlength="6">
             </div>
+            <div id="temporaryAccessHint" style="display: none; font-size: 9pt; color: #f97316; margin: 10px 0 0 0; text-align: left;">
+            </div>
             <button onclick="app.attemptUnlock()">Unlock Vault</button>
             <p style="margin-top: 15px; font-size: 9pt; color: #94a3b8;">
                 This vault file (.ehv) contains your encrypted data.
@@ -2132,6 +2134,42 @@
                 <p class="password-update-note" id="passwordUpdate2FANote" style="display: none;">
                     Two-factor authentication stays connected—your existing authenticator codes will continue to work after changing your password.
                 </p>
+                <div class="password-update-option" id="temporaryAccessSection" style="margin-top: 20px; display: none;">
+                    <h4 style="margin-bottom: 8px;">Temporary TOTP-Only Access</h4>
+                    <p style="font-size: 9pt; color: #64748b; margin-bottom: 12px;">
+                        Allow a trusted person to unlock this vault using only a current authenticator code for a limited time. They will not need the password while access is active.
+                    </p>
+                    <div class="warning-box" id="existingTemporaryAccess" style="display: none; margin-bottom: 12px;">
+                        <strong id="temporaryAccessSummary"></strong>
+                        <button type="button" class="btn btn-secondary" id="revokeTemporaryAccess" style="margin-top: 10px;">Revoke temporary access</button>
+                    </div>
+                    <label class="checkbox-item" style="align-items: flex-start; gap: 10px;">
+                        <input type="checkbox" id="enableTemporaryAccess">
+                        <div>
+                            <strong>Enable new temporary access</strong>
+                            <div style="font-size: 9pt; color: #64748b;">Requires a current code from your authenticator app.</div>
+                        </div>
+                    </label>
+                    <div id="temporaryAccessOptions" style="display: none; margin: 12px 0 0 26px; flex-direction: column; gap: 12px;">
+                        <div class="field">
+                            <label>Access duration</label>
+                            <select id="temporaryAccessDuration">
+                                <option value="15">15 minutes</option>
+                                <option value="30">30 minutes</option>
+                                <option value="45" selected>45 minutes</option>
+                                <option value="60">1 hour</option>
+                                <option value="120">2 hours</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Authenticator code</label>
+                            <input type="text" id="temporaryAccessCode" placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+                            <p style="font-size: 9pt; color: #f97316; margin-top: 6px;">
+                                Share this code and the new .ehv file. The recipient can unlock without the password until the timer expires.
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" id="passwordUpdateCancel">Cancel</button>
@@ -3418,6 +3456,8 @@
                 this.currentTOTPSecret = null;
                 this.totpSetupContext = null;
                 this.requires2FA = false;
+                this.temporaryAccess = null;
+                this.pendingTemporaryAccessRemoval = false;
                 this.isLocked = false;
                 this.modules = {
                     identity: false,
@@ -3475,6 +3515,8 @@
                         this.vaultIdentity = vaultData.vaultIdentity;
                         this.lastSaved = vaultData.savedDate;
                         this.emergencyAccessConfig = vaultData.emergencyAccess || null;
+                        this.temporaryAccess = vaultData.temporaryAccess || null;
+                        this.pendingTemporaryAccessRemoval = false;
                         this.version = vaultData.appVersion || this.version || APP_VERSION;
 
                         const embeddedSchemaVersion = vaultData.schemaVersion || vaultData.version;
@@ -3488,12 +3530,21 @@
                         const unlockScreen = document.getElementById('unlockScreen');
                         const unlockContainer = unlockScreen.querySelector('.unlock-container');
 
+                        const tempAccessExpiry = this.getTemporaryAccessExpiry();
+                        const formattedExpiry = tempAccessExpiry ? this.escapeHTML(tempAccessExpiry.toLocaleString()) : '';
+                        const tempAccessNotice = this.temporaryAccess
+                            ? this.isTemporaryAccessActive() && tempAccessExpiry
+                                ? `<p style="margin: 10px 0 0 0; color: #f97316; font-size: 9pt;">Temporary TOTP-only access active until ${formattedExpiry}.</p>`
+                                : '<p style="margin: 10px 0 0 0; color: #f97316; font-size: 9pt;">Temporary TOTP-only access has expired. Save a new vault to remove or renew it.</p>'
+                            : '';
+
                         const vaultInfoHTML = `
                             <div class="vault-identity-block" style="margin-bottom: 20px; padding: 15px; background: #f0f9ff; border-radius: 8px;">
                                 <h3 style="margin: 0; color: #3b82f6; font-size: 16pt;">🔷 ${this.vaultIdentity}</h3>
                                 <p style="margin: 5px 0 0 0; color: #64748b; font-size: 9pt;">
                                     Last saved: ${this.lastSaved ? new Date(this.lastSaved).toLocaleString() : 'Unknown'}
                                 </p>
+                                ${tempAccessNotice}
                             </div>
                         `;
 
@@ -3516,6 +3567,8 @@
                             document.getElementById('totpField').style.display = 'none';
                         }
 
+                        this.updateTemporaryAccessHint();
+
                         if (this.emergencyAccessConfig && this.emergencyAccessConfig.enabled) {
                             this.showEmergencyAccess(this.emergencyAccessConfig.data || {});
                         }
@@ -3530,6 +3583,9 @@
                     document.getElementById('unlockScreen').style.display = 'none';
                     document.getElementById('navTabs').style.display = 'none';
                     this.emergencyAccessConfig = null;
+                    this.temporaryAccess = null;
+                    this.pendingTemporaryAccessRemoval = false;
+                    this.updateTemporaryAccessHint();
                     this.version = APP_VERSION;
                     this.schemaVersion = schemaManager.currentVersion;
                     this.applyVersionMetadata();
@@ -3873,6 +3929,17 @@
                         this.togglePasswordUpdateMode(event.target.value);
                     });
                 });
+                const tempAccessToggle = document.getElementById('enableTemporaryAccess');
+                if (tempAccessToggle) {
+                    tempAccessToggle.addEventListener('change', (event) => this.handleTemporaryAccessToggle(event));
+                }
+                const revokeTempAccess = document.getElementById('revokeTemporaryAccess');
+                if (revokeTempAccess) {
+                    revokeTempAccess.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        this.handleRevokeTemporaryAccess();
+                    });
+                }
                 ['updateNewPassword', 'updateConfirmPassword'].forEach((id) => {
                     const input = document.getElementById(id);
                     if (input) {
@@ -4197,24 +4264,41 @@
                 document.getElementById('vaultName').innerHTML = `🔷 ${this.vaultIdentity}`;
             }
             
-            attemptUnlock() {
-                const password = document.getElementById('unlock-password').value;
-                const totpCode = document.getElementById('totp-code')?.value;
-                
+            async attemptUnlock() {
+                const passwordField = document.getElementById('unlock-password');
+                const totpFieldInput = document.getElementById('totp-code');
+
+                const enteredPassword = passwordField?.value || '';
+                const totpCode = totpFieldInput?.value?.trim() || '';
+
+                let password = enteredPassword;
+                let usedTemporaryAccess = false;
+
+                if (!password && totpCode) {
+                    try {
+                        password = await this.tryUnlockWithTemporaryAccess(totpCode);
+                        usedTemporaryAccess = true;
+                    } catch (error) {
+                        alert(error.message);
+                        return;
+                    }
+                }
+
                 if (!password) {
                     alert('Please enter your password');
                     return;
                 }
-                
-                if (this.requires2FA && !totpCode) {
+
+                if (this.requires2FA && !usedTemporaryAccess && !totpCode) {
                     alert('Please enter your 6-digit authentication code');
                     return;
                 }
-                
-                this.crypto.decrypt(this.encryptedData, password).then(async (decrypted) => {
+
+                try {
+                    const decrypted = await this.crypto.decrypt(this.encryptedData, password);
                     const decryptedPayload = { ...decrypted };
 
-                    if (this.requires2FA && decryptedPayload.totpSecret) {
+                    if (this.requires2FA && !usedTemporaryAccess && decryptedPayload.totpSecret) {
                         const isValidTOTP = await TOTP.verifyTOTP(decryptedPayload.totpSecret, totpCode);
 
                         if (!isValidTOTP) {
@@ -4286,14 +4370,18 @@
                             + 'Review the data carefully and consider updating the application when possible.'
                         );
                     }
+                } catch (error) {
+                    if (usedTemporaryAccess) {
+                        alert('Unable to unlock with the provided temporary access code. It may have expired or been entered incorrectly.');
+                        return;
+                    }
 
-                }).catch(error => {
                     if (this.requires2FA) {
                         alert('Invalid password or authentication code.\n\nMake sure you are using the current 6-digit code from your authenticator app.');
                     } else {
                         alert('Incorrect password');
                     }
-                });
+                }
             }
             
             navigateToSection(e) {
@@ -4467,6 +4555,8 @@
                 if (note) {
                     note.style.display = this.requires2FA ? 'block' : 'none';
                 }
+
+                this.prepareTemporaryAccessModalSection();
             }
 
             closePasswordUpdateModal() {
@@ -4477,6 +4567,17 @@
 
                 modal.classList.remove('active');
                 this.togglePasswordUpdateMode('keep');
+                this.pendingTemporaryAccessRemoval = false;
+
+                const toggle = document.getElementById('enableTemporaryAccess');
+                if (toggle) {
+                    toggle.checked = false;
+                }
+
+                const options = document.getElementById('temporaryAccessOptions');
+                if (options) {
+                    options.style.display = 'none';
+                }
             }
 
             togglePasswordUpdateMode(mode) {
@@ -4501,6 +4602,336 @@
                     if (confirmPasswordInput) {
                         confirmPasswordInput.value = '';
                     }
+                }
+            }
+
+            isTemporaryAccessActive() {
+                if (!this.temporaryAccess || !this.temporaryAccess.expiresAt) {
+                    return false;
+                }
+
+                const expires = Date.parse(this.temporaryAccess.expiresAt);
+                if (Number.isNaN(expires)) {
+                    return false;
+                }
+
+                return expires > Date.now();
+            }
+
+            getTemporaryAccessExpiry() {
+                if (!this.temporaryAccess || !this.temporaryAccess.expiresAt) {
+                    return null;
+                }
+
+                const expiry = new Date(this.temporaryAccess.expiresAt);
+                if (Number.isNaN(expiry.getTime())) {
+                    return null;
+                }
+
+                return expiry;
+            }
+
+            updateTemporaryAccessHint() {
+                const hint = document.getElementById('temporaryAccessHint');
+
+                if (!hint) {
+                    return;
+                }
+
+                if (this.temporaryAccess) {
+                    const expiry = this.getTemporaryAccessExpiry();
+
+                    if (this.isTemporaryAccessActive() && expiry) {
+                        hint.style.display = 'block';
+                        hint.textContent = `Temporary TOTP-only access is active until ${expiry.toLocaleString()}. Enter the code provided to you above to unlock without the password.`;
+                    } else {
+                        hint.style.display = 'block';
+                        hint.textContent = 'Temporary TOTP-only access has expired. Save a new vault to remove or renew it.';
+                    }
+                } else {
+                    hint.style.display = 'none';
+                    hint.textContent = '';
+                }
+            }
+
+            prepareTemporaryAccessModalSection() {
+                const section = document.getElementById('temporaryAccessSection');
+
+                if (!section) {
+                    return;
+                }
+
+                const toggle = document.getElementById('enableTemporaryAccess');
+                const options = document.getElementById('temporaryAccessOptions');
+                const codeInput = document.getElementById('temporaryAccessCode');
+                const durationSelect = document.getElementById('temporaryAccessDuration');
+                const existingBox = document.getElementById('existingTemporaryAccess');
+                const summary = document.getElementById('temporaryAccessSummary');
+
+                this.pendingTemporaryAccessRemoval = false;
+
+                if (!this.requires2FA || !this.totpSecret) {
+                    section.style.display = 'none';
+                    if (toggle) {
+                        toggle.checked = false;
+                    }
+                    if (options) {
+                        options.style.display = 'none';
+                    }
+                    return;
+                }
+
+                section.style.display = 'block';
+
+                if (toggle) {
+                    toggle.checked = false;
+                }
+
+                if (options) {
+                    options.style.display = 'none';
+                }
+
+                if (codeInput) {
+                    codeInput.value = '';
+                }
+
+                if (durationSelect) {
+                    durationSelect.value = '45';
+                }
+
+                if (existingBox) {
+                    if (this.temporaryAccess) {
+                        existingBox.style.display = 'block';
+                        if (summary) {
+                            if (this.isTemporaryAccessActive()) {
+                                const expiry = this.getTemporaryAccessExpiry();
+                                summary.textContent = expiry
+                                    ? `Temporary access active until ${expiry.toLocaleString()}.`
+                                    : 'Temporary access is active.';
+                            } else {
+                                summary.textContent = 'Temporary access has expired. Save to remove or create a new one.';
+                            }
+                        }
+                    } else {
+                        existingBox.style.display = 'none';
+                        if (summary) {
+                            summary.textContent = '';
+                        }
+                    }
+                }
+            }
+
+            handleTemporaryAccessToggle(event) {
+                const options = document.getElementById('temporaryAccessOptions');
+                const existingBox = document.getElementById('existingTemporaryAccess');
+
+                if (options) {
+                    options.style.display = event?.target?.checked ? 'flex' : 'none';
+                }
+
+                if (event?.target?.checked) {
+                    this.pendingTemporaryAccessRemoval = false;
+                    if (existingBox && this.temporaryAccess) {
+                        existingBox.style.display = 'none';
+                    }
+                } else if (existingBox && this.temporaryAccess) {
+                    existingBox.style.display = 'block';
+                }
+            }
+
+            handleRevokeTemporaryAccess() {
+                if (!this.temporaryAccess) {
+                    alert('No temporary TOTP-only access is currently active.');
+                    return;
+                }
+
+                this.pendingTemporaryAccessRemoval = true;
+
+                const summary = document.getElementById('temporaryAccessSummary');
+                if (summary) {
+                    summary.textContent = 'Temporary access will be revoked after you save a new vault file.';
+                }
+
+                const existingBox = document.getElementById('existingTemporaryAccess');
+                if (existingBox) {
+                    existingBox.style.display = 'block';
+                }
+
+                const toggle = document.getElementById('enableTemporaryAccess');
+                if (toggle) {
+                    toggle.checked = false;
+                }
+
+                const options = document.getElementById('temporaryAccessOptions');
+                if (options) {
+                    options.style.display = 'none';
+                }
+
+                alert('Temporary access will be revoked after you download and share the newly saved vault.');
+
+                this.markAsChanged();
+            }
+
+            async createTemporaryAccess(password, code, durationMinutes) {
+                if (!this.totpSecret) {
+                    throw new Error('Enable two-factor authentication before configuring temporary access.');
+                }
+
+                if (!/^\d{6}$/.test(code)) {
+                    throw new Error('Enter a 6-digit authenticator code.');
+                }
+
+                const isValid = await TOTP.verifyTOTP(this.totpSecret, code);
+
+                if (!isValid) {
+                    throw new Error('Authenticator code invalid or expired. Enter the current code from your app.');
+                }
+
+                const minutes = Math.max(1, Math.floor(Number(durationMinutes) || 45));
+
+                const salt = crypto.getRandomValues(new Uint8Array(16));
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+                const iterations = 250000;
+                const encoder = new TextEncoder();
+                const keyMaterial = await crypto.subtle.importKey(
+                    'raw',
+                    encoder.encode(code),
+                    'PBKDF2',
+                    false,
+                    ['deriveKey']
+                );
+
+                const key = await crypto.subtle.deriveKey(
+                    {
+                        name: 'PBKDF2',
+                        salt,
+                        iterations,
+                        hash: 'SHA-256'
+                    },
+                    keyMaterial,
+                    { name: 'AES-GCM', length: 256 },
+                    true,
+                    ['encrypt', 'decrypt']
+                );
+
+                const encryptedPassword = await crypto.subtle.encrypt(
+                    { name: 'AES-GCM', iv },
+                    key,
+                    encoder.encode(password)
+                );
+
+                return {
+                    version: 1,
+                    createdAt: new Date().toISOString(),
+                    expiresAt: new Date(Date.now() + minutes * 60 * 1000).toISOString(),
+                    durationMinutes: minutes,
+                    salt: Array.from(salt),
+                    iv: Array.from(iv),
+                    encryptedPassword: Array.from(new Uint8Array(encryptedPassword)),
+                    iterations
+                };
+            }
+
+            async prepareTemporaryAccessForSave(password) {
+                const toggle = document.getElementById('enableTemporaryAccess');
+                const wantsTemporaryAccess = Boolean(toggle?.checked);
+                const result = { temporaryAccess: undefined, clearTemporaryAccess: false };
+
+                if (!this.requires2FA) {
+                    if (this.pendingTemporaryAccessRemoval || this.temporaryAccess) {
+                        result.clearTemporaryAccess = Boolean(this.pendingTemporaryAccessRemoval || this.temporaryAccess);
+                    }
+                    return result;
+                }
+
+                if (wantsTemporaryAccess) {
+                    const codeInput = document.getElementById('temporaryAccessCode');
+                    const code = codeInput?.value?.trim() || '';
+                    const durationSelect = document.getElementById('temporaryAccessDuration');
+                    const parsedDuration = parseInt(durationSelect?.value || '45', 10);
+                    const duration = Number.isNaN(parsedDuration) ? 45 : parsedDuration;
+
+                    if (!/^\d{6}$/.test(code)) {
+                        alert('Enter the 6-digit code from your authenticator app to grant temporary access.');
+                        return null;
+                    }
+
+                    try {
+                        const config = await this.createTemporaryAccess(password, code, duration);
+                        result.temporaryAccess = config;
+                        result.clearTemporaryAccess = false;
+                    } catch (error) {
+                        alert(error.message || 'Unable to enable temporary access. Try again with a fresh code.');
+                        return null;
+                    }
+                } else if (this.pendingTemporaryAccessRemoval) {
+                    result.clearTemporaryAccess = true;
+                }
+
+                if (!wantsTemporaryAccess && !this.pendingTemporaryAccessRemoval && this.temporaryAccess && !this.isTemporaryAccessActive()) {
+                    result.clearTemporaryAccess = true;
+                }
+
+                return result;
+            }
+
+            async tryUnlockWithTemporaryAccess(code) {
+                if (!this.temporaryAccess) {
+                    throw new Error('Temporary access is not enabled for this vault.');
+                }
+
+                if (!/^\d{6}$/.test(code)) {
+                    throw new Error('Enter the 6-digit temporary code provided to you.');
+                }
+
+                if (!this.isTemporaryAccessActive()) {
+                    throw new Error('This temporary access code has expired. Ask the vault owner for a new code.');
+                }
+
+                const { salt: saltArray, iv: ivArray, encryptedPassword: cipherArray } = this.temporaryAccess;
+
+                if (!Array.isArray(saltArray) || !Array.isArray(ivArray) || !Array.isArray(cipherArray)) {
+                    throw new Error('Temporary access data is unavailable. Ask the vault owner for a new code.');
+                }
+
+                const encoder = new TextEncoder();
+                const salt = new Uint8Array(saltArray);
+                const iv = new Uint8Array(ivArray);
+                const encryptedPassword = new Uint8Array(cipherArray);
+                const iterations = this.temporaryAccess.iterations || 250000;
+
+                const keyMaterial = await crypto.subtle.importKey(
+                    'raw',
+                    encoder.encode(code),
+                    'PBKDF2',
+                    false,
+                    ['deriveKey']
+                );
+
+                const key = await crypto.subtle.deriveKey(
+                    {
+                        name: 'PBKDF2',
+                        salt,
+                        iterations,
+                        hash: 'SHA-256'
+                    },
+                    keyMaterial,
+                    { name: 'AES-GCM', length: 256 },
+                    true,
+                    ['decrypt']
+                );
+
+                try {
+                    const decrypted = await crypto.subtle.decrypt(
+                        { name: 'AES-GCM', iv },
+                        key,
+                        encryptedPassword
+                    );
+
+                    const decoder = new TextDecoder();
+                    return decoder.decode(decrypted);
+                } catch (error) {
+                    throw new Error('Incorrect temporary access code.');
                 }
             }
 
@@ -4552,40 +4983,52 @@
                 const selectedOption = document.querySelector('input[name="passwordUpdateChoice"]:checked');
                 const choice = selectedOption ? selectedOption.value : 'keep';
 
-                if (choice === 'keep') {
+                if (choice === 'keep' && !this.sessionPassword) {
                     this.closePasswordUpdateModal();
-                    if (this.sessionPassword) {
-                        await this.performSave(this.sessionPassword);
-                    } else {
-                        this.showPasswordModal();
+                    this.showPasswordModal();
+                    return;
+                }
+
+                let passwordToUse = this.sessionPassword;
+
+                if (choice === 'change') {
+                    const newPassword = document.getElementById('updateNewPassword')?.value || '';
+                    const confirmPassword = document.getElementById('updateConfirmPassword')?.value || '';
+
+                    if (!newPassword) {
+                        alert('Please enter a new password');
+                        return;
                     }
+
+                    if (newPassword !== confirmPassword) {
+                        alert('New passwords do not match');
+                        return;
+                    }
+
+                    if (newPassword.length < 8) {
+                        alert('New password must be at least 8 characters');
+                        return;
+                    }
+
+                    passwordToUse = newPassword;
+                }
+
+                const temporaryAccessOptions = await this.prepareTemporaryAccessForSave(passwordToUse);
+
+                if (temporaryAccessOptions === null) {
                     return;
                 }
 
-                const newPassword = document.getElementById('updateNewPassword')?.value || '';
-                const confirmPassword = document.getElementById('updateConfirmPassword')?.value || '';
-
-                if (!newPassword) {
-                    alert('Please enter a new password');
-                    return;
-                }
-
-                if (newPassword !== confirmPassword) {
-                    alert('New passwords do not match');
-                    return;
-                }
-
-                if (newPassword.length < 8) {
-                    alert('New password must be at least 8 characters');
-                    return;
-                }
-
-                this.sessionPassword = newPassword;
                 this.closePasswordUpdateModal();
-                await this.performSave(newPassword);
+
+                if (choice === 'change') {
+                    this.sessionPassword = passwordToUse;
+                }
+
+                await this.performSave(passwordToUse, temporaryAccessOptions);
             }
 
-            async performSave(password) {
+            async performSave(password, options = {}) {
                 this.version = APP_VERSION;
                 this.schemaVersion = schemaManager.currentVersion;
                 this.applyVersionMetadata();
@@ -4607,6 +5050,13 @@
                 }
                 
                 const dataScript = htmlDoc.querySelector('#embedded-vault-data');
+
+                if (options?.temporaryAccess) {
+                    this.temporaryAccess = options.temporaryAccess;
+                } else if (options?.clearTemporaryAccess) {
+                    this.temporaryAccess = null;
+                }
+
                 dataScript.textContent = JSON.stringify({
                     initialized: true,
                     encrypted: true,
@@ -4618,10 +5068,12 @@
                     modules: this.modules,
                     requires2FA: this.requires2FA,
                     vaultIdentity: this.vaultIdentity,
-                    emergencyAccess: emergencyAccess
+                    emergencyAccess: emergencyAccess,
+                    temporaryAccess: this.temporaryAccess || null
                 }, null, 2);
 
                 this.emergencyAccessConfig = emergencyAccess;
+                this.pendingTemporaryAccessRemoval = false;
 
                 const htmlString = '<!DOCTYPE html>\n' + htmlDoc.outerHTML;
                 
@@ -4639,6 +5091,11 @@
                 this.isInitialized = true;
                 this.updateSaveStatus();
                 this.pendingSchemaNotice = null;
+                this.updateTemporaryAccessHint();
+
+                if (document.getElementById('totpStatus')) {
+                    this.renderTOTPStatus();
+                }
 
                 const isFirstSave = !this.hasShownSaveInstructions;
                 this.hasShownSaveInstructions = true;
@@ -5082,6 +5539,18 @@
                             Download a fresh vault whenever you save updates.
                         </p>
                     `;
+
+                    if (this.temporaryAccess) {
+                        const expiry = this.getTemporaryAccessExpiry();
+                        const message = this.isTemporaryAccessActive() && expiry
+                            ? `Temporary TOTP-only access active until ${expiry.toLocaleString()}.`
+                            : 'Temporary TOTP-only access expired. Save a new vault to remove or renew it.';
+
+                        statusDiv.insertAdjacentHTML(
+                            'beforeend',
+                            `<div style="margin-top: 12px; padding: 10px; background: #fff7ed; border: 1px solid #fdba74; border-radius: 6px; font-size: 9pt; color: #9a3412;">${this.escapeHTML(message)}</div>`
+                        );
+                    }
                 } else {
                     statusDiv.innerHTML = `
                         <div style="display: flex; align-items: center; gap: 10px;">
@@ -7093,6 +7562,8 @@
                         document.getElementById('totpField').style.display = 'none';
                     }
                 }
+
+                this.updateTemporaryAccessHint();
             }
 
             unlock() {
