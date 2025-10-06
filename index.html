@@ -7,6 +7,7 @@
     <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="expires" content="0">
     <link rel="icon" type="image/x-icon" href="https://storage.googleapis.com/intelechia-content/favicon.ico">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js" integrity="sha512-5Y3OVd9VVKa70BxZ0JItNaJ+uwOxa7Xpu8aHf36JI3hLN3PTTr7X6KhoORmvK+jEbwSwrgPWSlhBu7/52iKR2w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <title>Personal Health Vault - Secure Medical Record</title>
     <style>
         @page {
@@ -5931,7 +5932,7 @@
 
                 for (const file of files) {
                     try {
-                        const base64 = await this.readFileAsBase64(file);
+                        const result = await this.readFileAsBase64(file);
                         const attachment = {
                             id: this.generateAttachmentId(),
                             name: typeof file.name === 'string' && file.name ? file.name : 'attachment',
@@ -5939,8 +5940,18 @@
                             size: typeof file.size === 'number' ? file.size : 0,
                             lastModified: typeof file.lastModified === 'number' ? file.lastModified : null,
                             addedAt: new Date().toISOString(),
-                            data: base64
+                            compressed: !!result?.compressed,
+                            originalSize: typeof result?.originalSize === 'number'
+                                ? result.originalSize
+                                : (typeof file.size === 'number' ? file.size : 0),
+                            compressedSize: typeof result?.compressedSize === 'number'
+                                ? result.compressedSize
+                                : (typeof result?.data === 'string' ? Math.ceil(result.data.length * 3 / 4) : (typeof file.size === 'number' ? file.size : 0)),
+                            data: typeof result?.data === 'string' ? result.data : ''
                         };
+                        if (!attachment.data) {
+                            throw new Error('Attachment data is empty');
+                        }
                         this.attachments.push(attachment);
                     } catch (error) {
                         console.error('Failed to add attachment', error);
@@ -5958,7 +5969,7 @@
                 }
             }
 
-            readFileAsBase64(file) {
+            readFileAsBase64(file, compress = true) {
                 return new Promise((resolve, reject) => {
                     if (!(file instanceof Blob)) {
                         reject(new Error('Invalid file'));
@@ -5971,16 +5982,46 @@
                             const result = reader.result;
                             if (result instanceof ArrayBuffer) {
                                 const bytes = new Uint8Array(result);
+                                let finalBytes = bytes;
+                                let isCompressed = false;
+
+                                if (compress && bytes.length > 1024) {
+                                    const pakoInstance = typeof window !== 'undefined' ? window.pako : null;
+                                    if (pakoInstance && typeof pakoInstance.deflate === 'function') {
+                                        try {
+                                            const compressed = pakoInstance.deflate(bytes, { level: 6 });
+                                            if (compressed && compressed.length < bytes.length) {
+                                                finalBytes = compressed;
+                                                isCompressed = true;
+                                            }
+                                        } catch (compressionError) {
+                                            console.warn('Attachment compression failed, storing uncompressed', compressionError);
+                                        }
+                                    }
+                                }
+
                                 const chunkSize = 0x8000;
                                 let binary = '';
-                                for (let i = 0; i < bytes.length; i += chunkSize) {
-                                    const chunk = bytes.subarray(i, i + chunkSize);
+                                for (let i = 0; i < finalBytes.length; i += chunkSize) {
+                                    const chunk = finalBytes.subarray(i, i + chunkSize);
                                     binary += String.fromCharCode(...chunk);
                                 }
-                                resolve(btoa(binary));
+
+                                resolve({
+                                    data: btoa(binary),
+                                    compressed: isCompressed,
+                                    originalSize: bytes.length,
+                                    compressedSize: finalBytes.length
+                                });
                             } else if (typeof result === 'string') {
                                 const base64Match = result.match(/^data:[^;]+;base64,(.*)$/);
-                                resolve(base64Match ? base64Match[1] : result);
+                                const data = base64Match ? base64Match[1] : result;
+                                resolve({
+                                    data,
+                                    compressed: false,
+                                    originalSize: typeof file.size === 'number' ? file.size : 0,
+                                    compressedSize: typeof file.size === 'number' ? file.size : 0
+                                });
                             } else {
                                 reject(new Error('Unsupported file data'));
                             }
@@ -6102,9 +6143,12 @@
                         name: attachment.name,
                         type: attachment.type,
                         size: attachment.size,
+                        compressed: !!attachment.compressed,
+                        originalSize: typeof attachment.originalSize === 'number' ? attachment.originalSize : (typeof attachment.size === 'number' ? attachment.size : 0),
+                        compressedSize: typeof attachment.compressedSize === 'number' ? attachment.compressedSize : (typeof attachment.data === 'string' ? Math.ceil(attachment.data.length * 3 / 4) : (typeof attachment.size === 'number' ? attachment.size : 0)),
                         lastModified: attachment.lastModified,
                         addedAt: attachment.addedAt,
-                        data: attachment.data
+                        data: typeof attachment.data === 'string' ? attachment.data : ''
                     }))
                     : [];
 
@@ -6149,9 +6193,16 @@
                         name: item.name || 'Attachment',
                         type: item.type || 'application/octet-stream',
                         size: typeof item.size === 'number' ? item.size : 0,
+                        compressed: !!item.compressed,
+                        originalSize: typeof item.originalSize === 'number'
+                            ? item.originalSize
+                            : (typeof item.size === 'number' ? item.size : 0),
+                        compressedSize: typeof item.compressedSize === 'number'
+                            ? item.compressedSize
+                            : (typeof item.data === 'string' ? Math.ceil(item.data.length * 3 / 4) : (typeof item.size === 'number' ? item.size : 0)),
                         lastModified: typeof item.lastModified === 'number' ? item.lastModified : null,
                         addedAt: item.addedAt || new Date().toISOString(),
-                        data: item.data
+                        data: typeof item.data === 'string' ? item.data : ''
                     }));
 
                 this.attachments = sanitized;
@@ -6278,7 +6329,7 @@
                 const mimeType = (attachment.type || 'application/octet-stream').toLowerCase();
 
                 try {
-                    const blob = this.base64ToBlob(attachment.data, attachment.type);
+                    const blob = this.base64ToBlob(attachment.data, attachment.type, attachment.compressed);
 
                     if (mimeType.startsWith('image/')) {
                         const url = URL.createObjectURL(blob);
@@ -6371,7 +6422,7 @@
                 }
 
                 try {
-                    const blob = this.base64ToBlob(attachment.data, attachment.type);
+                    const blob = this.base64ToBlob(attachment.data, attachment.type, attachment.compressed);
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
@@ -6386,7 +6437,7 @@
                 }
             }
 
-            base64ToBlob(base64, mimeType = 'application/octet-stream') {
+            base64ToBlob(base64, mimeType = 'application/octet-stream', isCompressed = false) {
                 const clean = typeof base64 === 'string' ? base64.trim() : '';
                 if (!clean) {
                     throw new Error('Attachment data is empty.');
@@ -6399,7 +6450,22 @@
                     bytes[i] = binary.charCodeAt(i);
                 }
 
-                return new Blob([bytes], { type: mimeType || 'application/octet-stream' });
+                let finalBytes = bytes;
+                if (isCompressed) {
+                    const pakoInstance = typeof window !== 'undefined' ? window.pako : null;
+                    if (!pakoInstance || typeof pakoInstance.inflate !== 'function') {
+                        throw new Error('Unable to decompress attachment: compression library unavailable.');
+                    }
+
+                    try {
+                        finalBytes = pakoInstance.inflate(bytes);
+                    } catch (error) {
+                        console.error('Failed to decompress attachment', error);
+                        throw new Error('Failed to decompress attachment data.');
+                    }
+                }
+
+                return new Blob([finalBytes], { type: mimeType || 'application/octet-stream' });
             }
 
             initializeExistingNotes() {
