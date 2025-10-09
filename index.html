@@ -25,21 +25,44 @@
             size: letter;
             margin: 0.5in;
         }
-        
+
+        :root {
+            --layout-max-width: 1200px;
+            --layout-gutter: clamp(16px, 4vw, 32px);
+            --header-height: 140px;
+            --header-bg: #0f172a;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
             font-size: 11pt;
             line-height: 1.5;
             color: #1e293b;
-            background: white;
-            padding: 20px;
-            padding-top: 160px;
+            background: #f8fafc;
+            padding: 0;
+        }
+
+        .page-shell {
+            width: min(100%, calc(var(--layout-max-width) + (var(--layout-gutter) * 2)));
+            margin: 0 auto;
+            padding: calc(var(--header-height) + 72px) var(--layout-gutter) 48px;
+        }
+
+        .site-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--header-bg);
+            color: white;
+            z-index: 1100;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
         }
         
         .unlock-screen {
@@ -268,21 +291,22 @@
         }
         
         .security-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: #1e293b;
-            color: white;
-            padding: 8px 15px;
+            width: min(100%, var(--layout-max-width));
+            margin: 0 auto;
+            padding: 20px var(--layout-gutter) 16px;
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
-            z-index: 1000;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            flex-wrap: nowrap;
-            gap: 8px;
-            min-height: 48px;
+            gap: 16px;
+        }
+
+        .site-header__brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-width: 260px;
+            flex: 1 1 320px;
         }
 
         .logo-container {
@@ -292,23 +316,29 @@
         }
 
         .logo-container img {
-            height: 32px;
+            height: 36px;
             width: auto;
         }
 
-        .save-status {
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-weight: 600;
-            font-size: 9pt;
+        .site-header__status {
+            flex: 1 1 100%;
             display: flex;
+            justify-content: center;
+            margin-top: 4px;
+        }
+
+        .save-status {
+            padding: 6px 18px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 9.5pt;
+            display: inline-flex;
             align-items: center;
             gap: 6px;
             white-space: normal;
             text-align: center;
             justify-content: center;
-            flex: 0 1 340px;
-            margin: 0 10px;
+            min-width: 260px;
         }
         
         .save-status.never-saved {
@@ -329,20 +359,21 @@
         .security-status {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             font-size: 11pt;
             flex-shrink: 0;
+            color: rgba(226, 232, 240, 0.92);
         }
 
         #lockTimer {
             margin-left: 4px;
             font-size: 10pt;
             font-weight: 600;
-            color: #1e3a8a;
+            color: #38bdf8;
         }
 
         #lockTimer.locked {
-            color: #dc2626;
+            color: #f87171;
         }
 
         .status-icon {
@@ -363,88 +394,51 @@
             font-weight: bold;
         }
         
+        .site-header__actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 16px;
+            flex-wrap: wrap;
+            flex: 1 1 320px;
+        }
+
         .action-buttons {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             align-items: center;
             flex-wrap: wrap;
-            flex-grow: 0;
-            flex-shrink: 0;
         }
 
         .language-selector {
-            position: relative;
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
-            justify-content: center;
             gap: 6px;
-            margin-right: 20px;
-            color: #0f172a;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            min-height: 32px;
-            min-width: 32px;
-            width: 32px;
-        }
-
-        .language-selector::before {
-            content: "🌐";
-            font-size: 18pt;
-            line-height: 1;
-            transition: opacity 0.2s ease, transform 0.2s ease;
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            pointer-events: none;
-        }
-
-        .language-selector label,
-        .language-selector select {
-            display: none;
+            color: #e2e8f0;
+            min-width: 180px;
+            flex: 1 1 200px;
         }
 
         .language-selector label {
             font-size: 9pt;
-            color: #64748b;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            color: rgba(226, 232, 240, 0.85);
         }
 
         .language-selector select {
-            padding: 6px 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
+            padding: 8px 10px;
+            border: 1px solid rgba(226, 232, 240, 0.4);
+            border-radius: 8px;
             font-size: 10pt;
-            min-width: 150px;
             background: white;
             color: #0f172a;
+            width: 100%;
         }
 
-        .language-selector:hover::before,
-        .language-selector:focus-within::before {
-            opacity: 0;
-            transform: scale(0.8);
-        }
-
-        .language-selector:hover label,
-        .language-selector:focus-within label,
-        .language-selector:hover select,
         .language-selector:focus-within select {
-            display: block;
-        }
-
-        .language-selector:hover,
-        .language-selector:focus-within {
-            background: rgba(148, 163, 184, 0.15);
-            padding: 8px 10px;
-            border-radius: 8px;
-            width: auto;
-        }
-
-        .language-selector:focus-visible {
-            outline: 2px solid #2563eb;
-            outline-offset: 2px;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
         }
 
         .unlock-language {
@@ -550,20 +544,21 @@
         }
         
         .nav-tabs {
-            position: fixed;
-            top: 56px;
-            left: 0;
-            right: 0;
-            background: #f8fafc;
+            position: sticky;
+            top: var(--header-height);
+            background: rgba(248, 250, 252, 0.95);
             border-bottom: 1px solid #e2e8f0;
-            z-index: 999;
+            z-index: 900;
             display: flex;
             flex-wrap: wrap;
             gap: 4px 12px;
-            padding: 8px 20px;
-            scrollbar-width: thin;
+            padding: 12px 0;
+            margin: 0 auto 28px;
+            width: 100%;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
         }
-        
+
         .nav-tabs::-webkit-scrollbar {
             height: 4px;
         }
@@ -1575,10 +1570,16 @@
         }
         
         @media (max-width: 900px) {
+            :root {
+                --header-height: 184px;
+            }
+
             body {
-                padding: 15px;
-                padding-top: 200px;
                 font-size: 10.5pt;
+            }
+
+            .page-shell {
+                padding-top: calc(var(--header-height) + 88px);
             }
 
             .unlock-container {
@@ -1606,33 +1607,20 @@
             }
 
             .security-bar {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 10px;
-                padding: 10px 12px;
+                justify-content: center;
+                text-align: center;
+                padding: 24px var(--layout-gutter);
             }
 
-            .logo-container {
+            .site-header__brand,
+            .site-header__actions {
                 justify-content: center;
             }
 
-            .security-status,
             .action-buttons {
-                width: 100%;
-                justify-content: space-between;
-            }
-
-            .action-buttons {
-                flex-wrap: wrap;
-                gap: 6px;
-            }
-
-            .save-status {
-                width: 100%;
                 justify-content: center;
-                margin: 0;
-                flex: 1 1 100%;
-                max-width: none;
+                width: 100%;
+                gap: 8px;
             }
 
             .action-buttons .btn {
@@ -1640,9 +1628,18 @@
                 min-width: 140px;
             }
 
+            .save-status {
+                width: 100%;
+                margin: 0;
+            }
+
+            .language-selector {
+                width: 100%;
+                min-width: 0;
+            }
+
             .nav-tabs {
-                top: 88px;
-                padding: 8px 12px;
+                margin-bottom: 20px;
             }
 
             .tab {
@@ -1904,6 +1901,7 @@
                 padding: 0;
             }
 
+            .site-header,
             .security-bar,
             .nav-tabs,
             .no-print,
@@ -1939,44 +1937,47 @@
                 gap: 0;
             }
 
-            body {
-                padding: 10px;
-                padding-top: 210px;
+            :root {
+                --header-height: 208px;
+            }
+
+            .page-shell {
+                padding-top: calc(var(--header-height) + 88px);
             }
 
             .nav-tabs {
-                padding: 8px 10px;
-                top: 130px;
+                padding: 12px 0;
             }
-            
+
             .tab {
                 padding: 10px 15px;
                 font-size: 9pt;
             }
-            
+
             .demo-field {
                 min-width: 100%;
             }
 
             .language-selector {
                 width: 100%;
-                margin-right: 0;
             }
 
             .language-selector select {
                 width: 100%;
             }
 
-            .language-selector:hover,
-            .language-selector:focus-within {
-                width: 100%;
+            .site-header__actions {
+                gap: 12px;
             }
         }
 
         @media (max-width: 600px) {
-            body {
-                padding: 12px;
-                padding-top: 230px;
+            :root {
+                --header-height: 232px;
+            }
+
+            .page-shell {
+                padding-top: calc(var(--header-height) + 88px);
             }
 
             .unlock-container {
@@ -1984,7 +1985,7 @@
             }
 
             .security-bar {
-                gap: 12px;
+                row-gap: 16px;
             }
 
             .security-status {
@@ -1993,12 +1994,35 @@
                 gap: 4px;
             }
 
+            .site-header__actions {
+                width: 100%;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+
+            .site-header__brand {
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                gap: 10px;
+            }
+
             .action-buttons {
+                width: 100%;
                 gap: 8px;
+                justify-content: stretch;
             }
 
             .action-buttons .btn {
-                flex: 1 1 100%;
+                flex: 1 1 auto;
+                min-width: 0;
+                width: 100%;
+            }
+
+            .language-selector {
+                width: 100%;
                 min-width: 0;
             }
 
@@ -2058,42 +2082,51 @@
         </div>
     </div>
 
-    <div class="security-bar no-print">
-        <div class="logo-container">
-            <img src="https://storage.googleapis.com/intelechia-content/ehr%20vault.png" alt="EHR Vault logo" loading="lazy" decoding="async">
+    <header class="site-header no-print">
+        <div class="security-bar">
+            <div class="site-header__brand">
+                <div class="logo-container">
+                    <img src="https://storage.googleapis.com/intelechia-content/ehr%20vault.png" alt="EHR Vault logo" loading="lazy" decoding="async">
+                </div>
+                <div class="security-status">
+                    <div class="status-icon"></div>
+                    <span id="securityText" data-i18n-key="always_encrypted">Always Encrypted</span>
+                    <span id="lockTimer" aria-live="polite">Session: --:--</span>
+                </div>
+            </div>
+            <div class="site-header__actions">
+                <div class="language-selector">
+                    <label for="languageSelect" data-i18n-key="language_label">Language</label>
+                    <select id="languageSelect" data-language-selector aria-label="Language"></select>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="settingsBtn" data-i18n-key="settings_button">⚙️ Settings</button>
+                    <button class="btn btn-lock" id="lockBtn" style="display: none;" data-i18n-key="unlock_action">🔓 Lock</button>
+                    <button class="btn btn-secondary" id="exportBtn" data-i18n-key="export_button">Export/Print</button>
+                    <button class="btn btn-save" id="saveBtn" data-i18n-key="save_button_create">Create Encrypted Vault</button>
+                </div>
+            </div>
+            <div class="site-header__status">
+                <div class="save-status never-saved" id="saveStatus" data-i18n-key="not_initialized">⚠️ Not Initialized - Create Your Vault</div>
+            </div>
         </div>
-        <div class="security-status">
-            <div class="status-icon"></div>
-            <span id="securityText" data-i18n-key="always_encrypted">Always Encrypted</span>
-            <span id="lockTimer" aria-live="polite">Session: --:--</span>
-        </div>
-        <div class="save-status never-saved" id="saveStatus" data-i18n-key="not_initialized">⚠️ Not Initialized - Create Your Vault</div>
-        <div class="language-selector no-print" tabindex="0">
-            <label for="languageSelect" data-i18n-key="language_label">Language</label>
-            <select id="languageSelect" data-language-selector aria-label="Language"></select>
-        </div>
-        <div class="action-buttons">
-            <button class="btn btn-secondary" id="settingsBtn" data-i18n-key="settings_button">⚙️ Settings</button>
-            <button class="btn btn-lock" id="lockBtn" style="display: none;" data-i18n-key="unlock_action">🔓 Lock</button>
-            <button class="btn btn-secondary" id="exportBtn" data-i18n-key="export_button">Export/Print</button>
-            <button class="btn btn-save" id="saveBtn" data-i18n-key="save_button_create">Create Encrypted Vault</button>
-        </div>
-    </div>
+    </header>
 
-    <div class="nav-tabs no-print" id="navTabs" style="display: none;">
-        <div class="tab active" data-section="demographics" data-i18n-key="nav_demographics">📋 Demographics</div>
-        <div class="tab" data-section="emergency" data-i18n-key="nav_emergency">🆘 Emergency</div>
-        <div class="tab" data-section="medications" data-i18n-key="nav_medications">💊 Medications</div>
-        <div class="tab" data-section="history" data-i18n-key="nav_history">🩺 History</div>
-        <div class="tab" data-section="vitals" data-i18n-key="nav_vitals">❤️ Vitals</div>
-        <div class="tab" data-section="immunizations" data-i18n-key="nav_immunizations">💉 Vaccines</div>
-        <div class="tab" data-section="labs" data-i18n-key="nav_labs">🔬 Lab Results</div>
-        <div class="tab" data-section="providers" data-i18n-key="nav_providers">👩‍⚕️ Providers</div>
-        <div class="tab" data-section="insurance" data-i18n-key="nav_insurance">🏥 Insurance</div>
-        <div class="tab" data-section="notes" data-i18n-key="nav_notes">📝 Notes</div>
-        <div class="tab" data-section="attachments" data-i18n-key="nav_attachments">📎 Attachments</div>
-        <!-- Module tabs added dynamically -->
-    </div>
+    <main class="page-shell">
+        <div class="nav-tabs no-print" id="navTabs" style="display: none;">
+            <div class="tab active" data-section="demographics" data-i18n-key="nav_demographics">📋 Demographics</div>
+            <div class="tab" data-section="emergency" data-i18n-key="nav_emergency">🆘 Emergency</div>
+            <div class="tab" data-section="medications" data-i18n-key="nav_medications">💊 Medications</div>
+            <div class="tab" data-section="history" data-i18n-key="nav_history">🩺 History</div>
+            <div class="tab" data-section="vitals" data-i18n-key="nav_vitals">❤️ Vitals</div>
+            <div class="tab" data-section="immunizations" data-i18n-key="nav_immunizations">💉 Vaccines</div>
+            <div class="tab" data-section="labs" data-i18n-key="nav_labs">🔬 Lab Results</div>
+            <div class="tab" data-section="providers" data-i18n-key="nav_providers">👩‍⚕️ Providers</div>
+            <div class="tab" data-section="insurance" data-i18n-key="nav_insurance">🏥 Insurance</div>
+            <div class="tab" data-section="notes" data-i18n-key="nav_notes">📝 Notes</div>
+            <div class="tab" data-section="attachments" data-i18n-key="nav_attachments">📎 Attachments</div>
+            <!-- Module tabs added dynamically -->
+        </div>
 
     <!-- Settings Modal -->
     <div class="modal" id="settingsModal">
@@ -3048,6 +3081,8 @@
     </div>
 
     <div id="printArea"></div>
+
+    </main>
 
     <!-- Embedded Data Script (Added by save function) -->
     <script id="embedded-vault-data" type="application/json">
