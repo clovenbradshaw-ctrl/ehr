@@ -7,6 +7,7 @@
     <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="expires" content="0">
     <link rel="icon" type="image/x-icon" href="https://storage.googleapis.com/intelechia-content/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js" integrity="sha512-g2TeAWw5GPnX7z0Kn8nFbYfeHcvAu/tx6d6mrLe/90mkCxO+RcptyYpksUz35EO337F83bZwcmUyHiHamspkfg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
         if (!window.pako) {
@@ -2397,39 +2398,7 @@
 
     <!-- Welcome Screen (shown for new files) -->
     <div class="welcome-screen" id="welcomeScreen" style="display: none;">
-        <h1 data-i18n-key="welcome_screen_title">🏥 Personal Health Vault</h1>
-        <p>
-            <span data-i18n-key="welcome_screen_intro_line1">Welcome to your secure, self-contained medical record system.</span>
-            <br>
-            <span data-i18n-key="welcome_screen_intro_line2">This single .ehv vault file will become your encrypted health vault.</span>
-        </p>
-        <div class="info-box" style="text-align: left;">
-            <strong data-i18n-key="welcome_screen_how_it_works">How it works:</strong>
-            <ul style="margin-top: 10px; margin-left: 20px;">
-                <li data-i18n-key="welcome_screen_bullet_encrypted">All data is encrypted with your password</li>
-                <li data-i18n-key="welcome_screen_bullet_contains_all">This .ehv vault file contains everything - no separate data files</li>
-                <li data-i18n-key="welcome_screen_bullet_offline">Works offline, no internet required</li>
-                <li data-i18n-key="welcome_screen_bullet_data_local">Your data never leaves your device</li>
-            </ul>
-        </div>
-        <div class="offline-download">
-            <p><strong data-i18n-key="offline_download_title">Want to use this 100% offline?</strong></p>
-            <button type="button" class="offline-download-trigger" data-i18n-key="offline_download_cta">Download the offline bundle</button>
-            <p data-i18n-key="offline_download_subtext">We'll package everything for you—just open index.html in any browser, no internet needed.</p>
-            <p class="offline-download-status" aria-live="polite"></p>
-        </div>
-        <div class="warning-box" data-i18n-key="trusted_device_warning">
-            ⚠️ Security Tip: Only create or open this vault on a device you trust. For extra privacy, use your browser's
-            private or incognito mode.
-        </div>
-        <div class="welcome-actions">
-            <button class="btn-start" onclick="app?.startSetup()" data-i18n-key="welcome_screen_get_started">
-                Get Started
-            </button>
-            <button class="btn-import" id="openVaultBtn" data-i18n-key="welcome_screen_open_existing">
-                Open Existing Vault
-            </button>
-        </div>
+        <div id="landingRoot"></div>
         <input type="file" id="vaultFileInput" accept=".ehv" />
     </div>
 
@@ -8924,6 +8893,308 @@
             });
 
         offlineBundleManager.init();
+    </script>
+
+    <script type="module">
+        import React, { useEffect, useState } from 'https://esm.sh/react@18';
+        import { createRoot } from 'https://esm.sh/react-dom@18/client';
+        import { Shield, Lock, HardDrive, WifiOff, Download, ChevronRight, CheckCircle2, FileText, Clock, Globe } from 'https://esm.sh/lucide-react@0.294.0';
+
+        function HealthVaultLanding() {
+            const [hoveredFeature, setHoveredFeature] = useState(null);
+
+            const features = [
+                {
+                    icon: React.createElement(Lock, { className: 'w-6 h-6' }),
+                    title: 'Military-Grade Encryption',
+                    description: 'Your data is encrypted with your password using AES-256 encryption'
+                },
+                {
+                    icon: React.createElement(HardDrive, { className: 'w-6 h-6' }),
+                    title: 'All-in-One Vault',
+                    description: 'Everything stored in a single .ehv file - no separate databases or files'
+                },
+                {
+                    icon: React.createElement(WifiOff, { className: 'w-6 h-6' }),
+                    title: '100% Offline Capable',
+                    description: 'Works completely offline. Your data never leaves your device'
+                },
+                {
+                    icon: React.createElement(Shield, { className: 'w-6 h-6' }),
+                    title: 'Zero-Knowledge System',
+                    description: "We can't access your data - only you have the encryption key"
+                }
+            ];
+
+            const benefits = [
+                'Complete privacy and control',
+                'HIPAA-compliant architecture',
+                'Cross-platform compatibility',
+                'Instant backup & restore',
+                'No subscription fees',
+                'Open-source transparency'
+            ];
+
+            useEffect(() => {
+                const openButtons = Array.from(document.querySelectorAll('[data-action="open-vault"]'));
+                const handleOpen = (event) => {
+                    event.preventDefault();
+                    if (window.app?.promptVaultImport) {
+                        window.app.promptVaultImport();
+                    } else {
+                        document.getElementById('vaultFileInput')?.click();
+                    }
+                };
+
+                openButtons.forEach(button => button.addEventListener('click', handleOpen));
+
+                window.offlineBundleManager?.init?.();
+                window.offlineBundleManager?.refresh?.();
+
+                return () => {
+                    openButtons.forEach(button => button.removeEventListener('click', handleOpen));
+                };
+            }, []);
+
+            const handleCreateVault = () => {
+                if (window.app?.startSetup) {
+                    window.app.startSetup();
+                }
+            };
+
+            return (
+                React.createElement('div', { className: 'min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white flex flex-col' },
+                    React.createElement('header', { className: 'fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-slate-900/50 border-b border-white/10' },
+                        React.createElement('div', { className: 'container mx-auto px-6 py-4 flex items-center justify-between' },
+                            React.createElement('div', { className: 'flex items-center gap-3' },
+                                React.createElement('div', { className: 'bg-gradient-to-br from-cyan-400 to-blue-500 p-2 rounded-lg' },
+                                    React.createElement(Shield, { className: 'w-6 h-6 text-white' })
+                                ),
+                                React.createElement('span', { className: 'text-xl font-bold' }, 'HealthVault')
+                            ),
+                            React.createElement('div', { className: 'flex items-center gap-4' },
+                                React.createElement('button', { className: 'px-4 py-2 text-sm hover:text-cyan-400 transition-colors' }, 'Documentation'),
+                                React.createElement('button', { id: 'openVaultBtn', className: 'px-6 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition-all backdrop-blur-sm', 'data-action': 'open-vault' }, 'Open Vault')
+                            )
+                        )
+                    ),
+                    React.createElement('main', { className: 'flex-1 pt-32 pb-20 px-6' },
+                        React.createElement('div', { className: 'container mx-auto max-w-6xl' },
+                            React.createElement('div', { className: 'text-center mb-12' },
+                                React.createElement('div', { className: 'inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/20 border border-cyan-400/30 rounded-full text-cyan-300 text-sm mb-6 backdrop-blur-sm' },
+                                    React.createElement(CheckCircle2, { className: 'w-4 h-4' }),
+                                    React.createElement('span', null, 'Always Encrypted • Zero Knowledge • Open Source')
+                                ),
+                                React.createElement('h1', { className: 'text-6xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent leading-tight' },
+                                    'Your Health Records,',
+                                    React.createElement('br', null),
+                                    React.createElement('span', { className: 'text-white' }, 'Completely Private')
+                                ),
+                                React.createElement('p', { className: 'text-xl text-slate-300 max-w-2xl mx-auto mb-8 leading-relaxed' },
+                                    'Take control of your medical data with a self-contained, encrypted health vault that works 100% offline. ',
+                                    'No cloud. No tracking. Just you and your records.'
+                                ),
+                                React.createElement('div', { className: 'bg-blue-500/10 border border-blue-400/30 rounded-xl p-4 max-w-2xl mx-auto mb-12 text-left' },
+                                    React.createElement('div', { className: 'flex gap-3' },
+                                        React.createElement(Shield, { className: 'w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5' }),
+                                        React.createElement('div', { className: 'text-sm text-blue-200' },
+                                            React.createElement('strong', { className: 'text-blue-300' }, 'Personal Health Record Tool:'),
+                                            ' This application is for your individual use only. ',
+                                            'Your data is stored exclusively on your device and never transmitted to any servers. ',
+                                            'This is not an electronic health record (EHR) system and is not subject to HIPAA regulations.'
+                                        )
+                                    )
+                                ),
+                                React.createElement('div', { className: 'flex flex-col sm:flex-row gap-4 justify-center' },
+                                    React.createElement('button', {
+                                        className: 'group px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 rounded-xl font-semibold text-lg transition-all shadow-lg shadow-cyan-500/50 hover:shadow-xl hover:shadow-cyan-500/60 flex items-center justify-center gap-2',
+                                        onClick: handleCreateVault
+                                    },
+                                        'Create Your Vault',
+                                        React.createElement(ChevronRight, { className: 'w-5 h-5 group-hover:translate-x-1 transition-transform' })
+                                    ),
+                                    React.createElement('button', { className: 'px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl font-semibold text-lg transition-all border border-white/20 flex items-center justify-center gap-2 offline-download-trigger' },
+                                        React.createElement(Download, { className: 'w-5 h-5' }),
+                                        'Download Offline Bundle'
+                                    )
+                                ),
+                                React.createElement('p', { className: 'offline-download-status mt-4 text-sm text-cyan-200/80', 'aria-live': 'polite' })
+                            ),
+                            React.createElement('div', { className: 'bg-amber-500/10 border border-amber-400/30 rounded-2xl p-6 backdrop-blur-sm max-w-3xl mx-auto' },
+                                React.createElement('div', { className: 'flex gap-4' },
+                                    React.createElement('div', { className: 'flex-shrink-0' },
+                                        React.createElement('div', { className: 'w-10 h-10 bg-amber-400/20 rounded-lg flex items-center justify-center' },
+                                            React.createElement(Shield, { className: 'w-5 h-5 text-amber-400' })
+                                        )
+                                    ),
+                                    React.createElement('div', null,
+                                        React.createElement('h3', { className: 'font-semibold text-amber-300 mb-2' }, 'Security & Privacy Best Practices'),
+                                        React.createElement('p', { className: 'text-amber-200/80 text-sm leading-relaxed' },
+                                            'Only create or open your vault on a trusted device. For maximum privacy, use your browser\'s ',
+                                            'private/incognito mode. Your encryption password is never stored or transmitted - only you control ',
+                                            'access to your data. This is your personal health record; protect it accordingly.'
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    React.createElement('section', { className: 'py-20 px-6' },
+                        React.createElement('div', { className: 'container mx-auto max-w-6xl' },
+                            React.createElement('div', { className: 'text-center mb-16' },
+                                React.createElement('h2', { className: 'text-4xl md:text-5xl font-bold mb-4' },
+                                    'Built for ',
+                                    React.createElement('span', { className: 'bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent' }, 'Privacy')
+                                ),
+                                React.createElement('p', { className: 'text-slate-400 text-lg' }, 'Enterprise-grade security without the enterprise complexity')
+                            ),
+                            React.createElement('div', { className: 'grid md:grid-cols-2 gap-6 mb-12' },
+                                features.map((feature, index) => (
+                                    React.createElement('div', {
+                                        key: feature.title,
+                                        onMouseEnter: () => setHoveredFeature(index),
+                                        onMouseLeave: () => setHoveredFeature(null),
+                                        className: `bg-white/5 backdrop-blur-sm border rounded-2xl p-8 transition-all duration-300 ${
+                                            hoveredFeature === index
+                                                ? 'border-cyan-400/50 bg-white/10 shadow-xl shadow-cyan-500/20 scale-105'
+                                                : 'border-white/10 hover:border-white/20'
+                                        }`
+                                    },
+                                        React.createElement('div', { className: 'w-14 h-14 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-xl flex items-center justify-center mb-4 text-cyan-400' },
+                                            feature.icon
+                                        ),
+                                        React.createElement('h3', { className: 'text-xl font-semibold mb-3' }, feature.title),
+                                        React.createElement('p', { className: 'text-slate-400 leading-relaxed' }, feature.description)
+                                    )
+                                ))
+                            )
+                        )
+                    ),
+                    React.createElement('section', { className: 'py-20 px-6 bg-gradient-to-b from-transparent to-slate-900/50' },
+                        React.createElement('div', { className: 'container mx-auto max-w-6xl' },
+                            React.createElement('div', { className: 'bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-12' },
+                                React.createElement('div', { className: 'grid md:grid-cols-2 gap-12 items-center' },
+                                    React.createElement('div', null,
+                                        React.createElement('h2', { className: 'text-4xl font-bold mb-6' },
+                                            'Everything you need.',
+                                            React.createElement('br', null),
+                                            React.createElement('span', { className: 'text-cyan-400' }, "Nothing you don't.")
+                                        ),
+                                        React.createElement('p', { className: 'text-slate-300 leading-relaxed mb-8' },
+                                            'Store medical records, test results, prescriptions, and health notes in one secure location. ',
+                                            'Access them anywhere, anytime - even without an internet connection.'
+                                        ),
+                                        React.createElement('div', { className: 'space-y-3 mb-8' },
+                                            benefits.map(benefit => (
+                                                React.createElement('div', { key: benefit, className: 'flex items-center gap-3' },
+                                                    React.createElement('div', { className: 'w-6 h-6 bg-cyan-500/20 rounded-full flex items-center justify-center flex-shrink-0' },
+                                                        React.createElement(CheckCircle2, { className: 'w-4 h-4 text-cyan-400' })
+                                                    ),
+                                                    React.createElement('span', { className: 'text-slate-300' }, benefit)
+                                                )
+                                            ))
+                                        ),
+                                        React.createElement('div', { className: 'bg-slate-800/50 border border-slate-700 rounded-lg p-4 text-xs text-slate-400' },
+                                            React.createElement('strong', { className: 'text-slate-300' }, 'Privacy Notice:'),
+                                            ' This is a personal health record (PHR) tool designed for individual use. ',
+                                            'All data is encrypted and stored only on your device. We do not operate servers, collect data, or transmit your information anywhere. ',
+                                            'This application is not subject to HIPAA as it is not operated by a covered entity or business associate under HIPAA regulations.'
+                                        )
+                                    ),
+                                    React.createElement('div', { className: 'space-y-4' },
+                                        React.createElement('div', { className: 'bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-400/20 rounded-2xl p-6' },
+                                            React.createElement(FileText, { className: 'w-8 h-8 text-cyan-400 mb-3' }),
+                                            React.createElement('h4', { className: 'font-semibold mb-2' }, 'Single File Architecture'),
+                                            React.createElement('p', { className: 'text-sm text-slate-400' }, 'One .ehv file contains your entire health vault. Easy to backup, transfer, or store securely.')
+                                        ),
+                                        React.createElement('div', { className: 'bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-400/20 rounded-2xl p-6' },
+                                            React.createElement(Clock, { className: 'w-8 h-8 text-purple-400 mb-3' }),
+                                            React.createElement('h4', { className: 'font-semibold mb-2' }, 'Instant Access'),
+                                            React.createElement('p', { className: 'text-sm text-slate-400' }, 'Open your vault in any modern browser. No installation, no setup, no waiting.')
+                                        ),
+                                        React.createElement('div', { className: 'bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-400/20 rounded-2xl p-6' },
+                                            React.createElement(Globe, { className: 'w-8 h-8 text-blue-400 mb-3' }),
+                                            React.createElement('h4', { className: 'font-semibold mb-2' }, 'Offline First'),
+                                            React.createElement('p', { className: 'text-sm text-slate-400' }, 'Download the offline bundle and use HealthVault without any internet connection.')
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    React.createElement('section', { className: 'py-20 px-6' },
+                        React.createElement('div', { className: 'container mx-auto max-w-4xl text-center' },
+                            React.createElement('h2', { className: 'text-4xl md:text-5xl font-bold mb-6' }, 'Ready to take control?'),
+                            React.createElement('p', { className: 'text-xl text-slate-300 mb-4' }, 'Create your encrypted health vault in under 60 seconds'),
+                            React.createElement('p', { className: 'text-sm text-slate-400 mb-10 max-w-2xl mx-auto' },
+                                '100% offline. Zero cloud storage. Your data never leaves your device. ',
+                                'You maintain complete control as the sole custodian of your personal health records.'
+                            ),
+                            React.createElement('div', { className: 'flex flex-col sm:flex-row gap-4 justify-center' },
+                                React.createElement('button', {
+                                    className: 'px-10 py-5 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 rounded-xl font-semibold text-lg transition-all shadow-xl shadow-cyan-500/50',
+                                    onClick: handleCreateVault
+                                }, 'Get Started Free'),
+                                React.createElement('button', { className: 'px-10 py-5 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl font-semibold text-lg transition-all border border-white/20', 'data-action': 'open-vault' }, 'View Demo')
+                            )
+                        )
+                    ),
+                    React.createElement('footer', { className: 'border-t border-white/10 py-12 px-6 backdrop-blur-sm' },
+                        React.createElement('div', { className: 'container mx-auto max-w-6xl space-y-8' },
+                            React.createElement('div', { className: 'bg-slate-800/30 border border-slate-700/50 rounded-xl p-8' },
+                                React.createElement('h3', { className: 'text-xl font-bold text-slate-200 mb-4 flex items-center gap-2' },
+                                    React.createElement(Shield, { className: 'w-5 h-5 text-cyan-400' }),
+                                    'Privacy & Legal Information'
+                                ),
+                                React.createElement('div', { className: 'space-y-4 text-sm text-slate-400 leading-relaxed' },
+                                    React.createElement('div', null,
+                                        React.createElement('strong', { className: 'text-slate-300' }, 'Personal Health Record Tool:'),
+                                        ' HealthVault is a personal health record (PHR) application designed for individual use. This is NOT an electronic health record (EHR) system operated by healthcare providers.'
+                                    ),
+                                    React.createElement('div', null,
+                                        React.createElement('strong', { className: 'text-slate-300' }, 'HIPAA Status:'),
+                                        ' This application is not subject to HIPAA (Health Insurance Portability and Accountability Act) regulations because it is not operated by a covered entity or business associate. You, the individual user, maintain complete control over your data.'
+                                    ),
+                                    React.createElement('div', null,
+                                        React.createElement('strong', { className: 'text-slate-300' }, 'Zero Data Collection:'),
+                                        ' We do not operate servers, databases, or cloud storage. Your encrypted health vault file (.ehv) is stored exclusively on your device. We never see, access, transmit, or store your data.'
+                                    ),
+                                    React.createElement('div', null,
+                                        React.createElement('strong', { className: 'text-slate-300' }, 'Your Responsibility:'),
+                                        ' As the sole custodian of your health data, you are responsible for keeping your encrypted vault file secure, backing it up appropriately, and protecting your password. We cannot recover lost passwords or data.'
+                                    ),
+                                    React.createElement('div', null,
+                                        React.createElement('strong', { className: 'text-slate-300' }, 'Medical Disclaimer:'),
+                                        ' This tool is for personal record-keeping only and does not provide medical advice, diagnosis, or treatment. Always consult qualified healthcare professionals for medical decisions.'
+                                    ),
+                                    React.createElement('div', { className: 'pt-2 border-t border-slate-700' },
+                                        React.createElement('strong', { className: 'text-slate-300' }, 'Note:'),
+                                        ' While this application is not subject to HIPAA, we implement strong encryption and security best practices to protect your sensitive health information. State privacy laws may also apply depending on your location.'
+                                    )
+                                )
+                            ),
+                            React.createElement('div', { className: 'flex flex-col md:flex-row justify-between items-center gap-4 text-slate-400 text-sm' },
+                                React.createElement('div', { className: 'flex items-center gap-2' },
+                                    React.createElement(Shield, { className: 'w-4 h-4 text-cyan-400' }),
+                                    React.createElement('span', null, '© 2025 HealthVault - Your data, your control')
+                                ),
+                                React.createElement('div', { className: 'flex gap-6' },
+                                    React.createElement('a', { href: '#', className: 'hover:text-cyan-400 transition-colors' }, 'Privacy Policy'),
+                                    React.createElement('a', { href: '#', className: 'hover:text-cyan-400 transition-colors' }, 'Documentation'),
+                                    React.createElement('a', { href: '#', className: 'hover:text-cyan-400 transition-colors' }, 'GitHub')
+                                )
+                            )
+                        )
+                    )
+                )
+            );
+        }
+
+        const rootElement = document.getElementById('landingRoot');
+        if (rootElement) {
+            const root = createRoot(rootElement);
+            root.render(React.createElement(HealthVaultLanding));
+        }
     </script>
 </body>
 </html>
