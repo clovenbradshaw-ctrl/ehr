@@ -29,7 +29,6 @@
         :root {
             --layout-max-width: 1200px;
             --layout-gutter: clamp(16px, 4vw, 32px);
-            --header-height: 140px;
             --header-bg: #0f172a;
         }
 
@@ -51,7 +50,11 @@
         .page-shell {
             width: min(100%, calc(var(--layout-max-width) + (var(--layout-gutter) * 2)));
             margin: 0 auto;
-            padding: calc(var(--header-height) + 72px) var(--layout-gutter) 48px;
+            padding: 0 var(--layout-gutter) 48px;
+        }
+
+        body:not(:has(#mainContent[style*="display: block"])) .page-shell {
+            padding-top: 212px;
         }
 
         .site-header {
@@ -63,6 +66,12 @@
             color: white;
             z-index: 1100;
             box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+        }
+
+        /* Hide site header when viewing EHR content */
+        #mainContent[style*="display: block"] ~ .site-header,
+        body:has(#mainContent[style*="display: block"]) .site-header {
+            display: none;
         }
         
         .unlock-screen {
@@ -309,6 +318,23 @@
             flex: 1 1 320px;
         }
 
+        .site-header__title {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .site-header__title h1 {
+            font-size: 16pt;
+            margin: 0;
+        }
+
+        .site-header__title p {
+            margin: 0;
+            font-size: 10pt;
+            color: rgba(226, 232, 240, 0.75);
+        }
+
         .logo-container {
             display: flex;
             align-items: center;
@@ -356,15 +382,6 @@
             color: white;
         }
         
-        .security-status {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 11pt;
-            flex-shrink: 0;
-            color: rgba(226, 232, 240, 0.92);
-        }
-
         #lockTimer {
             margin-left: 4px;
             font-size: 10pt;
@@ -545,7 +562,7 @@
         
         .nav-tabs {
             position: sticky;
-            top: var(--header-height);
+            top: 0;
             background: rgba(248, 250, 252, 0.95);
             border-bottom: 1px solid #e2e8f0;
             z-index: 900;
@@ -612,25 +629,108 @@
             margin-bottom: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        
+
         .chart-header-top {
             background: #2c3e50;
             color: white;
-            padding: 10px 20px;
+            padding: 16px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
         }
-        
-        .chart-header-top h1 {
+
+        .chart-branding {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex: 1 1 auto;
+        }
+
+        .chart-title-group h1 {
             font-size: 18pt;
             font-weight: 600;
-            margin: 0;
+            margin: 0 0 4px 0;
         }
-        
+
         .chart-header-info {
-            font-size: 10pt;
+            font-size: 9pt;
             opacity: 0.9;
+        }
+
+        .chart-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .chart-header-status {
+            background: rgba(15, 23, 42, 0.05);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .security-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 10pt;
+            color: #475569;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 900px) {
+            .chart-header-top {
+                padding: 12px 16px;
+            }
+
+            .chart-branding {
+                flex-basis: 100%;
+                justify-content: center;
+            }
+
+            .chart-controls {
+                flex-basis: 100%;
+                justify-content: center;
+            }
+
+            .action-buttons {
+                width: 100%;
+                justify-content: stretch;
+            }
+
+            .action-buttons .btn {
+                flex: 1 1 auto;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .chart-header-top {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .chart-branding {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .chart-controls {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .language-selector,
+            .action-buttons {
+                width: 100%;
+            }
         }
         
         .patient-demographics {
@@ -1570,16 +1670,8 @@
         }
         
         @media (max-width: 900px) {
-            :root {
-                --header-height: 184px;
-            }
-
             body {
                 font-size: 10.5pt;
-            }
-
-            .page-shell {
-                padding-top: calc(var(--header-height) + 88px);
             }
 
             .unlock-container {
@@ -1645,16 +1737,6 @@
             .tab {
                 padding: 10px 14px;
                 font-size: 9pt;
-            }
-
-            .chart-header-top {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 6px;
-            }
-
-            .chart-header-top h1 {
-                font-size: 16pt;
             }
 
             .patient-demographics {
@@ -1937,14 +2019,6 @@
                 gap: 0;
             }
 
-            :root {
-                --header-height: 208px;
-            }
-
-            .page-shell {
-                padding-top: calc(var(--header-height) + 88px);
-            }
-
             .nav-tabs {
                 padding: 12px 0;
             }
@@ -1972,14 +2046,6 @@
         }
 
         @media (max-width: 600px) {
-            :root {
-                --header-height: 232px;
-            }
-
-            .page-shell {
-                padding-top: calc(var(--header-height) + 88px);
-            }
-
             .unlock-container {
                 width: 100%;
             }
@@ -2088,26 +2154,10 @@
                 <div class="logo-container">
                     <img src="https://storage.googleapis.com/intelechia-content/ehr%20vault.png" alt="EHR Vault logo" loading="lazy" decoding="async">
                 </div>
-                <div class="security-status">
-                    <div class="status-icon"></div>
-                    <span id="securityText" data-i18n-key="always_encrypted">Always Encrypted</span>
-                    <span id="lockTimer" aria-live="polite">Session: --:--</span>
+                <div class="site-header__title">
+                    <h1>Personal Health Vault</h1>
+                    <p>Your encrypted medical record hub</p>
                 </div>
-            </div>
-            <div class="site-header__actions">
-                <div class="language-selector">
-                    <label for="languageSelect" data-i18n-key="language_label">Language</label>
-                    <select id="languageSelect" data-language-selector aria-label="Language"></select>
-                </div>
-                <div class="action-buttons">
-                    <button class="btn btn-secondary" id="settingsBtn" data-i18n-key="settings_button">⚙️ Settings</button>
-                    <button class="btn btn-lock" id="lockBtn" style="display: none;" data-i18n-key="unlock_action">🔓 Lock</button>
-                    <button class="btn btn-secondary" id="exportBtn" data-i18n-key="export_button">Export/Print</button>
-                    <button class="btn btn-save" id="saveBtn" data-i18n-key="save_button_create">Create Encrypted Vault</button>
-                </div>
-            </div>
-            <div class="site-header__status">
-                <div class="save-status never-saved" id="saveStatus" data-i18n-key="not_initialized">⚠️ Not Initialized - Create Your Vault</div>
             </div>
         </div>
     </header>
@@ -2440,11 +2490,41 @@
         <!-- Medical Chart Header -->
         <div class="chart-header" id="demographics-section">
             <div class="chart-header-top">
-                <h1>PATIENT HEALTH RECORD</h1>
-                <div class="chart-header-info">
-                    <span id="lastUpdatedHeader">Last Updated: Never</span>
+                <div class="chart-branding">
+                    <img src="https://storage.googleapis.com/intelechia-content/ehr%20vault.png" alt="EHR Vault logo" style="height: 32px;">
+                    <div class="chart-title-group">
+                        <h1>PATIENT HEALTH RECORD</h1>
+                        <div class="chart-header-info">
+                            <span id="lastUpdatedHeader">Last Updated: Never</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-controls">
+                    <div class="language-selector">
+                        <label for="languageSelect" data-i18n-key="language_label">Language</label>
+                        <select id="languageSelect" data-language-selector aria-label="Language"></select>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary" id="settingsBtn" data-i18n-key="settings_button">⚙️ Settings</button>
+                        <button class="btn btn-lock" id="lockBtn" style="display: none;" data-i18n-key="unlock_action">🔓 Lock</button>
+                        <button class="btn btn-secondary" id="exportBtn" data-i18n-key="export_button">Export/Print</button>
+                        <button class="btn btn-save" id="saveBtn" data-i18n-key="save_button_create">Create Encrypted Vault</button>
+                    </div>
                 </div>
             </div>
+
+            <div class="chart-header-status">
+                <div class="security-status">
+                    <div class="status-icon"></div>
+                    <span id="securityText" data-i18n-key="always_encrypted">Always Encrypted</span>
+                    <span id="lockTimer" aria-live="polite">Session: --:--</span>
+                </div>
+                <div class="save-status never-saved" id="saveStatus" data-i18n-key="not_initialized">⚠️ Not Initialized - Create Your Vault</div>
+            </div>
+
+            <!-- Patient demographics content continues here... -->
             <div class="patient-demographics">
                 <div class="patient-summary">
                     <div class="patient-profile">
