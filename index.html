@@ -2131,6 +2131,160 @@
             }
         }
 
+        footer {
+            border-top: 1px solid #e2e8f0;
+            padding: 48px 0;
+            background: linear-gradient(to bottom, #f8fafc 0%, #f1f5f9 100%);
+            margin-top: 60px;
+        }
+
+        footer .page-shell {
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .footer-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .footer-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+            transition: all 0.2s ease;
+        }
+
+        .footer-card:hover {
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .footer-card-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            font-size: 20px;
+        }
+
+        .footer-card-title {
+            font-size: 14pt;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0 0 12px 0;
+        }
+
+        .footer-card-text {
+            font-size: 10pt;
+            color: #64748b;
+            line-height: 1.6;
+            margin: 0 0 12px 0;
+        }
+
+        .footer-card-text:last-child {
+            margin-bottom: 0;
+        }
+
+        .footer-card-text strong {
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .footer-card.highlight {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border-color: #3b82f6;
+        }
+
+        .footer-card.warning {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-color: #f59e0b;
+        }
+
+        .footer-card.alert {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-color: #ef4444;
+        }
+
+        .footer-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 999px;
+            font-size: 9pt;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .footer-badge.badge-info {
+            background: #3b82f6;
+        }
+
+        .footer-badge.badge-warning {
+            background: #f59e0b;
+        }
+
+        .footer-badge.badge-success {
+            background: #10b981;
+        }
+
+        .footer-bottom {
+            margin-top: 32px;
+            padding-top: 32px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .footer-bottom-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #64748b;
+            font-size: 10pt;
+        }
+
+        .footer-bottom-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .footer-bottom-links a {
+            color: #64748b;
+            text-decoration: none;
+            font-size: 10pt;
+            transition: color 0.2s;
+        }
+
+        .footer-bottom-links a:hover {
+            color: #3b82f6;
+        }
+
+        @media (max-width: 768px) {
+            .footer-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
         .hidden {
             display: none !important;
         }
@@ -9240,77 +9394,74 @@
                             )
                         )
                     ),
-                    React.createElement('footer', { className: 'border-t border-white/10 py-12 px-6 backdrop-blur-sm' },
-                        React.createElement('div', { className: 'container mx-auto max-w-6xl space-y-8' },
-                            React.createElement('div', { className: 'bg-slate-800/30 border border-slate-700/50 rounded-xl p-8 space-y-6' },
-                                React.createElement('h3', { className: 'text-lg font-bold text-slate-200 flex items-center gap-2' },
-                                    React.createElement(Shield, { className: 'w-5 h-5 text-cyan-400' }),
-                                    'Privacy & Security Information'
+                    React.createElement('footer', { className: 'no-print' },
+                        React.createElement('div', { className: 'page-shell' },
+                            React.createElement('div', { className: 'footer-cards' },
+                                React.createElement('div', { className: 'footer-card' },
+                                    React.createElement('div', { className: 'footer-card-icon' }, '🏥'),
+                                    React.createElement('h3', { className: 'footer-card-title' }, 'Personal Health Record Tool'),
+                                    React.createElement('div', { className: 'footer-badge badge-info' }, 'Not an EHR System'),
+                                    React.createElement('p', { className: 'footer-card-text' },
+                                        'HealthVault is a personal health record (PHR) application designed for individual use. This is NOT an electronic health record (EHR) system operated by healthcare providers.'
+                                    )
                                 ),
-                                React.createElement('div', { className: 'space-y-6' },
-                                    React.createElement('div', { className: 'bg-amber-500/10 border border-amber-400/30 rounded-2xl p-6 backdrop-blur-sm' },
-                                        React.createElement('div', { className: 'flex flex-col gap-3' },
-                                            React.createElement('div', { className: 'flex items-center gap-3' },
-                                                React.createElement('div', { className: 'w-10 h-10 bg-amber-400/20 rounded-lg flex items-center justify-center' },
-                                                    React.createElement(Shield, { className: 'w-5 h-5 text-amber-300' })
-                                                ),
-                                                React.createElement('h4', { className: 'font-semibold text-amber-100 text-base' }, 'Security & Privacy Best Practices')
-                                            ),
-                                            React.createElement('p', { className: 'text-amber-100/80 text-sm leading-relaxed' },
-                                                'Only create or open your vault on a trusted device. For maximum privacy, use your browser\'s private/incognito mode. Your encryption password is never stored or transmitted—only you control access to your data.'
-                                            ),
-                                            React.createElement('div', { className: 'pt-4 border-t border-amber-400/20 space-y-3' },
-                                                React.createElement('h5', { className: 'text-amber-100 text-sm font-semibold uppercase tracking-wide' }, 'Offline Bundle'),
-                                                React.createElement('p', { className: 'text-amber-100/80 text-sm leading-relaxed' },
-                                                    'For maximum privacy, download the complete offline bundle to use HealthVault without any internet connection. Perfect for air-gapped environments.'
-                                                ),
-                                                React.createElement('div', { className: 'flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between' },
-                                                    React.createElement('button', { className: 'inline-flex items-center justify-center gap-2 px-4 py-2 bg-amber-400/20 hover:bg-amber-400/30 border border-amber-300/30 rounded-lg text-sm font-medium transition-colors offline-download-trigger' },
-                                                        React.createElement(Download, { className: 'w-4 h-4' }),
-                                                        'Download Offline Bundle'
-                                                    )
-                                                ),
-                                                React.createElement('p', { className: 'offline-download-status text-sm text-amber-100/70', 'aria-live': 'polite' })
-                                            )
-                                        )
+                                React.createElement('div', { className: 'footer-card' },
+                                    React.createElement('div', { className: 'footer-card-icon' }, '⚖️'),
+                                    React.createElement('h3', { className: 'footer-card-title' }, 'Regulatory Scope'),
+                                    React.createElement('div', { className: 'footer-badge badge-info' }, 'Not Subject to HIPAA'),
+                                    React.createElement('p', { className: 'footer-card-text' },
+                                        'This application is not subject to HIPAA regulations because it is not operated by a covered entity or business associate. You, the individual user, maintain complete control over your data.'
+                                    )
+                                ),
+                                React.createElement('div', { className: 'footer-card highlight' },
+                                    React.createElement('div', { className: 'footer-card-icon' }, '🔒'),
+                                    React.createElement('h3', { className: 'footer-card-title' }, 'Zero Data Collection'),
+                                    React.createElement('div', { className: 'footer-badge badge-success' }, '100% Private'),
+                                    React.createElement('p', { className: 'footer-card-text' },
+                                        React.createElement('strong', null, 'We never see your data.'),
+                                        ' No servers, no databases, no cloud storage. Your encrypted health vault (.ehv) is stored exclusively on your device.'
+                                    )
+                                ),
+                                React.createElement('div', { className: 'footer-card warning' },
+                                    React.createElement('div', { className: 'footer-card-icon' }, '🔑'),
+                                    React.createElement('h3', { className: 'footer-card-title' }, 'Your Responsibility'),
+                                    React.createElement('div', { className: 'footer-badge badge-warning' }, 'Important'),
+                                    React.createElement('p', { className: 'footer-card-text' },
+                                        'As the sole custodian of your health data, you are responsible for keeping your encrypted vault file secure, backing it up appropriately, and protecting your password.'
                                     ),
-                                    React.createElement('div', { className: 'space-y-4 text-sm text-slate-400 leading-relaxed' },
-                                        React.createElement('div', null,
-                                            React.createElement('strong', { className: 'text-slate-300' }, 'Personal Health Record Tool:'),
-                                            ' HealthVault is a personal health record (PHR) application designed for individual use. This is NOT an electronic health record (EHR) system operated by healthcare providers.'
-                                        ),
-                                        React.createElement('div', null,
-                                            React.createElement('strong', { className: 'text-slate-300' }, 'Regulatory Scope:'),
-                                            ' This application is not subject to HIPAA (Health Insurance Portability and Accountability Act) regulations because it is not operated by a covered entity or business associate. You, the individual user, maintain complete control over your data.'
-                                        ),
-                                        React.createElement('div', null,
-                                            React.createElement('strong', { className: 'text-slate-300' }, 'Zero Data Collection:'),
-                                            ' We do not operate servers, databases, or cloud storage. Your encrypted health vault file (.ehv) is stored exclusively on your device. We never see, access, transmit, or store your data.'
-                                        ),
-                                        React.createElement('div', null,
-                                            React.createElement('strong', { className: 'text-slate-300' }, 'Your Responsibility:'),
-                                            ' As the sole custodian of your health data, you are responsible for keeping your encrypted vault file secure, backing it up appropriately, and protecting your password. We cannot recover lost passwords or data.'
-                                        ),
-                                        React.createElement('div', null,
-                                            React.createElement('strong', { className: 'text-slate-300' }, 'Medical Disclaimer:'),
-                                            ' This tool is for personal record-keeping only and does not provide medical advice, diagnosis, or treatment. Always consult qualified healthcare professionals for medical decisions.'
-                                        ),
-                                        React.createElement('div', { className: 'pt-2 border-t border-slate-700/70' },
-                                            React.createElement('strong', { className: 'text-slate-300' }, 'Note:'),
-                                            ' While this application is not subject to HIPAA, we implement strong encryption and security best practices to protect your sensitive health information. State privacy laws may also apply depending on your location.'
-                                        )
+                                    React.createElement('p', { className: 'footer-card-text' },
+                                        React.createElement('strong', null, 'We cannot recover lost passwords or data.')
+                                    )
+                                ),
+                                React.createElement('div', { className: 'footer-card alert' },
+                                    React.createElement('div', { className: 'footer-card-icon' }, '⚕️'),
+                                    React.createElement('h3', { className: 'footer-card-title' }, 'Medical Disclaimer'),
+                                    React.createElement('div', { className: 'footer-badge badge-warning' }, 'Not Medical Advice'),
+                                    React.createElement('p', { className: 'footer-card-text' },
+                                        'This tool is for personal record-keeping only and does not provide medical advice, diagnosis, or treatment. Always consult qualified healthcare professionals for medical decisions.'
+                                    )
+                                ),
+                                React.createElement('div', { className: 'footer-card' },
+                                    React.createElement('div', { className: 'footer-card-icon' }, '🛡️'),
+                                    React.createElement('h3', { className: 'footer-card-title' }, 'Privacy Implementation'),
+                                    React.createElement('div', { className: 'footer-badge badge-success' }, 'Best Practices'),
+                                    React.createElement('p', { className: 'footer-card-text' },
+                                        'While this application is not subject to HIPAA, we implement strong encryption and security best practices to protect your sensitive health information.'
+                                    ),
+                                    React.createElement('p', { className: 'footer-card-text' },
+                                        'State privacy laws may also apply depending on your location.'
                                     )
                                 )
                             ),
-                            React.createElement('div', { className: 'flex flex-col md:flex-row justify-between items-center gap-4 text-slate-400 text-sm' },
-                                React.createElement('div', { className: 'flex items-center gap-2' },
-                                    React.createElement(Shield, { className: 'w-4 h-4 text-cyan-400' }),
+                            React.createElement('div', { className: 'footer-bottom' },
+                                React.createElement('div', { className: 'footer-bottom-left' },
+                                    React.createElement('span', { style: { fontSize: '20px' } }, '🔒'),
                                     React.createElement('span', null, '© 2025 HealthVault - Your data, your control')
                                 ),
-                                React.createElement('div', { className: 'flex gap-6' },
-                                    React.createElement('a', { href: '#', className: 'hover:text-cyan-400 transition-colors' }, 'Privacy Policy'),
-                                    React.createElement('a', { href: '#', className: 'hover:text-cyan-400 transition-colors' }, 'Documentation'),
-                                    React.createElement('a', { href: '#', className: 'hover:text-cyan-400 transition-colors' }, 'GitHub')
+                                React.createElement('div', { className: 'footer-bottom-links' },
+                                    React.createElement('a', { href: '#' }, 'Privacy Policy'),
+                                    React.createElement('a', { href: '#' }, 'Documentation'),
+                                    React.createElement('a', { href: '#' }, 'GitHub')
                                 )
                             )
                         )
