@@ -8472,10 +8472,7 @@
         const offlineBundleManager = (() => {
             const ZIP_FILENAME = 'personal-health-vault-offline.zip';
             const ASSETS = [
-                { path: 'index.html', type: 'text' },
-                { path: 'translations.json', type: 'text' },
-                { path: 'pako.min.js', type: 'text' },
-                { path: 'jszip.min.js', type: 'text' }
+                { path: 'index.html', type: 'text' }
             ];
 
             const getButtons = () => Array.from(document.querySelectorAll('.offline-download-trigger'));
