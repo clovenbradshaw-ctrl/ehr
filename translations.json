@@ -5038,5 +5038,29 @@
   "final_info_line3": {
     "en": "Replace your old file with the new one. Keep backups in secure locations.",
     "es": "Reemplaza tu archivo anterior con el nuevo. Conserva copias de seguridad en lugares seguros."
+  },
+  "offline_download_title": {
+    "en": "Want to use this 100% offline?",
+    "es": "¿Quieres usar esto al 100 % sin conexión?"
+  },
+  "offline_download_cta": {
+    "en": "Download the offline bundle",
+    "es": "Descargar el paquete sin conexión"
+  },
+  "offline_download_subtext": {
+    "en": "We'll package everything for you—just open index.html in any browser, no internet needed.",
+    "es": "Empaquetaremos todo por ti; solo abre index.html en cualquier navegador, sin necesidad de internet."
+  },
+  "offline_download_preparing": {
+    "en": "Preparing your offline bundle…",
+    "es": "Preparando tu paquete sin conexión…"
+  },
+  "offline_download_ready": {
+    "en": "Offline bundle ready! Check your downloads folder.",
+    "es": "¡Paquete sin conexión listo! Revisa tu carpeta de descargas."
+  },
+  "offline_download_error": {
+    "en": "We couldn't prepare the offline bundle. Please try again.",
+    "es": "No pudimos preparar el paquete sin conexión. Inténtalo de nuevo."
   }
 }
