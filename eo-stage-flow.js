@@ -52,6 +52,25 @@
         map[normalized.id] = normalized;
       }
     });
+
+    Object.values(map).forEach((role) => {
+      const parentId = role.parentRoleId;
+      if (parentId && map[parentId]) {
+        const parent = map[parentId];
+        if (!parent.childRoleIds.includes(role.id)) {
+          parent.childRoleIds = Array.from(new Set([...(parent.childRoleIds || []), role.id]));
+        }
+      }
+
+      role.childRoleIds = Array.from(new Set(role.childRoleIds || [])).filter((childId) => {
+        if (!map[childId]) return false;
+        if (!map[childId].parentRoleId) {
+          map[childId].parentRoleId = role.id;
+        }
+        return true;
+      });
+    });
+
     return map;
   }
 
@@ -197,6 +216,167 @@
     return (stageConfig.assignedRoleIds || []).some((roleId) => isUserInRole(userId, roleId, roles, true));
   }
 
+  function resolveStageAssignments(flow, roles, includeNested = true) {
+    const stageConfig = ensureStageConfig(flow);
+    const roleMap = normalizeRoles(roles);
+
+    return stageConfig.map((cfg) => ({
+      stageKey: cfg.stageKey,
+      active: Boolean(cfg.active),
+      assignedRoleIds: Array.from(new Set(cfg.assignedRoleIds || [])),
+      assignedUserIds: Array.from(new Set(cfg.assignedUserIds || [])),
+      optedOutUserIds: Array.from(new Set(cfg.optedOutUserIds || [])),
+      availableUserIds: getUsersForStage(cfg, roleMap, includeNested)
+    }));
+  }
+
+  function summarizeStageAssignments(flow, roles, includeNested = true) {
+    return resolveStageAssignments(flow, roles, includeNested).reduce((acc, cfg) => {
+      acc[cfg.stageKey] = cfg;
+      return acc;
+    }, {});
+  }
+
+  function getStageProgress(flow, activity) {
+    const stageConfig = ensureStageConfig(flow);
+    const activeStages = stageConfig.filter((cfg) => cfg.active);
+    const orderedActiveKeys = activeStages.map((cfg) => cfg.stageKey);
+    const currentStageId = activity?.currentStageId;
+    const currentIndex = orderedActiveKeys.indexOf(currentStageId);
+
+    const completedSet = new Set(
+      activity?.completedStageIds ||
+        activity?.completedStages ||
+        (Array.isArray(activity?.history)
+          ? activity.history
+              .filter((item) => item?.stageKey && item?.status === 'completed')
+              .map((item) => item.stageKey)
+          : [])
+    );
+
+    const skippedSet = new Set(activity?.skippedStageIds || []);
+
+    const stageLookup = stageConfig.reduce((acc, cfg, index) => {
+      acc[cfg.stageKey] = { cfg, index };
+      return acc;
+    }, {});
+
+    return stageConfig.map((cfg) => {
+      const base = {
+        stageKey: cfg.stageKey,
+        name: OPERATOR_INDEX[cfg.stageKey]?.name || cfg.stageKey,
+        description: OPERATOR_INDEX[cfg.stageKey]?.desc || null,
+        tier: OPERATOR_INDEX[cfg.stageKey]?.tier || null,
+        seq: OPERATOR_INDEX[cfg.stageKey]?.seq || null,
+        active: Boolean(cfg.active)
+      };
+
+      if (!cfg.active) {
+        return { ...base, status: 'skipped' };
+      }
+
+      if (skippedSet.has(cfg.stageKey)) {
+        return { ...base, status: 'skipped' };
+      }
+
+      if (completedSet.has(cfg.stageKey)) {
+        return { ...base, status: 'completed' };
+      }
+
+      if (cfg.stageKey === currentStageId) {
+        return { ...base, status: 'current' };
+      }
+
+      if (currentIndex !== -1) {
+        const stageIndex = orderedActiveKeys.indexOf(cfg.stageKey);
+        if (stageIndex !== -1) {
+          if (stageIndex < currentIndex) {
+            return { ...base, status: 'completed' };
+          }
+          if (stageIndex > currentIndex) {
+            return { ...base, status: 'upcoming' };
+          }
+        }
+      }
+
+      if (!currentStageId) {
+        const firstActive = findFirstActiveStage(flow);
+        if (firstActive && firstActive.stageKey === cfg.stageKey) {
+          return { ...base, status: 'current' };
+        }
+        const firstActiveIndex = firstActive ? stageLookup[firstActive.stageKey]?.index ?? -1 : -1;
+        if (firstActiveIndex !== -1) {
+          const stageIndex = stageLookup[cfg.stageKey]?.index ?? -1;
+          if (stageIndex !== -1 && stageIndex < firstActiveIndex) {
+            return { ...base, status: 'completed' };
+          }
+        }
+      }
+
+      return { ...base, status: 'upcoming' };
+    });
+  }
+
+  function flowNeedsStageConfiguration(flow) {
+    if (!flow) return true;
+    if (!Array.isArray(flow.stageConfig) || flow.stageConfig.length === 0) {
+      return true;
+    }
+
+    const stageConfig = ensureStageConfig(flow);
+    return !stageConfig.some((cfg) => cfg.active);
+  }
+
+  function buildRoleHierarchy(roles) {
+    const roleMap = normalizeRoles(roles);
+    const visited = new Set();
+
+    function buildNode(roleId) {
+      if (!roleId || visited.has(roleId)) return null;
+      const role = roleMap[roleId];
+      if (!role) return null;
+
+      visited.add(roleId);
+
+      const children = (role.childRoleIds || [])
+        .map((childId) => buildNode(childId))
+        .filter(Boolean);
+
+      const directMembers = Array.from(new Set(role.userIds || []));
+      const allMembers = new Set(directMembers);
+      children.forEach((child) => {
+        child.allMemberIds.forEach((userId) => allMembers.add(userId));
+      });
+
+      return {
+        id: role.id,
+        name: role.name,
+        parentRoleId: role.parentRoleId,
+        memberIds: directMembers,
+        memberCount: directMembers.length,
+        allMemberIds: Array.from(allMembers),
+        totalMemberCount: allMembers.size,
+        childRoles: children
+      };
+    }
+
+    const nodes = Object.values(roleMap)
+      .filter((role) => !role.parentRoleId || !roleMap[role.parentRoleId])
+      .map((role) => buildNode(role.id))
+      .filter(Boolean);
+
+    const orphanRoles = Object.values(roleMap)
+      .filter((role) => !visited.has(role.id))
+      .map((role) => buildNode(role.id))
+      .filter(Boolean);
+
+    return {
+      tree: nodes,
+      orphanRoles,
+      roleMap
+    };
+  }
+
   function migrateRolesToStageConfig(flow, roles) {
     const stageConfig = ensureStageConfig(flow);
     const roleList = Array.isArray(roles) ? roles : Object.values(roles || {});
@@ -232,6 +412,11 @@
     getUsersForStage,
     isUserInRole,
     canUserClaimActivity,
+    resolveStageAssignments,
+    summarizeStageAssignments,
+    getStageProgress,
+    flowNeedsStageConfiguration,
+    buildRoleHierarchy,
     migrateRolesToStageConfig,
     normalizeRole,
     normalizeRoles
