@@ -278,7 +278,18 @@
             font-size: 11pt;
             flex-shrink: 0;
         }
-        
+
+        #lockTimer {
+            margin-left: 4px;
+            font-size: 10pt;
+            font-weight: 600;
+            color: #1e3a8a;
+        }
+
+        #lockTimer.locked {
+            color: #dc2626;
+        }
+
         .status-icon {
             width: 14px;
             height: 14px;
@@ -1999,7 +2010,7 @@
         <div class="security-status">
             <div class="status-icon"></div>
             <span id="securityText" data-i18n-key="always_encrypted">Always Encrypted</span>
-            <span id="lockTimer"></span>
+            <span id="lockTimer" aria-live="polite">Session: --:--</span>
         </div>
         <div class="save-status never-saved" id="saveStatus" data-i18n-key="not_initialized">⚠️ Not Initialized - Create Your Vault</div>
         <div class="language-selector no-print" tabindex="0">
@@ -3960,6 +3971,12 @@
                 this.currentPreviewAttachmentId = null;
                 this.activePreviewObjectUrl = null;
 
+                this.lockTimeoutMs = 45 * 60 * 1000;
+                this.lockTimerInterval = null;
+                this.lockTimerExpiresAt = null;
+                this._lastActivityUpdate = 0;
+                this._lockTimeoutHandled = false;
+
                 // Application version metadata
                 this.version = APP_VERSION;
                 this.lastUpdated = APP_LAST_UPDATED;
@@ -3967,6 +3984,7 @@
 
                 // Initialize
                 this.init();
+                this.updateLockTimerDisplay();
             }
             
             generateVaultName() {
@@ -4501,6 +4519,11 @@
                 this.refreshProviderOptions();
                 this.refreshAllNoteTagSelectors();
                 this.restoreAttachmentsFromStorage();
+
+                ['click', 'mousemove', 'touchstart'].forEach((eventName) => {
+                    document.addEventListener(eventName, () => this.handleUserActivity(), { passive: true });
+                });
+                document.addEventListener('keydown', () => this.handleUserActivity());
             }
 
             promptVaultImport() {
@@ -4616,6 +4639,11 @@
                 const previousContent = targetScript.textContent;
 
                 try {
+                    this.stopLockCountdown();
+                    this.clearSessionData();
+                    this.updateLockTimerDisplay();
+                    this.clearUnlockFields();
+
                     targetScript.textContent = embeddedText;
 
                     this.checkInitialization();
@@ -4630,6 +4658,7 @@
                     this.hasUnsavedChanges = false;
                     this.isLocked = true;
                     this.pendingSchemaNotice = null;
+                    this.updateLockTimerDisplay();
 
                     const passwordInput = document.getElementById('unlock-password');
                     if (passwordInput instanceof HTMLInputElement) {
@@ -4880,16 +4909,10 @@
                     this.modules = this.savedModules || this.modules;
 
                     this.updateModuleVisibility();
-                    const emergencyBanner = document.getElementById('emergencyAccessBanner');
-                    if (emergencyBanner) {
-                        emergencyBanner.style.display = 'none';
-                    }
-                    document.getElementById('unlockScreen').style.display = 'none';
-                    document.getElementById('mainContent').style.display = 'block';
-                    document.getElementById('navTabs').style.display = 'block';
-                    document.getElementById('lockBtn').style.display = 'inline-block';
-
+                    this.isInitialized = true;
+                    this.clearUnlockFields();
                     this.applyVersionMetadata();
+                    this.unlock();
 
                     const needsResave = Boolean(migrationResult?.needsResave);
                     const isNewerSchema = Boolean(migrationResult?.newerThanApp);
@@ -5549,10 +5572,22 @@
                     document.getElementById('mainContent').style.display = 'block';
                     document.getElementById('navTabs').style.display = 'block';
 
+                    const lockBtn = document.getElementById('lockBtn');
+                    if (lockBtn) {
+                        lockBtn.style.display = 'inline-block';
+                        lockBtn.setAttribute('data-i18n-key', 'unlock_action');
+                        lockBtn.textContent = window.localization?.t('unlock_action', '🔓 Lock');
+                    }
+
                     this.isInitialized = true;
                     this.hasUnsavedChanges = true;
                     this.updateSaveStatus();
-                    
+
+                    this._lockTimeoutHandled = false;
+                    this._lastActivityUpdate = Date.now();
+                    this.startLockCountdown();
+                    this.updateLockTimerDisplay();
+
                     alert(`✅ Vault created!\n\n` +
                           `Your vault "${this.vaultIdentity}" is ready to use.\n\n` +
                           `• Enter your medical information\n` +
@@ -8289,42 +8324,321 @@
             
             toggleLock() {
                 if (this.isLocked) {
-                    this.unlock();
-                } else {
-                    this.lock();
+                    this.focusUnlockField();
+                    return;
                 }
+
+                this.lock();
             }
-            
+
             lock() {
                 this.isLocked = true;
+                this.stopLockCountdown();
+                this._lastActivityUpdate = 0;
+
                 const lockBtn = document.getElementById('lockBtn');
                 if (lockBtn) {
-                    lockBtn.setAttribute('data-i18n-key', 'lock_action');
-                    lockBtn.textContent = window.localization?.t('lock_action', '🔒 Unlock');
+                    lockBtn.style.display = 'none';
+                    lockBtn.setAttribute('data-i18n-key', 'unlock_action');
+                    lockBtn.textContent = window.localization?.t('unlock_action', '🔓 Lock');
                 }
-                document.getElementById('mainContent').style.display = 'none';
-                document.getElementById('navTabs').style.display = 'none';
-                document.getElementById('unlockScreen').style.display = 'flex';
+
+                const emergencyBanner = document.getElementById('emergencyAccessBanner');
+                if (emergencyBanner) {
+                    emergencyBanner.style.display = 'none';
+                }
+
+                this.clearSessionData();
+
+                const mainContent = document.getElementById('mainContent');
+                if (mainContent) {
+                    mainContent.style.display = 'none';
+                }
+
+                const navTabs = document.getElementById('navTabs');
+                if (navTabs) {
+                    navTabs.style.display = 'none';
+                }
+
+                const welcomeScreen = document.getElementById('welcomeScreen');
+                if (welcomeScreen) {
+                    welcomeScreen.style.display = 'none';
+                }
+
+                const unlockScreen = document.getElementById('unlockScreen');
+                if (unlockScreen) {
+                    unlockScreen.style.display = 'flex';
+                }
 
                 if (this.emergencyAccessConfig && this.emergencyAccessConfig.enabled) {
                     this.showEmergencyAccess(this.emergencyAccessConfig.data || {});
                 } else {
-                    if (this.requires2FA) {
-                        document.getElementById('totpField').style.display = 'block';
-                    } else {
-                        document.getElementById('totpField').style.display = 'none';
+                    const totpField = document.getElementById('totpField');
+                    if (totpField) {
+                        totpField.style.display = this.requires2FA ? 'block' : 'none';
                     }
                 }
 
+                this.clearUnlockFields();
                 this.updateTemporaryAccessHint();
+                this.updateLockTimerDisplay();
+                this.focusUnlockField();
             }
 
             unlock() {
                 this.isLocked = false;
+                this._lockTimeoutHandled = false;
+                this._lastActivityUpdate = Date.now();
+
                 const lockBtn = document.getElementById('lockBtn');
                 if (lockBtn) {
+                    lockBtn.style.display = 'inline-block';
                     lockBtn.setAttribute('data-i18n-key', 'unlock_action');
                     lockBtn.textContent = window.localization?.t('unlock_action', '🔓 Lock');
+                }
+
+                const emergencyBanner = document.getElementById('emergencyAccessBanner');
+                if (emergencyBanner) {
+                    emergencyBanner.style.display = 'none';
+                }
+
+                const unlockScreen = document.getElementById('unlockScreen');
+                if (unlockScreen) {
+                    unlockScreen.style.display = 'none';
+                }
+
+                const mainContent = document.getElementById('mainContent');
+                if (mainContent) {
+                    mainContent.style.display = 'block';
+                }
+
+                const navTabs = document.getElementById('navTabs');
+                if (navTabs) {
+                    navTabs.style.display = 'block';
+                }
+
+                this.startLockCountdown();
+                this.updateLockTimerDisplay();
+            }
+
+            focusUnlockField() {
+                const passwordField = document.getElementById('unlock-password');
+                if (passwordField instanceof HTMLInputElement) {
+                    passwordField.focus();
+                }
+            }
+
+            clearUnlockFields() {
+                const passwordField = document.getElementById('unlock-password');
+                if (passwordField instanceof HTMLInputElement) {
+                    passwordField.value = '';
+                }
+
+                const totpFieldInput = document.getElementById('totp-code');
+                if (totpFieldInput instanceof HTMLInputElement) {
+                    totpFieldInput.value = '';
+                }
+            }
+
+            startLockCountdown() {
+                if (this.isLocked || !this.sessionPassword) {
+                    this.lockTimerExpiresAt = null;
+                    this.updateLockTimerDisplay();
+                    return;
+                }
+
+                this.stopLockCountdown();
+                this.lockTimerExpiresAt = Date.now() + this.lockTimeoutMs;
+                this._lockTimeoutHandled = false;
+                this._lastActivityUpdate = Date.now();
+                this.updateLockTimerDisplay();
+                this.lockTimerInterval = window.setInterval(() => this.updateLockTimerDisplay(), 1000);
+            }
+
+            resetLockCountdown() {
+                if (this.isLocked || !this.sessionPassword) {
+                    return;
+                }
+
+                if (!this.lockTimerInterval) {
+                    this.startLockCountdown();
+                    return;
+                }
+
+                this.lockTimerExpiresAt = Date.now() + this.lockTimeoutMs;
+                this._lockTimeoutHandled = false;
+                this._lastActivityUpdate = Date.now();
+                this.updateLockTimerDisplay();
+            }
+
+            stopLockCountdown() {
+                if (this.lockTimerInterval) {
+                    window.clearInterval(this.lockTimerInterval);
+                    this.lockTimerInterval = null;
+                }
+                this.lockTimerExpiresAt = null;
+            }
+
+            updateLockTimerDisplay() {
+                const timerEl = document.getElementById('lockTimer');
+                if (!timerEl) {
+                    return;
+                }
+
+                if (this.isLocked) {
+                    timerEl.textContent = 'Session locked';
+                    timerEl.classList.add('locked');
+                    return;
+                }
+
+                timerEl.classList.remove('locked');
+
+                if (!this.lockTimerExpiresAt) {
+                    timerEl.textContent = 'Session: --:--';
+                    return;
+                }
+
+                const remainingMs = this.lockTimerExpiresAt - Date.now();
+                if (remainingMs <= 0) {
+                    timerEl.textContent = 'Session: 00:00';
+                    this.handleLockTimeout();
+                    return;
+                }
+
+                const totalSeconds = Math.ceil(remainingMs / 1000);
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+                timerEl.textContent = `Session: ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+
+            handleLockTimeout() {
+                if (this._lockTimeoutHandled || this.isLocked) {
+                    return;
+                }
+
+                this._lockTimeoutHandled = true;
+                this.lock();
+                alert('Your session timed out after 45 minutes. All data has been cleared for security. Please unlock the vault again.');
+            }
+
+            handleUserActivity() {
+                if (this.isLocked || !this.sessionPassword || !this.lockTimerInterval) {
+                    return;
+                }
+
+                const now = Date.now();
+                if (this._lastActivityUpdate && (now - this._lastActivityUpdate) < 1000) {
+                    return;
+                }
+
+                this._lastActivityUpdate = now;
+                this.resetLockCountdown();
+            }
+
+            clearSessionData() {
+                this.sessionPassword = null;
+                this.totpSecret = null;
+                this.currentTOTPSecret = null;
+                this.pendingTemporaryAccessRemoval = false;
+                this.pendingSchemaNotice = null;
+                this.emergencyAccessConfig = null;
+                this.hasUnsavedChanges = false;
+                this.isInitialized = false;
+                this._lastActivityUpdate = 0;
+
+                this.clearFormInputs();
+                if (typeof this.updateModuleVisibility === 'function') {
+                    this.updateModuleVisibility();
+                }
+                this.updateEmergencySettingsVisibility();
+                this.updatePatientSummaryDisplay();
+
+                this.noteTags = [];
+                this.saveNoteTagsToStorage();
+                this.renderTagChips();
+                this.refreshAllNoteTagSelectors();
+
+                document.querySelectorAll('.note-created-display').forEach((element) => {
+                    element.textContent = '';
+                });
+
+                const noteTagInput = document.getElementById('noteTagInput');
+                if (noteTagInput instanceof HTMLInputElement) {
+                    noteTagInput.value = '';
+                }
+
+                this.closeAttachmentPreview();
+                this.attachments = [];
+                this.renderAttachmentList();
+                this.updateAttachmentStorage({ silent: true });
+
+                const attachmentStorage = document.getElementById('attachmentStorage');
+                if (attachmentStorage instanceof HTMLInputElement) {
+                    attachmentStorage.value = '[]';
+                }
+
+                const lastUpdatedHeader = document.getElementById('lastUpdatedHeader');
+                if (lastUpdatedHeader) {
+                    lastUpdatedHeader.textContent = 'Last Updated: Never';
+                }
+
+                this.updateSaveStatus();
+                this.clearBrowserStorage();
+                document.querySelectorAll('.modal.active').forEach((modal) => modal.classList.remove('active'));
+                this.updateTemporaryAccessHint();
+            }
+
+            clearFormInputs() {
+                const inputs = document.querySelectorAll('.form-data');
+                inputs.forEach((element) => {
+                    if (element instanceof HTMLInputElement) {
+                        if (element.type === 'checkbox' || element.type === 'radio') {
+                            element.checked = false;
+                        } else {
+                            element.value = '';
+                        }
+                    } else if (element instanceof HTMLSelectElement) {
+                        if (element.multiple) {
+                            Array.from(element.options).forEach((option) => { option.selected = false; });
+                        } else if (element.options.length > 0) {
+                            element.selectedIndex = 0;
+                        } else {
+                            element.value = '';
+                        }
+                    } else if (element instanceof HTMLTextAreaElement) {
+                        element.value = '';
+                    } else if ('value' in element) {
+                        element.value = '';
+                    }
+                });
+            }
+
+            clearBrowserStorage() {
+                let preferredLanguage = null;
+                try {
+                    preferredLanguage = localStorage.getItem('preferredLanguage');
+                } catch (error) {
+                    console.warn('Unable to read preferred language from localStorage', error);
+                }
+
+                try {
+                    localStorage.clear();
+                } catch (error) {
+                    console.warn('Unable to clear localStorage', error);
+                }
+
+                if (preferredLanguage) {
+                    try {
+                        localStorage.setItem('preferredLanguage', preferredLanguage);
+                    } catch (error) {
+                        console.warn('Unable to restore preferred language', error);
+                    }
+                }
+
+                try {
+                    sessionStorage.clear();
+                } catch (error) {
+                    console.warn('Unable to clear sessionStorage', error);
                 }
             }
             
