@@ -8,6 +8,16 @@
     <meta http-equiv="expires" content="0">
     <link rel="icon" type="image/x-icon" href="https://storage.googleapis.com/intelechia-content/favicon.ico">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js" integrity="sha512-g2TeAWw5GPnX7z0Kn8nFbYfeHcvAu/tx6d6mrLe/90mkCxO+RcptyYpksUz35EO337F83bZwcmUyHiHamspkfg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        if (!window.pako) {
+            const script = document.createElement('script');
+            script.src = 'pako.min.js';
+            script.referrerPolicy = 'no-referrer';
+            script.onerror = () => console.warn('Local pako fallback failed to load.');
+            document.head.appendChild(script);
+        }
+    </script>
+    <script src="jszip.min.js"></script>
     <title>Personal Health Vault - Secure Medical Record</title>
     <style>
         @page {
@@ -166,7 +176,51 @@
             margin-bottom: 30px;
             line-height: 1.6;
         }
-        
+
+        .offline-download {
+            margin-top: 20px;
+            padding: 12px 16px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            font-size: 10pt;
+            color: #1e3a8a;
+            text-align: left;
+        }
+
+        .offline-download button.offline-download-trigger {
+            margin-top: 8px;
+            padding: 8px 14px;
+            background: #1d4ed8;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 10pt;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .offline-download button.offline-download-trigger:hover:not(:disabled) {
+            background: #1e40af;
+        }
+
+        .offline-download button.offline-download-trigger:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            background: #1e3a8a;
+        }
+
+        .offline-download-status {
+            margin-top: 8px;
+            font-size: 9pt;
+            color: #1e3a8a;
+        }
+
+        .offline-download-status.error {
+            color: #b91c1c;
+        }
+
         .welcome-actions {
             display: flex;
             gap: 20px;
@@ -2043,6 +2097,12 @@
                 <!-- Update the version number and timestamp above to reflect the latest deployment each time changes are pushed. -->
             </div>
             <div class="modal-body">
+                <div class="offline-download">
+                    <p><strong data-i18n-key="offline_download_title">Want to use this 100% offline?</strong></p>
+                    <button type="button" class="offline-download-trigger" data-i18n-key="offline_download_cta">Download the offline bundle</button>
+                    <p data-i18n-key="offline_download_subtext">We'll package everything for you—just open index.html in any browser, no internet needed.</p>
+                    <p class="offline-download-status" aria-live="polite"></p>
+                </div>
                 <div class="settings-grid">
                     <div class="settings-section">
                         <h4 data-i18n-key="optional_modules_heading">Optional Modules</h4>
@@ -2340,6 +2400,12 @@
                 <li data-i18n-key="welcome_screen_bullet_offline">Works offline, no internet required</li>
                 <li data-i18n-key="welcome_screen_bullet_data_local">Your data never leaves your device</li>
             </ul>
+        </div>
+        <div class="offline-download">
+            <p><strong data-i18n-key="offline_download_title">Want to use this 100% offline?</strong></p>
+            <button type="button" class="offline-download-trigger" data-i18n-key="offline_download_cta">Download the offline bundle</button>
+            <p data-i18n-key="offline_download_subtext">We'll package everything for you—just open index.html in any browser, no internet needed.</p>
+            <p class="offline-download-status" aria-live="polite"></p>
         </div>
         <div class="warning-box" data-i18n-key="trusted_device_warning">
             ⚠️ Security Tip: Only create or open this vault on a device you trust. For extra privacy, use your browser's
@@ -3594,6 +3660,10 @@
                 });
 
                 document.title = this.t('app_title', document.title);
+
+                if (window.offlineBundleManager?.refresh) {
+                    window.offlineBundleManager.refresh();
+                }
             }
 
             t(key, fallback) {
@@ -8399,6 +8469,137 @@
             };
         }
         
+        const offlineBundleManager = (() => {
+            const ZIP_FILENAME = 'personal-health-vault-offline.zip';
+            const ASSETS = [
+                { path: 'index.html', type: 'text' },
+                { path: 'translations.json', type: 'text' },
+                { path: 'pako.min.js', type: 'text' },
+                { path: 'jszip.min.js', type: 'text' }
+            ];
+
+            const getButtons = () => Array.from(document.querySelectorAll('.offline-download-trigger'));
+            const getStatusElements = () => Array.from(document.querySelectorAll('.offline-download-status'));
+            let currentStatus = { key: null, fallback: '', isError: false };
+
+            const translate = (key, fallback) => {
+                if (window.localization?.t) {
+                    return window.localization.t(key, fallback);
+                }
+                return fallback;
+            };
+
+            const applyStatus = () => {
+                const { key, fallback, isError } = currentStatus;
+                const message = key ? translate(key, fallback) : '';
+                getStatusElements().forEach(element => {
+                    element.textContent = message;
+                    element.style.display = message ? 'block' : 'none';
+                    element.classList.toggle('error', Boolean(isError));
+                });
+            };
+
+            const updateStatus = (key, fallback, isError = false) => {
+                currentStatus = { key, fallback, isError };
+                applyStatus();
+            };
+
+            const setBusyState = (isBusy) => {
+                getButtons().forEach(button => {
+                    button.disabled = isBusy;
+                });
+            };
+
+            const fetchAsset = async (asset) => {
+                const response = await fetch(asset.path, { cache: 'no-store' });
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch ${asset.path}: ${response.status}`);
+                }
+
+                if (asset.type === 'binary') {
+                    return new Uint8Array(await response.arrayBuffer());
+                }
+
+                return await response.text();
+            };
+
+            const buildZip = async () => {
+                if (!window.JSZip) {
+                    throw new Error('JSZip is unavailable');
+                }
+
+                const zip = new JSZip();
+
+                await Promise.all(ASSETS.map(async asset => {
+                    const content = await fetchAsset(asset);
+                    zip.file(asset.path, content);
+                }));
+
+                return await zip.generateAsync({ type: 'blob' });
+            };
+
+            const triggerDownload = (blob) => {
+                const url = URL.createObjectURL(blob);
+                const anchor = document.createElement('a');
+                anchor.href = url;
+                anchor.download = ZIP_FILENAME;
+                document.body.appendChild(anchor);
+                anchor.click();
+                anchor.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 2000);
+            };
+
+            const handleDownload = async (event) => {
+                event?.preventDefault?.();
+
+                if (handleDownload.isRunning) {
+                    return;
+                }
+
+                if (!window.JSZip) {
+                    updateStatus('offline_download_error', "We couldn't prepare the offline bundle. Please try again.", true);
+                    return;
+                }
+
+                try {
+                    handleDownload.isRunning = true;
+                    setBusyState(true);
+                    updateStatus('offline_download_preparing', 'Preparing your offline bundle…');
+
+                    const archive = await buildZip();
+                    triggerDownload(archive);
+
+                    updateStatus('offline_download_ready', 'Offline bundle ready! Check your downloads folder.');
+                } catch (error) {
+                    console.error('[Offline Bundle] Failed to create archive', error);
+                    updateStatus('offline_download_error', "We couldn't prepare the offline bundle. Please try again.", true);
+                } finally {
+                    handleDownload.isRunning = false;
+                    setBusyState(false);
+                }
+            };
+
+            const attachListeners = () => {
+                getButtons().forEach(button => {
+                    button.addEventListener('click', handleDownload);
+                });
+            };
+
+            const init = () => {
+                attachListeners();
+                applyStatus();
+            };
+
+            const refresh = () => {
+                applyStatus();
+            };
+
+            return { init, updateStatus, refresh };
+        })();
+        if (typeof window !== 'undefined') {
+            window.offlineBundleManager = offlineBundleManager;
+        }
+
         // Initialize localization and app
         const localization = new LocalizationManager();
         window.localization = localization;
@@ -8410,6 +8611,8 @@
             .finally(() => {
                 window.app = new HealthVaultApp();
             });
+
+        offlineBundleManager.init();
     </script>
 </body>
 </html>
