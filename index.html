@@ -1435,10 +1435,53 @@
             .chart-controls {
                 flex-direction: column;
                 width: 100%;
+                align-items: stretch;
+                gap: 12px;
             }
 
-            .language-selector,
+            .language-selector {
+                width: 100%;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                min-width: 0;
+            }
+
+            .language-selector label {
+                margin: 0;
+                font-size: 0.8rem;
+            }
+
+            .language-selector select {
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+
             .action-buttons {
+                width: 100%;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+
+            .action-buttons .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .chart-header-status {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+
+            .chart-header-status .security-status {
+                justify-content: center;
+                width: 100%;
+            }
+
+            .chart-header-status #saveStatus {
                 width: 100%;
             }
         }
@@ -3109,12 +3152,12 @@
 
     <!-- Accessibility Controls -->
     <div class="a11y-controls" id="a11yControls" role="region" aria-label="Accessibility settings">
-        <button class="a11y-toggle" id="a11yToggle" aria-expanded="false" aria-controls="a11yPanel">
-            <img src="https://img.icons8.com/?size=1200&id=1DPWUoZCriuY&format=png" alt="">
+        <button class="a11y-toggle" id="a11yToggle" type="button" aria-expanded="false" aria-controls="a11yPanel">
+            <img src="https://img.icons8.com/?size=1200&id=1DPWUoZCriuY&format=png" alt="" aria-hidden="true">
             <span class="sr-only">Accessibility Settings</span>
         </button>
 
-        <div class="a11y-panel" id="a11yPanel" hidden>
+        <div class="a11y-panel" id="a11yPanel" hidden aria-hidden="true" tabindex="-1">
             <h3 class="a11y-panel-title">Accessibility Settings</h3>
 
             <!-- Font Size Controls -->
@@ -4673,17 +4716,17 @@
                 const toggle = document.getElementById('a11yToggle');
                 const panel = document.getElementById('a11yPanel');
 
-                if (toggle && panel) {
-                    toggle.addEventListener('click', () => {
-                        const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
-                        const nextState = !isExpanded;
-                        toggle.setAttribute('aria-expanded', String(nextState));
-                        panel.hidden = !nextState;
+                if (panel) {
+                    panel.setAttribute('aria-hidden', panel.hasAttribute('hidden') ? 'true' : 'false');
+                }
 
-                        if (!nextState) {
-                            panel.setAttribute('aria-hidden', 'true');
+                if (toggle && panel) {
+                    toggle.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        if (this.isPanelOpen()) {
+                            this.closePanel();
                         } else {
-                            panel.removeAttribute('aria-hidden');
+                            this.openPanel();
                         }
                     });
                 }
@@ -4751,12 +4794,55 @@
                 document.addEventListener('keydown', this.handleDocumentKeydown);
             }
 
+            isPanelOpen() {
+                const panel = document.getElementById('a11yPanel');
+                return Boolean(panel && !panel.hidden && !panel.hasAttribute('hidden'));
+            }
+
+            openPanel() {
+                const toggle = document.getElementById('a11yToggle');
+                const panel = document.getElementById('a11yPanel');
+
+                if (!toggle || !panel) {
+                    return;
+                }
+
+                toggle.setAttribute('aria-expanded', 'true');
+                panel.hidden = false;
+                panel.removeAttribute('hidden');
+                panel.setAttribute('aria-hidden', 'false');
+
+                if (typeof panel.focus === 'function') {
+                    try {
+                        panel.focus({ preventScroll: true });
+                    } catch (error) {
+                        panel.focus();
+                    }
+                }
+            }
+
+            closePanel(options = {}) {
+                const toggle = document.getElementById('a11yToggle');
+                const panel = document.getElementById('a11yPanel');
+
+                if (!toggle || !panel) {
+                    return;
+                }
+
+                panel.hidden = true;
+                panel.setAttribute('hidden', '');
+                panel.setAttribute('aria-hidden', 'true');
+                toggle.setAttribute('aria-expanded', 'false');
+
+                if (options.focusToggle && typeof toggle.focus === 'function') {
+                    toggle.focus();
+                }
+            }
+
             handleDocumentClick(event) {
                 const controls = document.getElementById('a11yControls');
-                const panel = document.getElementById('a11yPanel');
-                const toggle = document.getElementById('a11yToggle');
 
-                if (!controls || !panel || !toggle || panel.hidden) {
+                if (!controls || !this.isPanelOpen()) {
                     return;
                 }
 
@@ -4764,25 +4850,16 @@
                     return;
                 }
 
-                panel.hidden = true;
-                toggle.setAttribute('aria-expanded', 'false');
-                panel.setAttribute('aria-hidden', 'true');
+                this.closePanel();
             }
 
             handleDocumentKeydown(event) {
-                if (event.key !== 'Escape') {
+                if (event.key !== 'Escape' || !this.isPanelOpen()) {
                     return;
                 }
 
-                const panel = document.getElementById('a11yPanel');
-                const toggle = document.getElementById('a11yToggle');
-
-                if (panel && toggle && !panel.hidden) {
-                    panel.hidden = true;
-                    panel.setAttribute('aria-hidden', 'true');
-                    toggle.setAttribute('aria-expanded', 'false');
-                    toggle.focus();
-                }
+                event.preventDefault();
+                this.closePanel({ focusToggle: true });
             }
 
             changeFontSize(delta) {
@@ -7809,26 +7886,25 @@
                 if (has2FA) {
                     requirementsDisplay.innerHTML = `
                         <div class="info-box">
-                            ✅ <strong>2FA Enabled</strong> - Standard password requirements:
+                            ✅ <strong>2FA Enabled</strong> - Keep your password strong:
                             <ul>
                                 <li>At least 12 characters</li>
-                                <li>Mix of uppercase, lowercase, and numbers</li>
+                                <li>Mix uppercase, lowercase, and numbers</li>
+                                <li>Avoid common words or sequences</li>
                             </ul>
+                            <p style="margin-top: 10px;">Special characters make it even stronger.</p>
                         </div>
                     `;
                 } else {
                     requirementsDisplay.innerHTML = `
                         <div class="warning-box">
-                            ⚠️ <strong>No 2FA</strong> - Strong password required:
+                            ⚠️ <strong>No 2FA</strong> - Protect your vault with a strong password:
                             <ul>
-                                <li>At least 16 characters</li>
-                                <li>Uppercase, lowercase, numbers, and special characters</li>
-                                <li>Must not be a common password</li>
-                                <li>High entropy (random characters preferred)</li>
+                                <li>At least 12 characters</li>
+                                <li>Use uppercase, lowercase, and numbers</li>
+                                <li>Avoid common or reused passwords</li>
                             </ul>
-                            <p style="margin-top: 10px;">
-                                <strong>Recommendation:</strong> Enable 2FA for easier password requirements
-                            </p>
+                            <p style="margin-top: 10px;">Enable 2FA for another layer of security.</p>
                         </div>
                     `;
                 }
@@ -7946,21 +8022,19 @@
 
             validatePasswordRequirements(password, has2FA) {
                 const requirements = {
-                    minLength: has2FA ? 12 : 16,
+                    minLength: 12,
                     requireUpper: true,
                     requireLower: true,
                     requireNumber: true,
-                    requireSpecial: !has2FA,
-                    requireNotCommon: !has2FA,
-                    minEntropy: has2FA ? 50 : 60
+                    requireSpecial: false,
+                    requireNotCommon: true,
+                    minEntropy: has2FA ? 45 : 50
                 };
 
                 if ((password || '').length < requirements.minLength) {
                     return {
                         valid: false,
-                        message: has2FA
-                            ? `Password must be at least ${requirements.minLength} characters`
-                            : `Without 2FA, password must be at least ${requirements.minLength} characters for security`
+                        message: `Password must be at least ${requirements.minLength} characters long.`
                     };
                 }
 
@@ -7987,7 +8061,7 @@
                 if (requirements.requireNotCommon && this.isCommonPassword(password)) {
                     return {
                         valid: false,
-                        message: 'This password is too common. Please choose a unique password.'
+                        message: 'This password is too common. Please choose something more unique.'
                     };
                 }
 
@@ -7995,7 +8069,7 @@
                 if (entropy < requirements.minEntropy) {
                     return {
                         valid: false,
-                        message: 'Password entropy is too low. Use a more random combination of characters.'
+                        message: 'Password entropy is too low. Add more variety or extra characters.'
                     };
                 }
 
@@ -8008,27 +8082,27 @@
                 }
 
                 const checks = {
-                    length: password.length >= (has2FA ? 12 : 16),
+                    length: password.length >= 12,
                     upper: /[A-Z]/.test(password),
                     lower: /[a-z]/.test(password),
                     number: /[0-9]/.test(password),
                     special: /[!@#$%^&*(),.?":{}|<>\[\];'`~\\/+-=]/.test(password),
                     notCommon: !this.isCommonPassword(password),
-                    entropy: this.calculateEntropy(password) > (has2FA ? 50 : 60)
+                    entropy: this.calculateEntropy(password) > (has2FA ? 45 : 50)
                 };
 
-                const requiredChecks = has2FA
-                    ? ['length', 'upper', 'lower', 'number']
-                    : ['length', 'upper', 'lower', 'number', 'special', 'notCommon', 'entropy'];
+                const requiredChecks = ['length', 'upper', 'lower', 'number', 'notCommon', 'entropy'];
+                const optionalChecks = ['special'];
 
-                const passed = requiredChecks.filter(check => checks[check]).length;
-                const total = requiredChecks.length;
-                const score = (passed / total) * 100;
+                const passedRequired = requiredChecks.filter(check => checks[check]).length;
+                const passedOptional = optionalChecks.filter(check => checks[check]).length;
+                const totalChecks = requiredChecks.length + optionalChecks.length;
+                const score = ((passedRequired + passedOptional) / Math.max(totalChecks, 1)) * 100;
 
                 let level = 'weak';
-                if (passed === total) {
-                    level = 'strong';
-                } else if (passed > total / 2) {
+                if (passedRequired === requiredChecks.length) {
+                    level = passedOptional === optionalChecks.length ? 'strong' : 'medium';
+                } else if (passedRequired >= requiredChecks.length - 1) {
                     level = 'medium';
                 }
 
@@ -9861,7 +9935,10 @@
                 metaEl.textContent = `${this.formatFileSize(attachment.size)} • ${(attachment.type || 'application/octet-stream')}`;
                 downloadBtn.disabled = false;
 
-                const mimeType = (attachment.type || 'application/octet-stream').toLowerCase();
+                const rawMimeType = typeof attachment.type === 'string' && attachment.type
+                    ? attachment.type.toLowerCase()
+                    : 'application/octet-stream';
+                const mimeType = rawMimeType.split(';')[0].trim() || 'application/octet-stream';
 
                 try {
                     const blob = this.base64ToBlob(attachment.data, attachment.type, attachment.compressed);
@@ -9897,6 +9974,27 @@
                         audio.controls = true;
                         audio.src = url;
                         content.appendChild(audio);
+                        modal.classList.add('active');
+                        return;
+                    }
+
+                    if (
+                        mimeType === 'application/pdf'
+                        || mimeType === 'application/x-pdf'
+                        || mimeType.endsWith('/pdf')
+                        || (attachment.name || '').toLowerCase().endsWith('.pdf')
+                    ) {
+                        const url = URL.createObjectURL(blob);
+                        this.activePreviewObjectUrl = url;
+                        const frame = document.createElement('iframe');
+                        frame.src = url;
+                        frame.title = `${attachment.name || 'Attachment'} preview`;
+                        frame.style.width = '100%';
+                        frame.style.height = '60vh';
+                        frame.style.border = 'none';
+                        frame.setAttribute('loading', 'lazy');
+                        frame.setAttribute('aria-label', `${attachment.name || 'Attachment'} preview`);
+                        content.appendChild(frame);
                         modal.classList.add('active');
                         return;
                     }
