@@ -1080,6 +1080,270 @@
             opacity: 0.9;
         }
 
+        .vault-manager-screen {
+            position: fixed;
+            inset: 0;
+            padding: clamp(32px, 6vw, 72px) clamp(16px, 6vw, 80px);
+            overflow-y: auto;
+            display: none;
+            z-index: 200;
+        }
+
+        .vault-manager-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            border-radius: 24px;
+            padding: clamp(24px, 4vw, 48px);
+            color: #e2e8f0;
+            box-shadow: 0 25px 80px rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(14px);
+        }
+
+        .vault-manager-header {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        @media (min-width: 768px) {
+            .vault-manager-header {
+                flex-direction: row;
+                align-items: flex-end;
+                justify-content: space-between;
+            }
+        }
+
+        .vault-manager-title h2 {
+            margin: 0;
+            font-size: clamp(1.75rem, 3vw, 2.25rem);
+            color: #38bdf8;
+        }
+
+        .vault-manager-title p {
+            margin: 8px 0 0;
+            color: #cbd5f5;
+        }
+
+        .vault-manager-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .vault-manager-search {
+            flex: 1 1 220px;
+            min-width: 200px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            background: rgba(15, 23, 42, 0.6);
+            color: #e2e8f0;
+            transition: border 0.2s, box-shadow 0.2s;
+        }
+
+        .vault-manager-search:focus {
+            outline: none;
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+        }
+
+        .vault-manager-search::placeholder {
+            color: #94a3b8;
+        }
+
+        .vault-manager-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 600;
+            border-radius: 12px;
+            padding: 12px 18px;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, background 0.2s, color 0.2s;
+            text-decoration: none;
+        }
+
+        .vault-manager-button[data-variant="primary"] {
+            background: linear-gradient(135deg, #38bdf8, #6366f1);
+            color: #0f172a;
+            box-shadow: 0 12px 25px rgba(56, 189, 248, 0.25);
+        }
+
+        .vault-manager-button[data-variant="primary"]:hover {
+            transform: translateY(-1px);
+            background: linear-gradient(135deg, #0ea5e9, #4f46e5);
+            box-shadow: 0 18px 32px rgba(14, 165, 233, 0.28);
+        }
+
+        .vault-manager-button[data-variant="secondary"] {
+            background: rgba(148, 163, 184, 0.2);
+            color: #e2e8f0;
+        }
+
+        .vault-manager-button[data-variant="secondary"]:hover {
+            background: rgba(148, 163, 184, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .vault-manager-button:focus-visible {
+            outline: 3px solid #fbbf24;
+            outline-offset: 2px;
+        }
+
+        .vault-manager-status {
+            margin-bottom: 16px;
+            font-size: 0.95rem;
+            display: none;
+        }
+
+        .vault-manager-status.is-visible {
+            display: block;
+        }
+
+        .vault-manager-status.is-error {
+            color: #f87171;
+        }
+
+        .vault-manager-status:not(.is-error) {
+            color: #facc15;
+        }
+
+        .vault-manager-empty {
+            text-align: center;
+            padding: clamp(40px, 8vw, 72px) clamp(24px, 6vw, 48px);
+            border: 1px dashed rgba(148, 163, 184, 0.4);
+            border-radius: 16px;
+            color: #cbd5f5;
+        }
+
+        .vault-manager-empty h3 {
+            margin: 0 0 8px;
+            font-size: clamp(1.25rem, 2.5vw, 1.6rem);
+            color: #e0f2fe;
+        }
+
+        .vault-manager-empty p {
+            margin: 0 auto 24px;
+            max-width: 460px;
+        }
+
+        .vault-manager-empty-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .vault-card-grid {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        }
+
+        .vault-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 18px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            transition: border 0.2s, transform 0.2s, box-shadow 0.2s;
+        }
+
+        .vault-card:hover {
+            border-color: rgba(56, 189, 248, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.35);
+        }
+
+        .vault-card h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #e0f2fe;
+        }
+
+        .vault-identity-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            width: fit-content;
+        }
+
+        .vault-card-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .vault-card-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .vault-card-actions button {
+            flex: 1 1 auto;
+            min-width: 120px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: background 0.2s, color 0.2s, transform 0.2s;
+        }
+
+        .vault-card-actions button[data-variant="open"] {
+            background: #38bdf8;
+            color: #0f172a;
+        }
+
+        .vault-card-actions button[data-variant="open"]:hover {
+            background: #0ea5e9;
+            transform: translateY(-1px);
+        }
+
+        .vault-card-actions button[data-variant="rename"] {
+            background: rgba(148, 163, 184, 0.18);
+            color: #e2e8f0;
+        }
+
+        .vault-card-actions button[data-variant="rename"]:hover {
+            background: rgba(148, 163, 184, 0.28);
+            transform: translateY(-1px);
+        }
+
+        .vault-card-actions button[data-variant="remove"] {
+            background: rgba(248, 113, 113, 0.14);
+            color: #f87171;
+        }
+
+        .vault-card-actions button[data-variant="remove"]:hover {
+            background: rgba(248, 113, 113, 0.24);
+            transform: translateY(-1px);
+        }
+
+        .vault-card-actions button:focus-visible {
+            outline: 3px solid #fbbf24;
+            outline-offset: 2px;
+        }
+
         .chart-controls {
             display: flex;
             align-items: center;
@@ -2750,6 +3014,34 @@
         </div>
     </header>
 
+    <div id="vaultManagerScreen" class="vault-manager-screen" aria-hidden="true">
+        <div class="vault-manager-container" role="region" aria-labelledby="vaultManagerHeading">
+            <div class="vault-manager-header">
+                <div class="vault-manager-title">
+                    <h2 id="vaultManagerHeading">Vault Manager</h2>
+                    <p>Organize, label, and open your encrypted health vaults.</p>
+                </div>
+                <div class="vault-manager-actions">
+                    <input type="search" id="vaultManagerSearch" class="vault-manager-search" placeholder="Search vaults…" aria-label="Search vaults">
+                    <button type="button" id="vaultManagerCreateBtn" class="vault-manager-button" data-variant="primary">Create New Vault</button>
+                    <button type="button" id="vaultManagerImportBtn" class="vault-manager-button" data-variant="secondary">Add Existing Vault</button>
+                </div>
+            </div>
+            <div id="vaultManagerStatus" class="vault-manager-status" aria-live="polite"></div>
+            <div id="vaultManagerEmpty" class="vault-manager-empty" hidden>
+                <h3>Welcome to your secure hub</h3>
+                <p>Import an encrypted .ehv file you already have or create a brand-new vault for someone you care for.</p>
+                <div class="vault-manager-empty-actions">
+                    <button type="button" id="vaultManagerEmptyCreate" class="vault-manager-button" data-variant="primary">Create a Vault</button>
+                    <button type="button" id="vaultManagerEmptyImport" class="vault-manager-button" data-variant="secondary">Import .ehv File</button>
+                </div>
+            </div>
+            <div id="vaultManagerList" class="vault-card-grid" aria-live="polite" aria-label="Saved vaults"></div>
+        </div>
+    </div>
+
+    <input type="file" id="vaultManagerFileInput" accept=".ehv" style="display: none;">
+
     <!-- Accessibility Controls -->
     <div class="a11y-controls" id="a11yControls" role="region" aria-label="Accessibility settings">
         <button class="a11y-toggle" id="a11yToggle" aria-expanded="false" aria-controls="a11yPanel">
@@ -4097,6 +4389,7 @@
         const APP_VERSION = '2024.04.07.1200';
         const APP_LAST_UPDATED = '2024-04-07T12:00:00Z';
         const DEFAULT_SCHEMA_VERSION = '1.0.0';
+        const VAULT_REGISTRY_STORAGE_KEY = 'healthVault.registry.v1';
 
         class FocusTrap {
             constructor(element) {
@@ -5382,6 +5675,7 @@
                         document.getElementById('mainContent').style.display = 'none';
                         document.getElementById('navTabs').style.display = 'none';
                         unlockScreen.style.display = 'flex';
+                        window.vaultManager?.hide();
 
                         if (this.requires2FA) {
                             document.getElementById('totpField').style.display = 'block';
@@ -5404,6 +5698,7 @@
                     document.getElementById('mainContent').style.display = 'none';
                     document.getElementById('unlockScreen').style.display = 'none';
                     document.getElementById('navTabs').style.display = 'none';
+                    window.vaultManager?.show();
                     this.emergencyAccessConfig = null;
                     this.temporaryAccess = null;
                     this.pendingTemporaryAccessRemoval = false;
@@ -5536,13 +5831,8 @@
                 this.setupEventListeners();
                 this.updateSaveStatus();
 
-                // Clear any cached data while preserving localization preference
-                let preferredLanguage = null;
-                try {
-                    preferredLanguage = localStorage.getItem('preferredLanguage');
-                } catch (error) {
-                    console.warn('Unable to read preferred language from localStorage', error);
-                }
+                // Clear any cached data while preserving localization preference and vault registry
+                const preservedValues = this.getLocalStoragePreservationMap();
 
                 try {
                     localStorage.clear();
@@ -5550,13 +5840,7 @@
                     console.warn('Unable to clear localStorage', error);
                 }
 
-                if (preferredLanguage) {
-                    try {
-                        localStorage.setItem('preferredLanguage', preferredLanguage);
-                    } catch (error) {
-                        console.warn('Unable to restore preferred language', error);
-                    }
-                }
+                this.restorePreservedLocalStorage(preservedValues);
 
                 try {
                     sessionStorage.clear();
@@ -5825,6 +6109,12 @@
             }
 
             promptVaultImport() {
+                if (window.vaultManager instanceof VaultManager) {
+                    window.vaultManager.show();
+                    window.vaultManager.beginImportFlow();
+                    return;
+                }
+
                 const fileInput = document.getElementById('vaultFileInput');
                 if (!(fileInput instanceof HTMLInputElement)) {
                     return;
@@ -6002,9 +6292,10 @@
                         </p>
                     </div>
                 `;
-                
+
+                window.vaultManager?.hide();
                 document.getElementById('welcomeScreen').style.display = 'none';
-                
+
                 const modal = document.getElementById('passwordModal');
                 modal.classList.add('active');
                 document.getElementById('modalTitle').textContent = 'Create Your Health Vault';
@@ -10015,13 +10306,48 @@
                 });
             }
 
-            clearBrowserStorage() {
-                let preferredLanguage = null;
-                try {
-                    preferredLanguage = localStorage.getItem('preferredLanguage');
-                } catch (error) {
-                    console.warn('Unable to read preferred language from localStorage', error);
+            getLocalStoragePreservationMap() {
+                const preserved = new Map();
+                const keysToPreserve = ['preferredLanguage'];
+
+                if (typeof VAULT_REGISTRY_STORAGE_KEY === 'string' && VAULT_REGISTRY_STORAGE_KEY.length > 0) {
+                    keysToPreserve.push(VAULT_REGISTRY_STORAGE_KEY);
                 }
+
+                keysToPreserve.forEach((key) => {
+                    if (!key) {
+                        return;
+                    }
+
+                    try {
+                        const value = localStorage.getItem(key);
+                        if (value !== null) {
+                            preserved.set(key, value);
+                        }
+                    } catch (error) {
+                        console.warn(`Unable to read ${key} from localStorage`, error);
+                    }
+                });
+
+                return preserved;
+            }
+
+            restorePreservedLocalStorage(preservedValues) {
+                if (!(preservedValues instanceof Map) || preservedValues.size === 0) {
+                    return;
+                }
+
+                preservedValues.forEach((value, key) => {
+                    try {
+                        localStorage.setItem(key, value);
+                    } catch (error) {
+                        console.warn(`Unable to restore ${key} in localStorage`, error);
+                    }
+                });
+            }
+
+            clearBrowserStorage() {
+                const preservedValues = this.getLocalStoragePreservationMap();
 
                 try {
                     localStorage.clear();
@@ -10029,13 +10355,7 @@
                     console.warn('Unable to clear localStorage', error);
                 }
 
-                if (preferredLanguage) {
-                    try {
-                        localStorage.setItem('preferredLanguage', preferredLanguage);
-                    } catch (error) {
-                        console.warn('Unable to restore preferred language', error);
-                    }
-                }
+                this.restorePreservedLocalStorage(preservedValues);
 
                 try {
                     sessionStorage.clear();
@@ -10124,6 +10444,618 @@
             };
         }
         
+        class VaultManager {
+            constructor(app) {
+                this.app = app;
+                this.registry = this.loadRegistry();
+                this.ensureRegistryShape();
+
+                this.root = document.getElementById('vaultManagerScreen');
+                this.listElement = document.getElementById('vaultManagerList');
+                this.emptyElement = document.getElementById('vaultManagerEmpty');
+                this.statusElement = document.getElementById('vaultManagerStatus');
+                this.searchInput = document.getElementById('vaultManagerSearch');
+                this.fileInput = document.getElementById('vaultManagerFileInput');
+
+                this.pendingAction = null;
+                this.searchTerm = '';
+
+                this.attachEventListeners();
+                this.render();
+            }
+
+            attachEventListeners() {
+                if (this.searchInput) {
+                    this.searchInput.addEventListener('input', (event) => {
+                        const value = event?.target?.value ?? '';
+                        this.searchTerm = value.toString().toLowerCase();
+                        this.render();
+                    });
+                }
+
+                if (this.fileInput) {
+                    this.fileInput.addEventListener('change', (event) => {
+                        this.handleFileInputChange(event);
+                    });
+                }
+
+                const importButton = document.getElementById('vaultManagerImportBtn');
+                if (importButton) {
+                    importButton.addEventListener('click', () => this.beginImportFlow());
+                }
+
+                const createButton = document.getElementById('vaultManagerCreateBtn');
+                if (createButton) {
+                    createButton.addEventListener('click', () => this.beginCreateFlow());
+                }
+
+                const emptyCreateButton = document.getElementById('vaultManagerEmptyCreate');
+                if (emptyCreateButton) {
+                    emptyCreateButton.addEventListener('click', () => this.beginCreateFlow());
+                }
+
+                const emptyImportButton = document.getElementById('vaultManagerEmptyImport');
+                if (emptyImportButton) {
+                    emptyImportButton.addEventListener('click', () => this.beginImportFlow());
+                }
+            }
+
+            loadRegistry() {
+                if (typeof localStorage === 'undefined') {
+                    return { vaults: [], folders: [] };
+                }
+
+                try {
+                    const raw = localStorage.getItem(VAULT_REGISTRY_STORAGE_KEY);
+                    if (!raw) {
+                        return { vaults: [], folders: [] };
+                    }
+
+                    const parsed = JSON.parse(raw);
+                    const vaults = Array.isArray(parsed?.vaults) ? parsed.vaults : [];
+                    const folders = Array.isArray(parsed?.folders) ? parsed.folders : [];
+                    return { vaults, folders };
+                } catch (error) {
+                    console.warn('[VaultManager] Unable to load registry', error);
+                    return { vaults: [], folders: [] };
+                }
+            }
+
+            ensureRegistryShape() {
+                if (!this.registry || typeof this.registry !== 'object') {
+                    this.registry = { vaults: [], folders: [] };
+                }
+
+                if (!Array.isArray(this.registry.vaults)) {
+                    this.registry.vaults = [];
+                }
+
+                if (!Array.isArray(this.registry.folders)) {
+                    this.registry.folders = [];
+                }
+            }
+
+            saveRegistry() {
+                this.ensureRegistryShape();
+
+                if (typeof localStorage === 'undefined') {
+                    return;
+                }
+
+                try {
+                    localStorage.setItem(
+                        VAULT_REGISTRY_STORAGE_KEY,
+                        JSON.stringify({
+                            vaults: this.registry.vaults,
+                            folders: this.registry.folders
+                        })
+                    );
+                } catch (error) {
+                    console.warn('[VaultManager] Unable to save registry', error);
+                    this.updateStatus('We could not save your vault list in this browser.', true);
+                }
+            }
+
+            beginCreateFlow() {
+                this.hide();
+                window.requestAnimationFrame(() => {
+                    this.app?.startSetup?.();
+                });
+            }
+
+            beginImportFlow() {
+                this.pendingAction = { type: 'import' };
+                this.updateStatus('Choose an encrypted .ehv file to add to your dashboard.');
+
+                if (this.fileInput) {
+                    this.fileInput.value = '';
+                    this.fileInput.click();
+                }
+            }
+
+            openVault(vaultId) {
+                const vault = this.registry.vaults.find((entry) => entry.id === vaultId);
+                this.pendingAction = { type: 'open', vaultId };
+
+                if (vault?.fileName) {
+                    this.updateStatus(`Select the file "${vault.fileName}" to open this vault.`);
+                } else {
+                    this.updateStatus('Choose the encrypted .ehv file for this vault.');
+                }
+
+                if (this.fileInput) {
+                    this.fileInput.value = '';
+                    this.fileInput.click();
+                }
+            }
+
+            async handleFileInputChange(event) {
+                const input = event?.target;
+                if (!(input instanceof HTMLInputElement)) {
+                    return;
+                }
+
+                const [file] = input.files || [];
+                input.value = '';
+
+                if (!file) {
+                    return;
+                }
+
+                const action = this.pendingAction;
+                this.pendingAction = null;
+
+                if (!action) {
+                    return;
+                }
+
+                if (action.type === 'import') {
+                    await this.registerVaultFromFile(file);
+                } else if (action.type === 'open' && action.vaultId) {
+                    await this.openVaultWithFile(action.vaultId, file);
+                }
+            }
+
+            async registerVaultFromFile(file) {
+                try {
+                    const fileContent = await file.text();
+                    const metadata = this.parseVaultMetadata(fileContent);
+                    const nowIso = new Date().toISOString();
+                    const fallbackName = this.deriveNameFromFile(file.name);
+                    const existingIndex = this.registry.vaults.findIndex((entry) => (
+                        entry.vaultIdentity && metadata.vaultIdentity
+                            ? entry.vaultIdentity === metadata.vaultIdentity
+                            : entry.fileName === file.name
+                    ));
+
+                    const baseEntry = {
+                        id: this.generateId(),
+                        vaultIdentity: metadata.vaultIdentity || fallbackName,
+                        displayName: metadata.vaultIdentity || fallbackName || 'Encrypted Vault',
+                        fileName: file.name,
+                        lastOpened: null,
+                        lastModified: metadata.savedDate || this.toISOStringOrNull(file.lastModified),
+                        savedDate: metadata.savedDate || null,
+                        lastKnownSize: typeof file.size === 'number' ? file.size : null,
+                        requires2FA: Boolean(metadata.requires2FA),
+                        schemaVersion: metadata.schemaVersion || null,
+                        appVersion: metadata.appVersion || null,
+                        folder: 'Uncategorized',
+                        favorite: false,
+                        notes: '',
+                        tags: [],
+                        addedAt: nowIso
+                    };
+
+                    if (existingIndex >= 0) {
+                        const previous = this.registry.vaults[existingIndex] || {};
+                        const updatedEntry = {
+                            ...previous,
+                            ...baseEntry,
+                            id: previous.id || baseEntry.id,
+                            displayName: previous.displayName || baseEntry.displayName,
+                            folder: previous.folder || baseEntry.folder,
+                            favorite: Boolean(previous.favorite),
+                            notes: previous.notes || '',
+                            tags: Array.isArray(previous.tags) ? previous.tags : [],
+                            addedAt: previous.addedAt || nowIso,
+                            lastOpened: previous.lastOpened || null
+                        };
+
+                        this.registry.vaults[existingIndex] = updatedEntry;
+                        this.updateStatus('Vault details updated from the selected file.');
+                    } else {
+                        this.registry.vaults.push(baseEntry);
+                        this.updateStatus('Vault added to your dashboard.');
+                    }
+
+                    this.saveRegistry();
+                    this.render();
+                } catch (error) {
+                    console.error('[VaultManager] Failed to add vault', error);
+                    const message = error instanceof Error ? error.message : 'Unable to add that vault file.';
+                    this.updateStatus(message, true);
+                }
+            }
+
+            async openVaultWithFile(vaultId, file) {
+                const entry = this.registry.vaults.find((item) => item.id === vaultId);
+
+                if (!entry) {
+                    this.updateStatus('That vault could not be found.', true);
+                    return;
+                }
+
+                try {
+                    const fileContent = await file.text();
+                    const metadata = this.parseVaultMetadata(fileContent);
+
+                    await this.app?.importVaultFromVaultFile?.(file, fileContent);
+
+                    const nowIso = new Date().toISOString();
+                    entry.lastOpened = nowIso;
+                    entry.fileName = file.name || entry.fileName;
+                    entry.lastKnownSize = typeof file.size === 'number' ? file.size : entry.lastKnownSize || null;
+                    entry.lastModified = metadata.savedDate || this.toISOStringOrNull(file.lastModified) || entry.lastModified || null;
+                    entry.savedDate = metadata.savedDate || entry.savedDate || null;
+                    entry.requires2FA = Boolean(metadata.requires2FA);
+                    entry.schemaVersion = metadata.schemaVersion || entry.schemaVersion || null;
+                    entry.appVersion = metadata.appVersion || entry.appVersion || null;
+
+                    if (metadata.vaultIdentity && !entry.vaultIdentity) {
+                        entry.vaultIdentity = metadata.vaultIdentity;
+                    }
+
+                    if (!entry.displayName || entry.displayName === entry.vaultIdentity) {
+                        entry.displayName = metadata.vaultIdentity || entry.displayName || this.deriveNameFromFile(file.name);
+                    }
+
+                    this.saveRegistry();
+                    this.render();
+                    this.hide();
+                } catch (error) {
+                    console.error('[VaultManager] Failed to open vault', error);
+                    const message = error instanceof Error ? error.message : 'Unable to open that vault file.';
+                    this.updateStatus(message, true);
+                }
+            }
+
+            renameVault(vaultId) {
+                const entry = this.registry.vaults.find((item) => item.id === vaultId);
+                if (!entry) {
+                    return;
+                }
+
+                const currentName = entry.displayName || entry.vaultIdentity || 'Encrypted Vault';
+                const response = window.prompt('Name this vault', currentName);
+
+                if (typeof response !== 'string') {
+                    return;
+                }
+
+                const trimmed = response.trim();
+                if (!trimmed) {
+                    return;
+                }
+
+                entry.displayName = trimmed;
+                this.saveRegistry();
+                this.render();
+                this.updateStatus('Vault name updated.');
+            }
+
+            removeVault(vaultId) {
+                const index = this.registry.vaults.findIndex((item) => item.id === vaultId);
+                if (index === -1) {
+                    return;
+                }
+
+                const entry = this.registry.vaults[index];
+                const confirmation = window.confirm('Remove this vault from your dashboard? The .ehv file will not be deleted.');
+
+                if (!confirmation) {
+                    return;
+                }
+
+                this.registry.vaults.splice(index, 1);
+                this.saveRegistry();
+                this.render();
+
+                const name = entry?.displayName || entry?.vaultIdentity || 'Vault';
+                this.updateStatus(`${name} removed from the dashboard.`);
+            }
+
+            parseVaultMetadata(fileContent) {
+                if (typeof DOMParser === 'undefined') {
+                    throw new Error('This browser cannot read vault files.');
+                }
+
+                if (typeof fileContent !== 'string' || fileContent.trim() === '') {
+                    throw new Error('The selected file does not contain vault data.');
+                }
+
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(fileContent, 'text/html');
+
+                if (doc.querySelector('parsererror')) {
+                    throw new Error('The selected file is not a valid vault document.');
+                }
+
+                const embedded = doc.getElementById('embedded-vault-data');
+                const raw = embedded?.textContent?.trim();
+
+                if (!raw) {
+                    throw new Error('No encrypted vault payload was found in the selected file.');
+                }
+
+                let payload;
+                try {
+                    payload = JSON.parse(raw);
+                } catch (error) {
+                    throw new Error('The vault metadata could not be parsed.');
+                }
+
+                if (payload?.compressed && payload?.data) {
+                    const compression = this.app?.getCompressionLibrary?.();
+                    if (compression?.inflate) {
+                        try {
+                            const binary = atob(payload.data);
+                            const bytes = new Uint8Array(binary.length);
+                            for (let i = 0; i < binary.length; i++) {
+                                bytes[i] = binary.charCodeAt(i);
+                            }
+                            const decompressed = compression.inflate(bytes, { to: 'string' });
+                            payload = JSON.parse(decompressed);
+                        } catch (error) {
+                            throw new Error('Failed to decompress the selected vault file.');
+                        }
+                    } else {
+                        throw new Error('Compression support is not available to read this vault.');
+                    }
+                }
+
+                if (!payload || typeof payload !== 'object') {
+                    throw new Error('The vault metadata could not be parsed.');
+                }
+
+                return {
+                    vaultIdentity: payload.vaultIdentity || null,
+                    savedDate: payload.savedDate || null,
+                    requires2FA: Boolean(payload.requires2FA),
+                    schemaVersion: payload.schemaVersion || payload.version || null,
+                    appVersion: payload.appVersion || null
+                };
+            }
+
+            deriveNameFromFile(fileName) {
+                if (typeof fileName !== 'string' || !fileName) {
+                    return 'Encrypted Vault';
+                }
+
+                return fileName.replace(/\.ehv$/i, '').trim() || 'Encrypted Vault';
+            }
+
+            generateId() {
+                if (window.crypto?.randomUUID) {
+                    return window.crypto.randomUUID();
+                }
+
+                return `vault-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+            }
+
+            toISOStringOrNull(value) {
+                if (typeof value !== 'number') {
+                    return null;
+                }
+
+                const date = new Date(value);
+                return Number.isNaN(date.getTime()) ? null : date.toISOString();
+            }
+
+            formatTimestamp(value, fallback = 'Never') {
+                if (!value) {
+                    return fallback;
+                }
+
+                const date = new Date(value);
+                if (Number.isNaN(date.getTime())) {
+                    return fallback;
+                }
+
+                return date.toLocaleString();
+            }
+
+            formatFileSize(bytes) {
+                if (typeof bytes !== 'number' || Number.isNaN(bytes) || bytes <= 0) {
+                    return '';
+                }
+
+                const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+                const exponent = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+                const value = bytes / (1024 ** exponent);
+                const formatted = exponent === 0 ? value.toFixed(0) : value.toFixed(1);
+                return `${formatted} ${units[exponent]}`;
+            }
+
+            parseTime(value) {
+                if (!value) {
+                    return 0;
+                }
+
+                const timestamp = Date.parse(value);
+                return Number.isNaN(timestamp) ? 0 : timestamp;
+            }
+
+            getFilteredVaults() {
+                this.ensureRegistryShape();
+                const vaults = [...this.registry.vaults];
+                const term = this.searchTerm.trim();
+
+                const filtered = term
+                    ? vaults.filter((vault) => {
+                        const haystacks = [
+                            vault.displayName,
+                            vault.vaultIdentity,
+                            vault.notes,
+                            ...(Array.isArray(vault.tags) ? vault.tags : [])
+                        ].filter(Boolean).map((value) => value.toString().toLowerCase());
+                        const searchTerm = term.toLowerCase();
+                        return haystacks.some((value) => value.includes(searchTerm));
+                    })
+                    : vaults;
+
+                filtered.sort((a, b) => {
+                    const aTime = this.parseTime(a.lastOpened);
+                    const bTime = this.parseTime(b.lastOpened);
+
+                    if (aTime !== bTime) {
+                        return bTime - aTime;
+                    }
+
+                    const aName = (a.displayName || a.vaultIdentity || '').toString().toLowerCase();
+                    const bName = (b.displayName || b.vaultIdentity || '').toString().toLowerCase();
+                    return aName.localeCompare(bName);
+                });
+
+                return filtered;
+            }
+
+            setEmptyState(isEmpty) {
+                if (this.emptyElement) {
+                    this.emptyElement.hidden = !isEmpty;
+                }
+
+                if (this.listElement) {
+                    this.listElement.style.display = isEmpty ? 'none' : 'grid';
+                }
+            }
+
+            render() {
+                if (!this.listElement) {
+                    return;
+                }
+
+                const vaults = this.getFilteredVaults();
+                this.listElement.innerHTML = '';
+
+                this.setEmptyState(vaults.length === 0);
+
+                vaults.forEach((vault) => {
+                    const card = document.createElement('article');
+                    card.className = 'vault-card';
+                    card.dataset.vaultId = vault.id;
+
+                    const title = document.createElement('h3');
+                    title.textContent = vault.displayName || vault.vaultIdentity || 'Encrypted Vault';
+                    card.appendChild(title);
+
+                    if (vault.vaultIdentity) {
+                        const identity = document.createElement('span');
+                        identity.className = 'vault-identity-pill';
+                        identity.textContent = `🔷 ${vault.vaultIdentity}`;
+                        card.appendChild(identity);
+                    }
+
+                    const meta = document.createElement('div');
+                    meta.className = 'vault-card-meta';
+                    meta.appendChild(this.buildMetaRow('Last opened', this.formatTimestamp(vault.lastOpened, 'Never')));
+                    meta.appendChild(this.buildMetaRow('Last saved', this.formatTimestamp(vault.lastModified || vault.savedDate, 'Unknown')));
+
+                    if (vault.fileName) {
+                        const sizeText = this.formatFileSize(vault.lastKnownSize);
+                        const fileRow = `${vault.fileName}${sizeText ? ` • ${sizeText}` : ''}`;
+                        meta.appendChild(this.buildMetaRow('File', fileRow));
+                    }
+
+                    meta.appendChild(this.buildMetaRow('Security', vault.requires2FA ? 'Password + authenticator code' : 'Password only'));
+                    card.appendChild(meta);
+
+                    const actions = document.createElement('div');
+                    actions.className = 'vault-card-actions';
+
+                    const openButton = document.createElement('button');
+                    openButton.type = 'button';
+                    openButton.dataset.variant = 'open';
+                    openButton.textContent = 'Open Vault';
+                    openButton.addEventListener('click', () => this.openVault(vault.id));
+                    actions.appendChild(openButton);
+
+                    const renameButton = document.createElement('button');
+                    renameButton.type = 'button';
+                    renameButton.dataset.variant = 'rename';
+                    renameButton.textContent = 'Rename';
+                    renameButton.addEventListener('click', () => this.renameVault(vault.id));
+                    actions.appendChild(renameButton);
+
+                    const removeButton = document.createElement('button');
+                    removeButton.type = 'button';
+                    removeButton.dataset.variant = 'remove';
+                    removeButton.textContent = 'Remove';
+                    removeButton.addEventListener('click', () => this.removeVault(vault.id));
+                    actions.appendChild(removeButton);
+
+                    card.appendChild(actions);
+                    this.listElement.appendChild(card);
+                });
+            }
+
+            buildMetaRow(label, value) {
+                const row = document.createElement('div');
+                row.textContent = `${label}: ${value}`;
+                return row;
+            }
+
+            updateStatus(message = '', isError = false) {
+                if (!this.statusElement) {
+                    return;
+                }
+
+                const text = typeof message === 'string' ? message.trim() : '';
+
+                if (text) {
+                    this.statusElement.textContent = text;
+                    this.statusElement.classList.add('is-visible');
+                    this.statusElement.classList.toggle('is-error', Boolean(isError));
+                } else {
+                    this.statusElement.textContent = '';
+                    this.statusElement.classList.remove('is-visible');
+                    this.statusElement.classList.remove('is-error');
+                }
+            }
+
+            show(message = '') {
+                if (this.root) {
+                    this.root.style.display = 'block';
+                    this.root.setAttribute('aria-hidden', 'false');
+                }
+
+                if (message) {
+                    this.updateStatus(message);
+                } else {
+                    this.updateStatus('');
+                }
+
+                this.render();
+            }
+
+            hide() {
+                if (this.root) {
+                    this.root.style.display = 'none';
+                    this.root.setAttribute('aria-hidden', 'true');
+                }
+
+                this.updateStatus('');
+            }
+
+            syncWithApp() {
+                if (this.app?.encryptedData) {
+                    this.hide();
+                } else {
+                    this.show();
+                }
+            }
+        }
+
         const offlineBundleManager = (() => {
             const ZIP_FILENAME = 'personal-health-vault-offline.zip';
             const resolveAssetSources = (asset) => {
@@ -10313,6 +11245,8 @@
             })
             .finally(() => {
                 window.app = new HealthVaultApp();
+                window.vaultManager = new VaultManager(window.app);
+                window.vaultManager.syncWithApp();
             });
 
         offlineBundleManager.init();
