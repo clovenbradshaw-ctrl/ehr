@@ -5066,6 +5066,38 @@
       "vi": "Paste the long recovery key you saved. It unlocks without your password or 2FA.",
       "zh-Hans": "Paste the long recovery key you saved. It unlocks without your password or 2FA."
     },
+    "unlock_show_recovery_option": {
+      "en": "Use recovery key instead",
+      "es": "Usar clave de recuperación",
+      "my": "ပြန်လည်ရယူသော ကီးကို အသုံးပြုပါ",
+      "ar": "Use recovery key instead",
+      "fil": "Use recovery key instead",
+      "fr": "Use recovery key instead",
+      "ht": "Use recovery key instead",
+      "kmr": "Use recovery key instead",
+      "ko": "Use recovery key instead",
+      "pt-BR": "Use recovery key instead",
+      "ru": "Use recovery key instead",
+      "so": "Use recovery key instead",
+      "vi": "Use recovery key instead",
+      "zh-Hans": "Use recovery key instead"
+    },
+    "unlock_hide_recovery_option": {
+      "en": "Hide recovery key option",
+      "es": "Ocultar opción de clave de recuperación",
+      "my": "ပြန်လည်ရယူသော ကီးရွေးချယ်မှုကို ရှောင်ပါ",
+      "ar": "Hide recovery key option",
+      "fil": "Hide recovery key option",
+      "fr": "Hide recovery key option",
+      "ht": "Hide recovery key option",
+      "kmr": "Hide recovery key option",
+      "ko": "Hide recovery key option",
+      "pt-BR": "Hide recovery key option",
+      "ru": "Hide recovery key option",
+      "so": "Hide recovery key option",
+      "vi": "Hide recovery key option",
+      "zh-Hans": "Hide recovery key option"
+    },
     "vault_notice": {
       "en": "This vault file (.ehv) will contain your encrypted data. Always download and save the updated .ehv file after making changes.",
       "es": "Este archivo de bóveda (.ehv) contendrá tus datos cifrados. Descarga y guarda siempre el archivo .ehv actualizado después de realizar cambios.",
