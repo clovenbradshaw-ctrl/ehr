@@ -3024,7 +3024,7 @@
     </style>
 </head>
 <body>
-    <a href="#main-content" class="skip-to-content">Skip to main content</a>
+    <a href="#main-content" class="skip-to-content" data-i18n-key="skip_to_main_content">Skip to main content</a>
     <div class="sr-only" role="status" aria-live="polite" aria-atomic="true" id="status-announcements"></div>
     <div class="sr-only" role="alert" aria-live="assertive" aria-atomic="true" id="alert-announcements"></div>
 
@@ -3047,19 +3047,18 @@
             </div>
             <div id="temporaryAccessHint" style="display: none; font-size: 9pt; color: #f97316; margin: 10px 0 0 0; text-align: left;">
             </div>
-            <button id="unlockBtn" onclick="app.attemptUnlock(event)">Unlock Vault</button>
-            <p style="margin-top: 15px; font-size: 9pt; color: #94a3b8;">
-                This vault file (.ehv) contains your encrypted data.
-                Save it after making changes.
+            <button id="unlockBtn" onclick="app.attemptUnlock(event)" data-i18n-key="unlock_button">Unlock Vault</button>
+            <p style="margin-top: 15px; font-size: 9pt; color: #94a3b8;" data-i18n-key="unlock_footer">
+                This vault file (.ehv) contains your encrypted data. Save it after making changes.
             </p>
         </div>
     </div>
 
     <div id="emergencyAccessBanner" class="emergency-access-banner" style="display: none;">
         <div class="emergency-banner-content">
-            <h2>🚨 EMERGENCY MEDICAL INFORMATION</h2>
+            <h2 data-i18n-key="emergency_banner_title">🚨 EMERGENCY MEDICAL INFORMATION</h2>
             <div class="emergency-data-display" id="emergencyDataDisplay"></div>
-            <button class="btn btn-primary" onclick="app?.proceedToUnlock()">
+            <button class="btn btn-primary" onclick="app?.proceedToUnlock()" data-i18n-key="emergency_banner_button">
                 Access Full Medical Record (Password Required)
             </button>
         </div>
@@ -3072,8 +3071,8 @@
                     <img src="https://storage.googleapis.com/intelechia-content/ehr%20vault.png" alt="EHR Vault logo" loading="lazy" decoding="async">
                 </div>
                 <div class="site-header__title">
-                    <h1>Personal Health Vault</h1>
-                    <p>Your encrypted medical record hub</p>
+                    <h1 data-i18n-key="header_title">Personal Health Vault</h1>
+                    <p data-i18n-key="header_subtitle">Your encrypted medical record hub</p>
                 </div>
             </div>
         </div>
@@ -3083,22 +3082,22 @@
         <div class="vault-manager-container" role="region" aria-labelledby="vaultManagerHeading">
             <div class="vault-manager-header">
                 <div class="vault-manager-title">
-                    <h2 id="vaultManagerHeading">Vault Manager</h2>
-                    <p>Organize, label, and open your encrypted health vaults.</p>
+                    <h2 id="vaultManagerHeading" data-i18n-key="vault_manager_title">Vault Manager</h2>
+                    <p data-i18n-key="vault_manager_description">Organize, label, and open your encrypted health vaults.</p>
                 </div>
                 <div class="vault-manager-actions">
-                    <input type="search" id="vaultManagerSearch" class="vault-manager-search" placeholder="Search vaults…" aria-label="Search vaults">
-                    <button type="button" id="vaultManagerCreateBtn" class="vault-manager-button" data-variant="primary">Create New Vault</button>
-                    <button type="button" id="vaultManagerImportBtn" class="vault-manager-button" data-variant="secondary">Add Existing Vault</button>
+                    <input type="search" id="vaultManagerSearch" class="vault-manager-search" placeholder="Search vaults…" aria-label="Search vaults" data-i18n-placeholder="vault_manager_search_placeholder">
+                    <button type="button" id="vaultManagerCreateBtn" class="vault-manager-button" data-variant="primary" data-i18n-key="vault_manager_create_button">Create New Vault</button>
+                    <button type="button" id="vaultManagerImportBtn" class="vault-manager-button" data-variant="secondary" data-i18n-key="vault_manager_import_button">Add Existing Vault</button>
                 </div>
             </div>
             <div id="vaultManagerStatus" class="vault-manager-status" aria-live="polite"></div>
             <div id="vaultManagerEmpty" class="vault-manager-empty" hidden>
-                <h3>Welcome to your secure hub</h3>
-                <p>Import an encrypted .ehv file you already have or create a brand-new vault for someone you care for.</p>
+                <h3 data-i18n-key="vault_manager_empty_title">Welcome to your secure hub</h3>
+                <p data-i18n-key="vault_manager_empty_body">Import an encrypted .ehv file you already have or create a brand-new vault for someone you care for.</p>
                 <div class="vault-manager-empty-actions">
-                    <button type="button" id="vaultManagerEmptyCreate" class="vault-manager-button" data-variant="primary">Create a Vault</button>
-                    <button type="button" id="vaultManagerEmptyImport" class="vault-manager-button" data-variant="secondary">Import .ehv File</button>
+                    <button type="button" id="vaultManagerEmptyCreate" class="vault-manager-button" data-variant="primary" data-i18n-key="vault_manager_empty_create">Create a Vault</button>
+                    <button type="button" id="vaultManagerEmptyImport" class="vault-manager-button" data-variant="secondary" data-i18n-key="vault_manager_empty_import">Import .ehv File</button>
                 </div>
             </div>
             <div id="vaultManagerList" class="vault-card-grid" aria-live="polite" aria-label="Saved vaults"></div>

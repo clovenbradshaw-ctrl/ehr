@@ -3236,6 +3236,42 @@
       "en": "🏥 Personal Health Vault",
       "es": "🏥 Bóveda de Salud Personal"
     },
+    "vault_manager_title": {
+      "en": "Vault Manager",
+      "es": "Administrador de bóvedas"
+    },
+    "vault_manager_description": {
+      "en": "Organize, label, and open your encrypted health vaults.",
+      "es": "Organiza, etiqueta y abre tus bóvedas de salud cifradas."
+    },
+    "vault_manager_search_placeholder": {
+      "en": "Search vaults…",
+      "es": "Buscar bóvedas…"
+    },
+    "vault_manager_create_button": {
+      "en": "Create New Vault",
+      "es": "Crear nueva bóveda"
+    },
+    "vault_manager_import_button": {
+      "en": "Add Existing Vault",
+      "es": "Agregar bóveda existente"
+    },
+    "vault_manager_empty_title": {
+      "en": "Welcome to your secure hub",
+      "es": "Bienvenido a tu centro seguro"
+    },
+    "vault_manager_empty_body": {
+      "en": "Import an encrypted .ehv file you already have or create a brand-new vault for someone you care for.",
+      "es": "Importa un archivo .ehv cifrado que ya tengas o crea una bóveda completamente nueva para alguien a quien cuidas."
+    },
+    "vault_manager_empty_create": {
+      "en": "Create a Vault",
+      "es": "Crear una bóveda"
+    },
+    "vault_manager_empty_import": {
+      "en": "Import .ehv File",
+      "es": "Importar archivo .ehv"
+    },
     "welcome_screen_intro_line1": {
       "en": "Welcome to your secure, self-contained medical record system.",
       "es": "Bienvenido a tu sistema de historial médico seguro e independiente."
@@ -3497,6 +3533,18 @@
       "so": "Default language",
       "vi": "Default language",
       "zh-Hans": "Default language"
+    },
+    "header_title": {
+      "en": "Personal Health Vault",
+      "es": "Bóveda de salud personal"
+    },
+    "header_subtitle": {
+      "en": "Your encrypted medical record hub",
+      "es": "Tu centro de historial médico cifrado"
+    },
+    "skip_to_main_content": {
+      "en": "Skip to main content",
+      "es": "Saltar al contenido principal"
     },
     "emergency_access_subtitle": {
       "en": "Select information visible to anyone who opens this file, even without the password. Useful for first responders or emergency situations.",
