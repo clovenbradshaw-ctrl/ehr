@@ -118,8 +118,8 @@
         }
 
         .a11y-toggle {
-            width: 56px;
-            height: 56px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             background: #3b82f6;
             color: white;
@@ -135,7 +135,13 @@
 
         .a11y-toggle:hover {
             background: #2563eb;
-            transform: scale(1.05);
+            transform: scale(1.15);
+        }
+
+        .a11y-toggle img {
+            width: 26px;
+            height: 26px;
+            display: block;
         }
 
         .a11y-toggle:focus {
@@ -2753,7 +2759,7 @@
     <!-- Accessibility Controls -->
     <div class="a11y-controls" id="a11yControls" role="region" aria-label="Accessibility settings">
         <button class="a11y-toggle" id="a11yToggle" aria-expanded="false" aria-controls="a11yPanel">
-            <span aria-hidden="true">♿</span>
+            <img src="https://img.icons8.com/?size=1200&id=1DPWUoZCriuY&format=png" alt="">
             <span class="sr-only">Accessibility Settings</span>
         </button>
 
