@@ -529,7 +529,31 @@
             font-weight: 600;
             word-break: break-word;
         }
-        
+
+        .unlock-container button.recovery-key-toggle {
+            width: 100%;
+            margin: 0 0 12px 0;
+            background: transparent;
+            color: #3b82f6;
+            border: none;
+            padding: 0;
+            font-size: 10pt;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: underline;
+            text-align: left;
+        }
+
+        .unlock-container button.recovery-key-toggle:hover {
+            background: transparent;
+            color: #2563eb;
+        }
+
+        .unlock-container button.recovery-key-toggle:focus {
+            outline: 2px solid #2563eb;
+            outline-offset: 2px;
+        }
+
         .unlock-container input {
             width: 100%;
             padding: 12px;
@@ -3084,6 +3108,15 @@
             <div id="totpField" style="display: none;">
                 <input type="text" id="totp-code" placeholder="6-digit code" maxlength="6" data-i18n-placeholder="unlock_totp_placeholder">
             </div>
+            <button type="button"
+                    id="toggleRecoveryKeyBtn"
+                    class="recovery-key-toggle"
+                    data-i18n-key="unlock_show_recovery_option"
+                    aria-controls="recoveryKeyField"
+                    aria-expanded="false"
+                    style="display: none;">
+                Use recovery key instead
+            </button>
             <div id="recoveryKeyField" style="display: none;">
                 <input type="text" id="recovery-key" placeholder="Enter recovery key" data-i18n-placeholder="unlock_recovery_placeholder" autocomplete="off" spellcheck="false">
                 <p class="recovery-key-note" data-i18n-key="unlock_recovery_hint">Paste the long recovery key you saved. It unlocks without your password or 2FA.</p>
@@ -5707,6 +5740,7 @@
                 this.requires2FA = false;
                 this.temporaryAccess = null;
                 this.recoveryAccess = null;
+                this.isRecoveryFieldManuallyShown = false;
                 this.pendingTemporaryAccessRemoval = false;
                 this.isLocked = false;
                 this.modules = {
@@ -6132,6 +6166,7 @@
                 document.getElementById('removePhotoBtn')?.addEventListener('click', () => this.removeProfilePhoto());
                 document.getElementById('generateRecoveryKeyBtn')?.addEventListener('click', () => this.handleGenerateRecoveryKey());
                 document.getElementById('disableRecoveryKeyBtn')?.addEventListener('click', () => this.handleDisableRecoveryKey());
+                document.getElementById('toggleRecoveryKeyBtn')?.addEventListener('click', (event) => this.toggleRecoveryKeyInput(event));
 
                 ['unlock-password', 'totp-code', 'recovery-key'].forEach((inputId) => {
                     const input = document.getElementById(inputId);
@@ -7714,17 +7749,73 @@
             updateRecoveryFieldVisibility() {
                 const field = document.getElementById('recoveryKeyField');
                 const input = document.getElementById('recovery-key');
+                const toggle = document.getElementById('toggleRecoveryKeyBtn');
 
                 if (!field) {
                     return;
                 }
 
-                if (this.recoveryAccess) {
+                if (!this.recoveryAccess) {
+                    field.style.display = 'none';
+
+                    if (toggle) {
+                        toggle.style.display = 'none';
+                        toggle.setAttribute('aria-expanded', 'false');
+                        toggle.setAttribute('data-i18n-key', 'unlock_show_recovery_option');
+                        toggle.textContent = window.localization?.t('unlock_show_recovery_option', 'Use recovery key instead');
+                    }
+
+                    if (input instanceof HTMLInputElement) {
+                        input.value = '';
+                    }
+
+                    this.isRecoveryFieldManuallyShown = false;
+                    return;
+                }
+
+                if (toggle) {
+                    toggle.style.display = 'block';
+                    toggle.setAttribute('aria-expanded', this.isRecoveryFieldManuallyShown ? 'true' : 'false');
+
+                    const key = this.isRecoveryFieldManuallyShown
+                        ? 'unlock_hide_recovery_option'
+                        : 'unlock_show_recovery_option';
+                    toggle.setAttribute('data-i18n-key', key);
+                    toggle.textContent = window.localization?.t(
+                        key,
+                        this.isRecoveryFieldManuallyShown
+                            ? 'Hide recovery key option'
+                            : 'Use recovery key instead'
+                    );
+                }
+
+                if (this.isRecoveryFieldManuallyShown) {
                     field.style.display = 'block';
                 } else {
                     field.style.display = 'none';
                     if (input instanceof HTMLInputElement) {
                         input.value = '';
+                    }
+                }
+            }
+
+            toggleRecoveryKeyInput(event) {
+                if (event?.preventDefault) {
+                    event.preventDefault();
+                }
+
+                if (!this.recoveryAccess) {
+                    alert('Recovery key is not enabled for this vault.');
+                    return;
+                }
+
+                this.isRecoveryFieldManuallyShown = !this.isRecoveryFieldManuallyShown;
+                this.updateRecoveryFieldVisibility();
+
+                if (this.isRecoveryFieldManuallyShown) {
+                    const input = document.getElementById('recovery-key');
+                    if (input instanceof HTMLInputElement) {
+                        input.focus();
                     }
                 }
             }
@@ -11235,6 +11326,8 @@
                 if (recoveryFieldInput instanceof HTMLInputElement) {
                     recoveryFieldInput.value = '';
                 }
+
+                this.isRecoveryFieldManuallyShown = false;
             }
 
             startLockCountdown() {
