@@ -10126,6 +10126,41 @@
         
         const offlineBundleManager = (() => {
             const ZIP_FILENAME = 'personal-health-vault-offline.zip';
+            const resolveAssetSources = (asset) => {
+                if (Array.isArray(asset.sources) && asset.sources.length) {
+                    return asset.sources;
+                }
+
+                if (asset.path === 'index.html') {
+                    const currentUrl = new URL(window.location.href);
+                    const sources = [];
+
+                    const ensureSource = (value) => {
+                        if (!value) return;
+                        const normalized = value.toString();
+                        if (!sources.includes(normalized)) {
+                            sources.push(normalized);
+                        }
+                    };
+
+                    ensureSource(currentUrl.href);
+
+                    if (!currentUrl.pathname.endsWith('/')) {
+                        const withoutQuery = new URL(currentUrl.href);
+                        withoutQuery.search = '';
+                        withoutQuery.hash = '';
+                        ensureSource(withoutQuery.href);
+                    }
+
+                    ensureSource(new URL('index.html', currentUrl).href);
+                    ensureSource(new URL('./', currentUrl).href);
+
+                    return sources;
+                }
+
+                return [asset.path];
+            };
+
             const ASSETS = [
                 { path: 'index.html', type: 'text' }
             ];
@@ -10163,16 +10198,32 @@
             };
 
             const fetchAsset = async (asset) => {
-                const response = await fetch(asset.path, { cache: 'no-store' });
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch ${asset.path}: ${response.status}`);
+                const sources = resolveAssetSources(asset);
+                let lastError = null;
+
+                for (const source of sources) {
+                    try {
+                        const response = await fetch(source, {
+                            cache: 'no-store',
+                            credentials: 'same-origin'
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`Failed to fetch ${asset.path} from ${source}: ${response.status}`);
+                        }
+
+                        if (asset.type === 'binary') {
+                            return new Uint8Array(await response.arrayBuffer());
+                        }
+
+                        return await response.text();
+                    } catch (error) {
+                        lastError = error;
+                        console.warn('[Offline Bundle] Failed source', source, error);
+                    }
                 }
 
-                if (asset.type === 'binary') {
-                    return new Uint8Array(await response.arrayBuffer());
-                }
-
-                return await response.text();
+                throw lastError ?? new Error(`Unable to fetch ${asset.path}`);
             };
 
             const buildZip = async () => {
