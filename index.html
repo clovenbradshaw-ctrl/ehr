@@ -1991,6 +1991,42 @@
         .strength-bar.medium {
             background: #f59e0b;
         }
+
+        .password-requirements {
+            margin-top: 10px;
+            font-size: 10pt;
+            color: #475569;
+        }
+
+        .password-feedback {
+            margin-top: 8px;
+            font-size: 10pt;
+            color: #475569;
+        }
+
+        .password-feedback.success {
+            color: #15803d;
+        }
+
+        .password-feedback.warning {
+            color: #dc2626;
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(59, 130, 246, 0.2);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.75s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
         
         .settings-grid {
             display: grid;
@@ -2718,7 +2754,7 @@
             </div>
             <div id="temporaryAccessHint" style="display: none; font-size: 9pt; color: #f97316; margin: 10px 0 0 0; text-align: left;">
             </div>
-            <button onclick="app.attemptUnlock()">Unlock Vault</button>
+            <button id="unlockBtn" onclick="app.attemptUnlock(event)">Unlock Vault</button>
             <p style="margin-top: 15px; font-size: 9pt; color: #94a3b8;">
                 This vault file (.ehv) contains your encrypted data.
                 Save it after making changes.
@@ -3017,6 +3053,8 @@
                         <div class="strength-bar" id="strength3"></div>
                         <div class="strength-bar" id="strength4"></div>
                     </div>
+                    <div id="passwordRequirements" class="password-requirements"></div>
+                    <div id="passwordFeedback" class="password-feedback" role="status" aria-live="polite"></div>
                 </div>
                 <div class="field" id="confirmPasswordField">
                     <label data-i18n-key="confirm_password_label">Confirm Password</label>
@@ -5267,6 +5305,13 @@
                 this.currentPreviewAttachmentId = null;
                 this.activePreviewObjectUrl = null;
 
+                this.commonPasswords = [
+                    'password', 'Password1', 'password123', '12345678', '123456789',
+                    'qwerty', 'abc123', 'letmein', 'welcome', 'iloveyou',
+                    'monkey', 'dragon', 'baseball', 'football', 'shadow'
+                ];
+                this.hasBenchmarkedKDF = false;
+                
                 this.lockTimeoutMs = 45 * 60 * 1000;
                 this.lockTimerInterval = null;
                 this.lockTimerExpiresAt = null;
@@ -5281,6 +5326,7 @@
                 // Initialize
                 this.init();
                 this.updateLockTimerDisplay();
+                this.scheduleKDFBenchmark();
             }
             
             generateVaultName() {
@@ -5565,6 +5611,61 @@
                 }
             }
 
+            scheduleKDFBenchmark() {
+                if (this.hasBenchmarkedKDF) {
+                    return;
+                }
+
+                this.hasBenchmarkedKDF = true;
+
+                setTimeout(() => {
+                    this.benchmarkKDF().catch((error) => {
+                        console.warn('KDF benchmark failed', error);
+                    });
+                }, 1000);
+            }
+
+            async benchmarkKDF() {
+                const webCrypto = window.crypto || globalThis.crypto;
+
+                if (!webCrypto?.subtle) {
+                    return;
+                }
+
+                const encoder = new TextEncoder();
+                const salt = webCrypto.getRandomValues(new Uint8Array(16));
+                const password = 'benchmark';
+
+                const keyMaterial = await webCrypto.subtle.importKey(
+                    'raw',
+                    encoder.encode(password),
+                    'PBKDF2',
+                    false,
+                    ['deriveKey']
+                );
+
+                const start = performance.now();
+                await webCrypto.subtle.deriveKey(
+                    {
+                        name: 'PBKDF2',
+                        salt,
+                        iterations: 600000,
+                        hash: 'SHA-256'
+                    },
+                    keyMaterial,
+                    { name: 'AES-GCM', length: 256 },
+                    false,
+                    ['encrypt']
+                );
+                const elapsed = performance.now() - start;
+
+                console.log(`KDF takes ${elapsed.toFixed(0)}ms on this device`);
+
+                if (elapsed > 5000) {
+                    alert('Password processing may take a few seconds on this device');
+                }
+            }
+
             applyVersionMetadata() {
                 const versionEl = document.getElementById('appVersion');
                 if (versionEl && this.version) {
@@ -5777,6 +5878,7 @@
                         this.togglePasswordUpdateMode(event.target.value);
                     });
                 });
+                this.initializePasswordGuidance();
                 const tempAccessToggle = document.getElementById('enableTemporaryAccess');
                 if (tempAccessToggle) {
                     tempAccessToggle.addEventListener('change', (event) => this.handleTemporaryAccessToggle(event));
@@ -6089,6 +6191,7 @@
                 }
 
                 window.localization?.applyTranslations();
+                this.initializePasswordGuidance();
             }
 
             applySetupModuleSelections() {
@@ -6148,7 +6251,7 @@
                 document.getElementById('vaultName').innerHTML = `🔷 ${this.vaultIdentity}`;
             }
             
-            async attemptUnlock() {
+            async attemptUnlock(event) {
                 const passwordField = document.getElementById('unlock-password');
                 const totpFieldInput = document.getElementById('totp-code');
 
@@ -6157,6 +6260,12 @@
 
                 let password = enteredPassword;
                 let usedTemporaryAccess = false;
+
+                const unlockBtn = (event?.target instanceof HTMLElement)
+                    ? event.target
+                    : document.getElementById('unlockBtn');
+                const originalLabel = unlockBtn?.textContent;
+                let spinner = null;
 
                 if (!password && totpCode) {
                     try {
@@ -6178,9 +6287,32 @@
                     return;
                 }
 
+                if (unlockBtn && !unlockBtn.dataset.busy) {
+                    unlockBtn.disabled = true;
+                    unlockBtn.dataset.busy = 'true';
+                    if (unlockBtn instanceof HTMLButtonElement) {
+                        unlockBtn.textContent = 'Decrypting...';
+                    }
+
+                    spinner = document.createElement('div');
+                    spinner.className = 'spinner';
+                    unlockBtn.parentElement?.appendChild(spinner);
+                }
+
                 try {
                     const decrypted = await this.crypto.decrypt(this.encryptedData, password);
-                    const decryptedPayload = { ...decrypted };
+                    const { codeHash, codeSignature, ...decryptedPayload } = decrypted || {};
+
+                    try {
+                        await this.verifyVaultIntegrity({ codeHash, codeSignature }, password);
+                    } catch (integrityError) {
+                        if (integrityError?.message === 'TAMPERING_DETECTED') {
+                            this.showTamperingAlert();
+                            this.clearUnlockFields();
+                            return;
+                        }
+                        throw integrityError;
+                    }
 
                     if (this.requires2FA && !usedTemporaryAccess && decryptedPayload.totpSecret) {
                         const isValidTOTP = await TOTP.verifyTOTP(decryptedPayload.totpSecret, totpCode);
@@ -6249,6 +6381,12 @@
                         );
                     }
                 } catch (error) {
+                    if (error?.message === 'TAMPERING_DETECTED') {
+                        this.showTamperingAlert();
+                        this.clearUnlockFields();
+                        return;
+                    }
+
                     if (usedTemporaryAccess) {
                         alert('Unable to unlock with the provided temporary access code. It may have expired or been entered incorrectly.');
                         return;
@@ -6258,6 +6396,18 @@
                         alert('Invalid password or authentication code.\n\nMake sure you are using the current 6-digit code from your authenticator app.');
                     } else {
                         alert('Incorrect password');
+                    }
+                } finally {
+                    if (spinner?.parentElement) {
+                        spinner.parentElement.removeChild(spinner);
+                    }
+
+                    if (unlockBtn) {
+                        unlockBtn.disabled = false;
+                        delete unlockBtn.dataset.busy;
+                        if (unlockBtn instanceof HTMLButtonElement && originalLabel !== undefined) {
+                            unlockBtn.textContent = originalLabel;
+                        }
                     }
                 }
             }
@@ -6519,12 +6669,16 @@
                 const modal = document.getElementById('passwordModal');
                 modal.classList.add('active');
                 document.getElementById('modalPassword').focus();
+                this.updatePasswordRequirementsDisplay();
+                this.handlePasswordInputChange();
             }
             
             closePasswordModal() {
                 document.getElementById('passwordModal').classList.remove('active');
                 document.getElementById('modalPassword').value = '';
                 document.getElementById('modalConfirmPassword').value = '';
+                this.resetStrengthBars();
+                this.clearPasswordFeedback();
             }
 
             showPasswordUpdateModal() {
@@ -6942,6 +7096,434 @@
                 }
             }
 
+            initializePasswordGuidance() {
+                const passwordInput = document.getElementById('modalPassword');
+                if (passwordInput && !passwordInput.dataset.guidanceBound) {
+                    passwordInput.addEventListener('input', () => this.handlePasswordInputChange());
+                    passwordInput.addEventListener('focus', () => this.handlePasswordInputChange());
+                    passwordInput.dataset.guidanceBound = 'true';
+                }
+
+                const enable2FA = document.getElementById('enable2FA');
+                if (enable2FA && !enable2FA.dataset.guidanceBound) {
+                    enable2FA.addEventListener('change', () => {
+                        this.updatePasswordRequirementsDisplay();
+                        this.handlePasswordInputChange();
+                    });
+                    enable2FA.dataset.guidanceBound = 'true';
+                }
+
+                this.updatePasswordRequirementsDisplay();
+                this.handlePasswordInputChange();
+            }
+
+            updatePasswordRequirementsDisplay() {
+                const requirementsDisplay = document.getElementById('passwordRequirements');
+                if (!requirementsDisplay) {
+                    return;
+                }
+
+                const has2FA = Boolean(document.getElementById('enable2FA')?.checked);
+
+                if (has2FA) {
+                    requirementsDisplay.innerHTML = `
+                        <div class="info-box">
+                            ✅ <strong>2FA Enabled</strong> - Standard password requirements:
+                            <ul>
+                                <li>At least 12 characters</li>
+                                <li>Mix of uppercase, lowercase, and numbers</li>
+                            </ul>
+                        </div>
+                    `;
+                } else {
+                    requirementsDisplay.innerHTML = `
+                        <div class="warning-box">
+                            ⚠️ <strong>No 2FA</strong> - Strong password required:
+                            <ul>
+                                <li>At least 16 characters</li>
+                                <li>Uppercase, lowercase, numbers, and special characters</li>
+                                <li>Must not be a common password</li>
+                                <li>High entropy (random characters preferred)</li>
+                            </ul>
+                            <p style="margin-top: 10px;">
+                                <strong>Recommendation:</strong> Enable 2FA for easier password requirements
+                            </p>
+                        </div>
+                    `;
+                }
+            }
+
+            handlePasswordInputChange() {
+                const passwordInput = document.getElementById('modalPassword');
+                if (!passwordInput) {
+                    return;
+                }
+
+                const password = passwordInput.value || '';
+                const has2FA = Boolean(document.getElementById('enable2FA')?.checked);
+
+                if (!password) {
+                    this.resetStrengthBars();
+                    this.clearPasswordFeedback();
+                    return;
+                }
+
+                const validation = this.validatePasswordRequirements(password, has2FA);
+                const strength = this.calculatePasswordStrength(password, has2FA);
+                this.updateStrengthBars(strength);
+
+                if (validation.valid) {
+                    this.showPasswordFeedback('✓ Password meets requirements', 'success');
+                } else {
+                    this.showPasswordFeedback(validation.message, 'warning');
+                }
+            }
+
+            updateStrengthBars(strength) {
+                const container = document.getElementById('passwordStrength');
+                const bars = [
+                    document.getElementById('strength1'),
+                    document.getElementById('strength2'),
+                    document.getElementById('strength3'),
+                    document.getElementById('strength4')
+                ];
+
+                if (!container || bars.some(bar => !bar)) {
+                    return;
+                }
+
+                if (!strength || Number.isNaN(strength.score)) {
+                    container.style.display = 'none';
+                    bars.forEach((bar) => {
+                        bar.classList.remove('active', 'weak', 'medium');
+                    });
+                    return;
+                }
+
+                container.style.display = 'flex';
+
+                const activeBars = Math.max(1, Math.min(4, Math.ceil((strength.score / 100) * 4)));
+
+                bars.forEach((bar, index) => {
+                    bar.classList.remove('active', 'weak', 'medium');
+                    if (index < activeBars) {
+                        bar.classList.add('active');
+                        if (strength.level === 'weak') {
+                            bar.classList.add('weak');
+                        } else if (strength.level === 'medium') {
+                            bar.classList.add('medium');
+                        }
+                    }
+                });
+            }
+
+            resetStrengthBars() {
+                const container = document.getElementById('passwordStrength');
+                const bars = [
+                    document.getElementById('strength1'),
+                    document.getElementById('strength2'),
+                    document.getElementById('strength3'),
+                    document.getElementById('strength4')
+                ];
+
+                if (container) {
+                    container.style.display = 'none';
+                }
+
+                bars.forEach((bar) => {
+                    if (bar) {
+                        bar.classList.remove('active', 'weak', 'medium');
+                    }
+                });
+            }
+
+            showPasswordFeedback(message, type = 'info') {
+                const feedback = document.getElementById('passwordFeedback');
+                if (!feedback) {
+                    return;
+                }
+
+                feedback.textContent = message;
+                feedback.classList.remove('success', 'warning');
+
+                if (type === 'success') {
+                    feedback.classList.add('success');
+                } else if (type === 'warning') {
+                    feedback.classList.add('warning');
+                }
+            }
+
+            clearPasswordFeedback() {
+                const feedback = document.getElementById('passwordFeedback');
+                if (!feedback) {
+                    return;
+                }
+
+                feedback.textContent = '';
+                feedback.classList.remove('success', 'warning');
+            }
+
+            validatePasswordRequirements(password, has2FA) {
+                const requirements = {
+                    minLength: has2FA ? 12 : 16,
+                    requireUpper: true,
+                    requireLower: true,
+                    requireNumber: true,
+                    requireSpecial: !has2FA,
+                    requireNotCommon: !has2FA,
+                    minEntropy: has2FA ? 50 : 60
+                };
+
+                if ((password || '').length < requirements.minLength) {
+                    return {
+                        valid: false,
+                        message: has2FA
+                            ? `Password must be at least ${requirements.minLength} characters`
+                            : `Without 2FA, password must be at least ${requirements.minLength} characters for security`
+                    };
+                }
+
+                const checks = {
+                    hasUpper: /[A-Z]/.test(password),
+                    hasLower: /[a-z]/.test(password),
+                    hasNumber: /[0-9]/.test(password),
+                    hasSpecial: /[!@#$%^&*(),.?":{}|<>\[\];'`~\\/+-=]/.test(password)
+                };
+
+                const missing = [];
+                if (requirements.requireUpper && !checks.hasUpper) missing.push('uppercase letter');
+                if (requirements.requireLower && !checks.hasLower) missing.push('lowercase letter');
+                if (requirements.requireNumber && !checks.hasNumber) missing.push('number');
+                if (requirements.requireSpecial && !checks.hasSpecial) missing.push('special character (!@#$%^&*)');
+
+                if (missing.length > 0) {
+                    return {
+                        valid: false,
+                        message: `Password must include: ${missing.join(', ')}`
+                    };
+                }
+
+                if (requirements.requireNotCommon && this.isCommonPassword(password)) {
+                    return {
+                        valid: false,
+                        message: 'This password is too common. Please choose a unique password.'
+                    };
+                }
+
+                const entropy = this.calculateEntropy(password);
+                if (entropy < requirements.minEntropy) {
+                    return {
+                        valid: false,
+                        message: 'Password entropy is too low. Use a more random combination of characters.'
+                    };
+                }
+
+                return { valid: true };
+            }
+
+            calculatePasswordStrength(password, has2FA) {
+                if (!password) {
+                    return { score: 0, level: 'weak' };
+                }
+
+                const checks = {
+                    length: password.length >= (has2FA ? 12 : 16),
+                    upper: /[A-Z]/.test(password),
+                    lower: /[a-z]/.test(password),
+                    number: /[0-9]/.test(password),
+                    special: /[!@#$%^&*(),.?":{}|<>\[\];'`~\\/+-=]/.test(password),
+                    notCommon: !this.isCommonPassword(password),
+                    entropy: this.calculateEntropy(password) > (has2FA ? 50 : 60)
+                };
+
+                const requiredChecks = has2FA
+                    ? ['length', 'upper', 'lower', 'number']
+                    : ['length', 'upper', 'lower', 'number', 'special', 'notCommon', 'entropy'];
+
+                const passed = requiredChecks.filter(check => checks[check]).length;
+                const total = requiredChecks.length;
+                const score = (passed / total) * 100;
+
+                let level = 'weak';
+                if (passed === total) {
+                    level = 'strong';
+                } else if (passed > total / 2) {
+                    level = 'medium';
+                }
+
+                return { score, level };
+            }
+
+            isCommonPassword(password) {
+                if (!password) {
+                    return false;
+                }
+
+                const normalized = password.toLowerCase();
+                return this.commonPasswords.some(common => normalized.includes(common.toLowerCase()));
+            }
+
+            calculateEntropy(password) {
+                if (!password) {
+                    return 0;
+                }
+
+                const uniqueChars = new Set(password);
+                const charsetSize = Math.max(uniqueChars.size, 1);
+                return password.length * Math.log2(charsetSize);
+            }
+
+            getApplicationHTML() {
+                const clone = document.documentElement.cloneNode(true);
+                const dataScript = clone.querySelector('#embedded-vault-data');
+                if (dataScript) {
+                    dataScript.textContent = '';
+                }
+
+                return '<!DOCTYPE html>\n' + clone.outerHTML;
+            }
+
+            extractCriticalCode(html) {
+                const scriptMatches = html.match(/<script[^>]*>([\s\S]*?)<\/script>/gi) || [];
+                return scriptMatches
+                    .filter(script => !/\ssrc\s*=/.test(script))
+                    .map(script => script.replace(/<\/?script[^>]*>/gi, ''))
+                    .join('\n');
+            }
+
+            async hashCode(htmlContent) {
+                const criticalSections = this.extractCriticalCode(htmlContent);
+                const encoder = new TextEncoder();
+                const webCrypto = window.crypto || globalThis.crypto;
+
+                if (!webCrypto?.subtle) {
+                    return '';
+                }
+
+                const hashBuffer = await webCrypto.subtle.digest(
+                    'SHA-256',
+                    encoder.encode(criticalSections || htmlContent)
+                );
+
+                return btoa(String.fromCharCode(...new Uint8Array(hashBuffer)));
+            }
+
+            async deriveHMACKey(password) {
+                const encoder = new TextEncoder();
+                const webCrypto = window.crypto || globalThis.crypto;
+
+                if (!webCrypto?.subtle) {
+                    console.warn('WebCrypto is unavailable for integrity verification.');
+                    return null;
+                }
+
+                const keyMaterial = await webCrypto.subtle.importKey(
+                    'raw',
+                    encoder.encode(`${password}:HMAC_KEY`),
+                    'PBKDF2',
+                    false,
+                    ['deriveKey']
+                );
+
+                return await webCrypto.subtle.deriveKey(
+                    {
+                        name: 'PBKDF2',
+                        salt: encoder.encode('HealthVault-HMAC-v1'),
+                        iterations: 600000,
+                        hash: 'SHA-256'
+                    },
+                    keyMaterial,
+                    { name: 'HMAC', hash: 'SHA-256', length: 256 },
+                    false,
+                    ['sign', 'verify']
+                );
+            }
+
+            async createHMAC(key, data) {
+                const encoder = new TextEncoder();
+                const webCrypto = window.crypto || globalThis.crypto;
+
+                if (!webCrypto?.subtle) {
+                    console.warn('WebCrypto is unavailable for integrity verification.');
+                    return '';
+                }
+
+                const signature = await webCrypto.subtle.sign(
+                    'HMAC',
+                    key,
+                    encoder.encode(data)
+                );
+
+                return btoa(String.fromCharCode(...new Uint8Array(signature)));
+            }
+
+            async verifyVaultIntegrity(integrity, password) {
+                if (!integrity) {
+                    return;
+                }
+
+                const { codeHash, codeSignature } = integrity;
+                if (!codeHash && !codeSignature) {
+                    return;
+                }
+
+                const htmlContent = this.getApplicationHTML();
+
+                if (codeHash) {
+                    const currentHash = await this.hashCode(htmlContent);
+                    if (currentHash !== codeHash) {
+                        throw new Error('TAMPERING_DETECTED');
+                    }
+                }
+
+                if (codeSignature) {
+                    const hmacKey = await this.deriveHMACKey(password);
+                    if (hmacKey) {
+                        const expectedSignature = await this.createHMAC(hmacKey, htmlContent);
+                        if (expectedSignature && expectedSignature !== codeSignature) {
+                            throw new Error('TAMPERING_DETECTED');
+                        }
+                    }
+                }
+            }
+
+            showTamperingAlert() {
+                if (document.getElementById('tamperingAlertModal')) {
+                    return;
+                }
+
+                const modal = document.createElement('div');
+                modal.className = 'modal active';
+                modal.id = 'tamperingAlertModal';
+                modal.innerHTML = `
+                    <div class="modal-content" style="border: 3px solid #dc2626; max-width: 480px;">
+                        <div class="modal-header">
+                            <h3 style="color: #dc2626;">⚠️ SECURITY WARNING</h3>
+                        </div>
+                        <div class="modal-body">
+                            <div class="danger-box">
+                                <strong>This vault file has been modified!</strong>
+                            </div>
+                            <p>The application code has been altered since this vault was last saved.</p>
+                            <p><strong>This could indicate:</strong></p>
+                            <ul>
+                                <li>Malicious tampering</li>
+                                <li>An attempt to steal your password</li>
+                                <li>A corrupted or damaged file</li>
+                            </ul>
+                            <p><strong>Do not proceed unless you understand why this happened.</strong></p>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-danger" onclick="window.location.reload()">
+                                Close Without Unlocking
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(modal);
+            }
+
             async handlePasswordSubmit() {
                 const password = document.getElementById('modalPassword').value;
                 const confirmPassword = document.getElementById('modalConfirmPassword').value;
@@ -6951,14 +7533,16 @@
                     alert('Please enter a password');
                     return;
                 }
-                
+
                 if (password !== confirmPassword) {
                     alert('Passwords do not match');
                     return;
                 }
-                
-                if (password.length < 8) {
-                    alert('Password must be at least 8 characters');
+
+                const validation = this.validatePasswordRequirements(password, Boolean(enable2FA));
+                if (!validation.valid) {
+                    this.showPasswordFeedback(validation.message, 'warning');
+                    alert(validation.message);
                     return;
                 }
 
@@ -7024,8 +7608,9 @@
                         return;
                     }
 
-                    if (newPassword.length < 8) {
-                        alert('New password must be at least 8 characters');
+                    const validation = this.validatePasswordRequirements(newPassword, this.requires2FA);
+                    if (!validation.valid) {
+                        alert(validation.message);
                         return;
                     }
 
@@ -7058,6 +7643,18 @@
 
                 document.getElementById('lastUpdatedHeader').textContent = `Last Updated: ${timestamp}`;
                 formData.lastUpdated = timestamp;
+
+                try {
+                    const htmlContent = this.getApplicationHTML();
+                    const codeHash = await this.hashCode(htmlContent);
+                    const hmacKey = await this.deriveHMACKey(password);
+                    const codeSignature = await this.createHMAC(hmacKey, htmlContent);
+
+                    formData.codeHash = codeHash;
+                    formData.codeSignature = codeSignature;
+                } catch (error) {
+                    console.warn('Unable to generate integrity metadata', error);
+                }
 
                 const encrypted = await this.crypto.encrypt(formData, password);
 
@@ -10060,7 +10657,7 @@
                         {
                             name: 'PBKDF2',
                             salt: salt,
-                            iterations: 100000,
+                            iterations: 600000,
                             hash: 'SHA-256'
                         },
                         keyMaterial,
