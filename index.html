@@ -6560,7 +6560,7 @@
                 
                 // Password modal
                 document.getElementById('modalSubmit').addEventListener('click', () => this.handlePasswordSubmit());
-                document.getElementById('modalCancel').addEventListener('click', () => this.closePasswordModal());
+                document.getElementById('modalCancel').addEventListener('click', () => this.handlePasswordModalCancel());
                 document.getElementById('passwordUpdateSubmit')?.addEventListener('click', () => this.handlePasswordUpdateSubmit());
                 document.getElementById('passwordUpdateCancel')?.addEventListener('click', () => this.closePasswordUpdateModal());
                 document.querySelectorAll('input[name="passwordUpdateChoice"]').forEach((input) => {
@@ -7397,6 +7397,35 @@
                 document.getElementById('modalConfirmPassword').value = '';
                 this.resetStrengthBars();
                 this.clearPasswordFeedback();
+            }
+
+            handlePasswordModalCancel() {
+                this.closePasswordModal();
+
+                if (!this.isInitialized) {
+                    const welcomeScreen = document.getElementById('welcomeScreen');
+                    const unlockScreen = document.getElementById('unlockScreen');
+                    const mainContent = document.getElementById('mainContent');
+                    const navTabs = document.getElementById('navTabs');
+
+                    if (welcomeScreen) {
+                        welcomeScreen.style.display = 'block';
+                    }
+
+                    if (unlockScreen) {
+                        unlockScreen.style.display = 'none';
+                    }
+
+                    if (mainContent) {
+                        mainContent.style.display = 'none';
+                    }
+
+                    if (navTabs) {
+                        navTabs.style.display = 'none';
+                    }
+
+                    window.vaultManager?.show();
+                }
             }
 
             showPasswordUpdateModal() {
