@@ -510,6 +510,25 @@
             margin-bottom: 20px;
             font-size: 10pt;
         }
+
+        .recovery-key-note {
+            font-size: 9pt;
+            color: #94a3b8;
+            margin-top: 6px;
+            text-align: left;
+        }
+
+        .recovery-key-value {
+            display: inline-block;
+            padding: 10px 14px;
+            background: #0f172a;
+            color: #f8fafc;
+            border-radius: 6px;
+            letter-spacing: 1px;
+            font-size: 13pt;
+            font-weight: 600;
+            word-break: break-word;
+        }
         
         .unlock-container input {
             width: 100%;
@@ -3022,6 +3041,10 @@
             <div id="totpField" style="display: none;">
                 <input type="text" id="totp-code" placeholder="6-digit code" maxlength="6" data-i18n-placeholder="unlock_totp_placeholder">
             </div>
+            <div id="recoveryKeyField" style="display: none;">
+                <input type="text" id="recovery-key" placeholder="Enter recovery key" data-i18n-placeholder="unlock_recovery_placeholder" autocomplete="off" spellcheck="false">
+                <p class="recovery-key-note" data-i18n-key="unlock_recovery_hint">Paste the long recovery key you saved. It unlocks without your password or 2FA.</p>
+            </div>
             <div id="temporaryAccessHint" style="display: none; font-size: 9pt; color: #f97316; margin: 10px 0 0 0; text-align: left;">
             </div>
             <button id="unlockBtn" onclick="app.attemptUnlock(event)">Unlock Vault</button>
@@ -3246,6 +3269,26 @@
                         </p>
                         <div id="totpStatus" style="padding: 15px; background: #f8fafc; border-radius: 6px;">
                             <!-- Status will be updated dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="settings-section" id="recoveryKeySettings">
+                        <h4 data-i18n-key="recovery_key_title">🛟 Emergency Recovery Key</h4>
+                        <p style="font-size: 9pt; color: #64748b; margin-bottom: 15px;" data-i18n-key="recovery_key_subtitle">
+                            Generate a one-time backup key that can unlock your vault if you forget your password or lose 2FA.
+                        </p>
+                        <div id="recoveryKeyStatus" style="padding: 15px; background: #f8fafc; border-radius: 6px;">
+                            <!-- Recovery key status -->
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
+                            <button class="btn btn-primary" id="generateRecoveryKeyBtn" data-i18n-key="recovery_key_generate">Generate recovery key</button>
+                            <button class="btn btn-secondary" id="disableRecoveryKeyBtn" data-i18n-key="recovery_key_disable" style="display: none;">Remove recovery key</button>
+                        </div>
+                        <div class="warning-box" id="recoveryKeyDisplay" style="display: none; margin-top: 15px; text-align: left;">
+                            <strong data-i18n-key="recovery_key_warning_title">Store this key securely!</strong>
+                            <p style="margin: 10px 0;" data-i18n-key="recovery_key_warning">This recovery key can unlock your vault by itself. Copy it to an offline password manager or secure storage and keep it private.</p>
+                            <code id="recoveryKeyValue" class="recovery-key-value"></code>
+                            <p class="recovery-key-note" style="margin-top: 12px;" data-i18n-key="recovery_key_save_hint">Download a new .ehv file after saving so this recovery key is included.</p>
                         </div>
                     </div>
 
@@ -5587,6 +5630,7 @@
                 this.totpSetupContext = null;
                 this.requires2FA = false;
                 this.temporaryAccess = null;
+                this.recoveryAccess = null;
                 this.pendingTemporaryAccessRemoval = false;
                 this.isLocked = false;
                 this.modules = {
@@ -5683,6 +5727,7 @@
                         this.lastSaved = vaultData.savedDate;
                         this.emergencyAccessConfig = vaultData.emergencyAccess || null;
                         this.temporaryAccess = vaultData.temporaryAccess || null;
+                        this.recoveryAccess = vaultData.recoveryAccess || null;
                         this.pendingTemporaryAccessRemoval = false;
                         this.version = vaultData.appVersion || this.version || APP_VERSION;
 
@@ -5736,6 +5781,7 @@
                         }
 
                         this.updateTemporaryAccessHint();
+                        this.updateRecoveryFieldVisibility();
 
                         if (this.emergencyAccessConfig && this.emergencyAccessConfig.enabled) {
                             this.showEmergencyAccess(this.emergencyAccessConfig.data || {});
@@ -5753,8 +5799,10 @@
                     window.vaultManager?.show();
                     this.emergencyAccessConfig = null;
                     this.temporaryAccess = null;
+                    this.recoveryAccess = null;
                     this.pendingTemporaryAccessRemoval = false;
                     this.updateTemporaryAccessHint();
+                    this.updateRecoveryFieldVisibility();
                     this.version = APP_VERSION;
                     this.schemaVersion = schemaManager.currentVersion;
                     this.applyVersionMetadata();
@@ -5875,6 +5923,8 @@
                 } else {
                     document.getElementById('totpField').style.display = 'none';
                 }
+
+                this.updateRecoveryFieldVisibility();
 
                 document.getElementById('unlock-password')?.focus();
             }
@@ -6004,6 +6054,8 @@
                 document.getElementById('vaultFileInput')?.addEventListener('change', (event) => this.handleVaultFileSelect(event));
                 document.getElementById('uploadPhotoBtn')?.addEventListener('click', () => this.promptProfilePhoto());
                 document.getElementById('removePhotoBtn')?.addEventListener('click', () => this.removeProfilePhoto());
+                document.getElementById('generateRecoveryKeyBtn')?.addEventListener('click', () => this.handleGenerateRecoveryKey());
+                document.getElementById('disableRecoveryKeyBtn')?.addEventListener('click', () => this.handleDisableRecoveryKey());
 
                 const profilePhotoInput = document.getElementById('profilePhotoInput');
                 if (profilePhotoInput) {
@@ -6404,6 +6456,9 @@
                 window.vaultManager?.hide();
                 document.getElementById('welcomeScreen').style.display = 'none';
 
+                this.recoveryAccess = null;
+                this.updateRecoveryFieldVisibility();
+
                 const modal = document.getElementById('passwordModal');
                 modal.classList.add('active');
                 document.getElementById('modalTitle').textContent = 'Create Your Health Vault';
@@ -6551,12 +6606,15 @@
             async attemptUnlock(event) {
                 const passwordField = document.getElementById('unlock-password');
                 const totpFieldInput = document.getElementById('totp-code');
+                const recoveryFieldInput = document.getElementById('recovery-key');
 
                 const enteredPassword = passwordField?.value || '';
                 const totpCode = totpFieldInput?.value?.trim() || '';
+                const recoveryKey = recoveryFieldInput?.value?.trim() || '';
 
                 let password = enteredPassword;
                 let usedTemporaryAccess = false;
+                let usedRecoveryKey = false;
 
                 const unlockBtn = (event?.target instanceof HTMLElement)
                     ? event.target
@@ -6574,12 +6632,22 @@
                     }
                 }
 
+                if (!password && recoveryKey) {
+                    try {
+                        password = await this.tryUnlockWithRecoveryKey(recoveryKey);
+                        usedRecoveryKey = true;
+                    } catch (error) {
+                        alert(error.message);
+                        return;
+                    }
+                }
+
                 if (!password) {
                     alert('Please enter your password');
                     return;
                 }
 
-                if (this.requires2FA && !usedTemporaryAccess && !totpCode) {
+                if (this.requires2FA && !usedTemporaryAccess && !usedRecoveryKey && !totpCode) {
                     alert('Please enter your 6-digit authentication code');
                     return;
                 }
@@ -6611,7 +6679,7 @@
                         throw integrityError;
                     }
 
-                    if (this.requires2FA && !usedTemporaryAccess && decryptedPayload.totpSecret) {
+                    if (this.requires2FA && !usedTemporaryAccess && !usedRecoveryKey && decryptedPayload.totpSecret) {
                         const isValidTOTP = await TOTP.verifyTOTP(decryptedPayload.totpSecret, totpCode);
 
                         if (!isValidTOTP) {
@@ -6686,6 +6754,11 @@
 
                     if (usedTemporaryAccess) {
                         alert('Unable to unlock with the provided temporary access code. It may have expired or been entered incorrectly.');
+                        return;
+                    }
+
+                    if (usedRecoveryKey) {
+                        alert('Unable to unlock with the provided recovery key. Make sure you entered it exactly as saved.');
                         return;
                     }
 
@@ -7393,6 +7466,317 @@
                 }
             }
 
+            normalizeRecoveryKey(input) {
+                if (!input) {
+                    return '';
+                }
+
+                return input.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+            }
+
+            formatRecoveryKey(rawKey) {
+                if (!rawKey) {
+                    return '';
+                }
+
+                return rawKey.match(/.{1,4}/g)?.join('-') || rawKey;
+            }
+
+            generateRecoveryKey() {
+                const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+                const bytes = crypto.getRandomValues(new Uint8Array(32));
+                let key = '';
+
+                for (let i = 0; i < bytes.length; i++) {
+                    key += alphabet[bytes[i] % alphabet.length];
+                }
+
+                return key;
+            }
+
+            bufferToBase64(buffer) {
+                return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+            }
+
+            async computeRecoveryFingerprint(recoveryKey) {
+                if (!recoveryKey) {
+                    return '';
+                }
+
+                const encoder = new TextEncoder();
+                const digest = await crypto.subtle.digest('SHA-256', encoder.encode(recoveryKey));
+                return this.bufferToBase64(digest);
+            }
+
+            async createRecoveryAccess(password, recoveryKey) {
+                if (!password || !recoveryKey) {
+                    throw new Error('Missing recovery key requirements.');
+                }
+
+                const encoder = new TextEncoder();
+                const salt = crypto.getRandomValues(new Uint8Array(16));
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+                const iterations = 600000;
+
+                const keyMaterial = await crypto.subtle.importKey(
+                    'raw',
+                    encoder.encode(recoveryKey),
+                    'PBKDF2',
+                    false,
+                    ['deriveKey']
+                );
+
+                const derivedKey = await crypto.subtle.deriveKey(
+                    {
+                        name: 'PBKDF2',
+                        salt,
+                        iterations,
+                        hash: 'SHA-256'
+                    },
+                    keyMaterial,
+                    { name: 'AES-GCM', length: 256 },
+                    true,
+                    ['encrypt', 'decrypt']
+                );
+
+                const encryptedPassword = await crypto.subtle.encrypt(
+                    { name: 'AES-GCM', iv },
+                    derivedKey,
+                    encoder.encode(password)
+                );
+
+                const fingerprint = await this.computeRecoveryFingerprint(recoveryKey);
+
+                return {
+                    version: 1,
+                    createdAt: new Date().toISOString(),
+                    salt: Array.from(salt),
+                    iv: Array.from(iv),
+                    encryptedPassword: Array.from(new Uint8Array(encryptedPassword)),
+                    iterations,
+                    fingerprint
+                };
+            }
+
+            async tryUnlockWithRecoveryKey(recoveryKey) {
+                if (!this.recoveryAccess) {
+                    throw new Error('Recovery key is not enabled for this vault.');
+                }
+
+                const normalizedKey = this.normalizeRecoveryKey(recoveryKey);
+
+                if (normalizedKey.length < 24) {
+                    throw new Error('Enter the full recovery key exactly as provided.');
+                }
+
+                const fingerprint = await this.computeRecoveryFingerprint(normalizedKey);
+                if (this.recoveryAccess.fingerprint && fingerprint !== this.recoveryAccess.fingerprint) {
+                    throw new Error('Incorrect recovery key.');
+                }
+
+                const encoder = new TextEncoder();
+                const saltArray = this.recoveryAccess.salt;
+                const ivArray = this.recoveryAccess.iv;
+                const encryptedArray = this.recoveryAccess.encryptedPassword;
+
+                if (!Array.isArray(saltArray) || !Array.isArray(ivArray) || !Array.isArray(encryptedArray)) {
+                    throw new Error('Recovery key data is missing. Generate a new recovery key.');
+                }
+
+                const salt = new Uint8Array(saltArray);
+                const iv = new Uint8Array(ivArray);
+                const encryptedPassword = new Uint8Array(encryptedArray);
+                const iterations = this.recoveryAccess.iterations || 600000;
+
+                const keyMaterial = await crypto.subtle.importKey(
+                    'raw',
+                    encoder.encode(normalizedKey),
+                    'PBKDF2',
+                    false,
+                    ['deriveKey']
+                );
+
+                const derivedKey = await crypto.subtle.deriveKey(
+                    {
+                        name: 'PBKDF2',
+                        salt,
+                        iterations,
+                        hash: 'SHA-256'
+                    },
+                    keyMaterial,
+                    { name: 'AES-GCM', length: 256 },
+                    true,
+                    ['decrypt']
+                );
+
+                try {
+                    const decrypted = await crypto.subtle.decrypt(
+                        { name: 'AES-GCM', iv },
+                        derivedKey,
+                        encryptedPassword
+                    );
+
+                    const decoder = new TextDecoder();
+                    return decoder.decode(decrypted);
+                } catch (error) {
+                    throw new Error('Unable to unlock with that recovery key. Double-check the key you saved.');
+                }
+            }
+
+            updateRecoveryFieldVisibility() {
+                const field = document.getElementById('recoveryKeyField');
+                const input = document.getElementById('recovery-key');
+
+                if (!field) {
+                    return;
+                }
+
+                if (this.recoveryAccess) {
+                    field.style.display = 'block';
+                } else {
+                    field.style.display = 'none';
+                    if (input instanceof HTMLInputElement) {
+                        input.value = '';
+                    }
+                }
+            }
+
+            renderRecoveryKeyStatus() {
+                const statusEl = document.getElementById('recoveryKeyStatus');
+                const display = document.getElementById('recoveryKeyDisplay');
+                const generateBtn = document.getElementById('generateRecoveryKeyBtn');
+                const disableBtn = document.getElementById('disableRecoveryKeyBtn');
+
+                if (!statusEl) {
+                    return;
+                }
+
+                if (display) {
+                    display.style.display = 'none';
+                }
+
+                if (this.recoveryAccess) {
+                    const createdAt = this.recoveryAccess.createdAt
+                        ? new Date(this.recoveryAccess.createdAt).toLocaleString()
+                        : '';
+
+                    statusEl.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span style="font-size: 20pt;">✅</span>
+                            <div>
+                                <strong>${window.localization?.t('recovery_key_status_enabled', 'Recovery key enabled')}</strong><br>
+                                <span style="font-size: 9pt; color: #64748b;">
+                                    ${createdAt
+                                        ? window.localization?.t('recovery_key_last_generated', 'Generated on {{date}}').replace('{{date}}', createdAt)
+                                        : window.localization?.t('recovery_key_ready', 'A recovery key is configured for this vault.')}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+
+                    if (generateBtn) {
+                        generateBtn.setAttribute('data-i18n-key', 'recovery_key_regenerate');
+                        generateBtn.textContent = window.localization?.t('recovery_key_regenerate', 'Regenerate recovery key');
+                    }
+
+                    if (disableBtn) {
+                        disableBtn.style.display = 'inline-block';
+                    }
+                } else {
+                    statusEl.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span style="font-size: 20pt;">🛡️</span>
+                            <div>
+                                <strong>${window.localization?.t('recovery_key_status_disabled', 'No recovery key configured')}</strong><br>
+                                <span style="font-size: 9pt; color: #64748b;">
+                                    ${window.localization?.t('recovery_key_status_hint', 'Generate a recovery key so you can unlock the vault if you forget the password.')}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+
+                    if (generateBtn) {
+                        generateBtn.setAttribute('data-i18n-key', 'recovery_key_generate');
+                        generateBtn.textContent = window.localization?.t('recovery_key_generate', 'Generate recovery key');
+                    }
+
+                    if (disableBtn) {
+                        disableBtn.style.display = 'none';
+                    }
+                }
+
+                this.updateRecoveryFieldVisibility();
+            }
+
+            showRecoveryKey(formattedKey) {
+                const display = document.getElementById('recoveryKeyDisplay');
+                const valueEl = document.getElementById('recoveryKeyValue');
+
+                if (!display || !valueEl) {
+                    return;
+                }
+
+                valueEl.textContent = formattedKey;
+                display.style.display = 'block';
+                display.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            async handleGenerateRecoveryKey() {
+                if (!this.sessionPassword) {
+                    alert('Unlock the vault before generating a recovery key.');
+                    return;
+                }
+
+                if (this.recoveryAccess) {
+                    const confirmed = window.confirm('Generating a new recovery key will replace the existing one. Continue?');
+                    if (!confirmed) {
+                        return;
+                    }
+                }
+
+                try {
+                    const rawKey = this.generateRecoveryKey();
+                    const formattedKey = this.formatRecoveryKey(rawKey);
+                    const normalizedKey = this.normalizeRecoveryKey(rawKey);
+                    const recoveryAccess = await this.createRecoveryAccess(this.sessionPassword, normalizedKey);
+
+                    this.recoveryAccess = recoveryAccess;
+                    this.renderRecoveryKeyStatus();
+                    this.showRecoveryKey(formattedKey);
+                    this.hasUnsavedChanges = true;
+                    this.updateSaveStatus();
+
+                    alert('✅ Recovery key generated!\n\nCopy the key shown and store it in a secure location.\nDownload a new .ehv file after saving so this backup is preserved.');
+                } catch (error) {
+                    console.error('Failed to generate recovery key', error);
+                    alert('Unable to generate recovery key. Try again.');
+                }
+            }
+
+            handleDisableRecoveryKey() {
+                if (!this.recoveryAccess) {
+                    alert('No recovery key is currently configured.');
+                    return;
+                }
+
+                const confirmed = window.confirm('Remove the recovery key? You will no longer be able to unlock with it.');
+                if (!confirmed) {
+                    return;
+                }
+
+                this.recoveryAccess = null;
+                const display = document.getElementById('recoveryKeyDisplay');
+                if (display) {
+                    display.style.display = 'none';
+                }
+
+                this.renderRecoveryKeyStatus();
+                this.hasUnsavedChanges = true;
+                this.updateSaveStatus();
+
+                alert('Recovery key removed. Save and download a new vault file to finalize this change.');
+            }
+
             initializePasswordGuidance() {
                 const passwordInput = document.getElementById('modalPassword');
                 if (passwordInput && !passwordInput.dataset.guidanceBound) {
@@ -7982,7 +8366,8 @@
                     requires2FA: this.requires2FA,
                     vaultIdentity: this.vaultIdentity,
                     emergencyAccess: emergencyAccess,
-                    temporaryAccess: this.temporaryAccess || null
+                    temporaryAccess: this.temporaryAccess || null,
+                    recoveryAccess: this.recoveryAccess || null
                 };
 
                 const vaultJSON = JSON.stringify(vaultData);
@@ -8404,8 +8789,9 @@
                 document.getElementById('module-gac').checked = this.modules.gac;
                 document.getElementById('module-mental').checked = this.modules.mental;
                 document.getElementById('module-chronic').checked = this.modules.chronic;
-                
+
                 this.renderTOTPStatus();
+                this.renderRecoveryKeyStatus();
 
                 this.updateEmergencySettingsVisibility();
             }
@@ -10676,6 +11062,7 @@
                 }
 
                 this.clearUnlockFields();
+                this.updateRecoveryFieldVisibility();
                 this.updateTemporaryAccessHint();
                 this.updateLockTimerDisplay();
                 this.focusUnlockField();
@@ -10733,6 +11120,11 @@
                 const totpFieldInput = document.getElementById('totp-code');
                 if (totpFieldInput instanceof HTMLInputElement) {
                     totpFieldInput.value = '';
+                }
+
+                const recoveryFieldInput = document.getElementById('recovery-key');
+                if (recoveryFieldInput instanceof HTMLInputElement) {
+                    recoveryFieldInput.value = '';
                 }
             }
 
