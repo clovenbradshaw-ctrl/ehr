@@ -30,6 +30,8 @@
             --layout-max-width: 1600px;
             --layout-gutter: clamp(16px, 2vw, 32px);
             --header-bg: #0f172a;
+            --font-scale: 1;
+            --base-font-size: 11pt;
         }
 
         * {
@@ -45,9 +47,13 @@
             overflow-x: hidden;
         }
 
+        html {
+            font-size: calc(var(--base-font-size) * var(--font-scale));
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-            font-size: 11pt;
+            font-size: 1rem;
             line-height: 1.5;
             color: #1e293b;
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
@@ -71,6 +77,363 @@
                 radial-gradient(circle at 80% 80%, rgba(6, 182, 212, 0.1) 0%, transparent 50%);
             pointer-events: none;
             z-index: 0;
+        }
+
+        /* Screen Reader Only */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Skip to Content Link */
+        .skip-to-content {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: #3b82f6;
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            z-index: 10000;
+            border-radius: 0 0 4px 0;
+        }
+
+        .skip-to-content:focus {
+            top: 0;
+        }
+
+        /* Accessibility Controls Widget */
+        .a11y-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .a11y-toggle {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .a11y-toggle:hover {
+            background: #2563eb;
+            transform: scale(1.05);
+        }
+
+        .a11y-toggle:focus {
+            outline: 3px solid #fbbf24;
+            outline-offset: 2px;
+        }
+
+        .a11y-panel {
+            position: absolute;
+            bottom: 70px;
+            right: 0;
+            width: 320px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            padding: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .a11y-panel[hidden] {
+            display: none;
+        }
+
+        .a11y-panel-title {
+            margin: 0 0 20px 0;
+            font-size: 16pt;
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        .a11y-section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .a11y-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .a11y-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 12px;
+            font-size: 11pt;
+        }
+
+        .a11y-current {
+            color: #3b82f6;
+            font-size: 10pt;
+        }
+
+        .a11y-button-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .a11y-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            color: #1e293b;
+            border-radius: 6px;
+            font-size: 14pt;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .a11y-btn:hover {
+            background: #f1f5f9;
+            border-color: #3b82f6;
+        }
+
+        .a11y-btn:focus {
+            outline: 3px solid #fbbf24;
+            outline-offset: 2px;
+        }
+
+        .a11y-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 11pt;
+        }
+
+        .a11y-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .a11y-description {
+            margin: 8px 0 0 30px;
+            font-size: 9pt;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .a11y-controls {
+                bottom: 10px;
+                right: 10px;
+            }
+
+            .a11y-panel {
+                width: calc(100vw - 40px);
+                right: -10px;
+            }
+        }
+
+        /* Font scale classes */
+        .font-scale-80 {
+            --font-scale: 0.8;
+        }
+
+        .font-scale-90 {
+            --font-scale: 0.9;
+        }
+
+        .font-scale-100 {
+            --font-scale: 1;
+        }
+
+        .font-scale-110 {
+            --font-scale: 1.1;
+        }
+
+        .font-scale-120 {
+            --font-scale: 1.2;
+        }
+
+        .font-scale-130 {
+            --font-scale: 1.3;
+        }
+
+        .font-scale-140 {
+            --font-scale: 1.4;
+        }
+
+        .font-scale-150 {
+            --font-scale: 1.5;
+        }
+
+        h1 { font-size: 2.5rem; }
+        h2 { font-size: 2rem; }
+        h3 { font-size: 1.5rem; }
+        h4 { font-size: 1.25rem; }
+        h5 { font-size: 1.1rem; }
+        h6 { font-size: 1rem; }
+
+        /* High Contrast Theme */
+        .high-contrast {
+            --bg-primary: #000000;
+            --bg-secondary: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #e0e0e0;
+            --border-color: #ffffff;
+            --link-color: #ffff00;
+            --button-bg: #ffffff;
+            --button-text: #000000;
+            --focus-color: #ffff00;
+        }
+
+        .high-contrast body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .high-contrast .page-shell {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+        }
+
+        .high-contrast .site-header {
+            background: var(--bg-primary);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .high-contrast a {
+            color: var(--link-color);
+            text-decoration: underline;
+        }
+
+        .high-contrast button,
+        .high-contrast .btn {
+            background: var(--button-bg);
+            color: var(--button-text);
+            border: 2px solid var(--border-color);
+        }
+
+        .high-contrast input,
+        .high-contrast select,
+        .high-contrast textarea {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .high-contrast .section {
+            border: 2px solid var(--border-color);
+        }
+
+        .high-contrast .section-header {
+            background: var(--bg-primary);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        /* High contrast focus indicators */
+        .high-contrast *:focus {
+            outline: 3px solid var(--focus-color);
+            outline-offset: 2px;
+        }
+
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        .reduced-motion *,
+        .reduced-motion *::before,
+        .reduced-motion *::after {
+            animation: none !important;
+            transition: none !important;
+        }
+
+        .reduced-motion {
+            scroll-behavior: auto !important;
+        }
+
+        /* Focus styles */
+        *:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+
+        .enhanced-focus *:focus {
+            outline: 4px solid #fbbf24;
+            outline-offset: 4px;
+            box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.2);
+        }
+
+        .enhanced-focus button:focus,
+        .enhanced-focus .btn:focus {
+            outline: 4px solid #fbbf24;
+            outline-offset: 4px;
+        }
+
+        .enhanced-focus a:focus {
+            background: rgba(251, 191, 36, 0.2);
+            outline: 4px solid #fbbf24;
+            outline-offset: 2px;
+        }
+
+        .underline-links a {
+            text-decoration: underline !important;
+        }
+
+        .underline-links a:hover {
+            text-decoration: underline !important;
+            text-decoration-thickness: 2px !important;
+        }
+
+        /* Contrast adjustments */
+        .text-slate-400 {
+            color: #64748b;
+        }
+
+        .text-slate-300 {
+            color: #94a3b8;
+        }
+
+        a {
+            color: #2563eb;
+        }
+
+        ::placeholder {
+            color: #6b7280;
+            opacity: 1;
         }
 
         .page-shell {
@@ -581,12 +944,12 @@
         }
         
         .btn-secondary {
-            background: #64748b;
-            color: white;
+            background: #475569;
+            color: #ffffff;
         }
 
         .btn-secondary:hover {
-            background: #475569;
+            background: #334155;
         }
 
         .btn-danger {
@@ -2327,16 +2690,20 @@
     </style>
 </head>
 <body>
+    <a href="#main-content" class="skip-to-content">Skip to main content</a>
+    <div class="sr-only" role="status" aria-live="polite" aria-atomic="true" id="status-announcements"></div>
+    <div class="sr-only" role="alert" aria-live="assertive" aria-atomic="true" id="alert-announcements"></div>
+
     <div class="unlock-screen" id="unlockScreen" style="display: none;">
         <div class="unlock-container">
             <h2 data-i18n-key="unlock_title">🔒 Health Vault Locked</h2>
             <p data-i18n-key="unlock_subtitle">This .ehv vault file contains encrypted medical records</p>
             <div class="unlock-language">
                 <label for="unlockLanguageSelect" data-i18n-key="default_language_label">Default language</label>
-                <select id="unlockLanguageSelect" data-language-selector data-default-selector="true"></select>
-                <small data-i18n-key="default_language_hint">Use this language automatically when opening the vault.</small>
+                <select id="unlockLanguageSelect" data-language-selector data-default-selector="true" aria-describedby="unlockLanguageHelp"></select>
+                <small id="unlockLanguageHelp" data-i18n-key="default_language_hint">Use this language automatically when opening the vault.</small>
             </div>
-            <input type="password" id="unlock-password" placeholder="Enter password" data-i18n-placeholder="unlock_password_placeholder">
+            <input type="password" id="unlock-password" placeholder="Enter password" data-i18n-placeholder="unlock_password_placeholder" aria-required="true">
             <div id="totpField" style="display: none;">
                 <input type="text" id="totp-code" placeholder="6-digit code" maxlength="6" data-i18n-placeholder="unlock_totp_placeholder">
             </div>
@@ -2360,7 +2727,7 @@
         </div>
     </div>
 
-    <header class="site-header no-print">
+    <header class="site-header no-print" role="banner">
         <div class="security-bar">
             <div class="site-header__brand">
                 <div class="logo-container">
@@ -2374,14 +2741,75 @@
         </div>
     </header>
 
+    <!-- Accessibility Controls -->
+    <div class="a11y-controls" id="a11yControls" role="region" aria-label="Accessibility settings">
+        <button class="a11y-toggle" id="a11yToggle" aria-expanded="false" aria-controls="a11yPanel">
+            <span aria-hidden="true">♿</span>
+            <span class="sr-only">Accessibility Settings</span>
+        </button>
+
+        <div class="a11y-panel" id="a11yPanel" hidden>
+            <h3 class="a11y-panel-title">Accessibility Settings</h3>
+
+            <!-- Font Size Controls -->
+            <div class="a11y-section">
+                <label class="a11y-label">
+                    <span>Text Size</span>
+                    <span class="a11y-current" id="fontSizeDisplay">100%</span>
+                </label>
+                <div class="a11y-button-group" role="group" aria-label="Font size controls">
+                    <button class="a11y-btn" id="fontDecrease" aria-label="Decrease font size">A-</button>
+                    <button class="a11y-btn" id="fontReset" aria-label="Reset font size">A</button>
+                    <button class="a11y-btn" id="fontIncrease" aria-label="Increase font size">A+</button>
+                </div>
+            </div>
+
+            <!-- High Contrast Toggle -->
+            <div class="a11y-section">
+                <label class="a11y-checkbox">
+                    <input type="checkbox" id="highContrastToggle" aria-describedby="highContrastDesc">
+                    <span>High Contrast Mode</span>
+                </label>
+                <p class="a11y-description" id="highContrastDesc">Increases color contrast for better readability</p>
+            </div>
+
+            <!-- Reduced Motion -->
+            <div class="a11y-section">
+                <label class="a11y-checkbox">
+                    <input type="checkbox" id="reducedMotionToggle" aria-describedby="reducedMotionDesc">
+                    <span>Reduce Motion</span>
+                </label>
+                <p class="a11y-description" id="reducedMotionDesc">Minimizes animations and transitions</p>
+            </div>
+
+            <!-- Focus Indicators -->
+            <div class="a11y-section">
+                <label class="a11y-checkbox">
+                    <input type="checkbox" id="focusIndicatorsToggle" aria-describedby="focusDesc" checked>
+                    <span>Enhanced Focus Indicators</span>
+                </label>
+                <p class="a11y-description" id="focusDesc">Shows clear outlines around interactive elements</p>
+            </div>
+
+            <!-- Link Underlines -->
+            <div class="a11y-section">
+                <label class="a11y-checkbox">
+                    <input type="checkbox" id="linkUnderlineToggle" aria-describedby="linkDesc">
+                    <span>Underline All Links</span>
+                </label>
+                <p class="a11y-description" id="linkDesc">Makes links easier to identify</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Welcome Screen (shown for new files) -->
     <div class="welcome-screen" id="welcomeScreen" style="display: none;">
         <div id="landingRoot"></div>
         <input type="file" id="vaultFileInput" accept=".ehv" />
     </div>
 
-    <main class="page-shell">
-        <div class="nav-tabs no-print" id="navTabs" style="display: none;">
+    <main class="page-shell" id="main-content" role="main">
+        <nav class="nav-tabs no-print" id="navTabs" role="tablist" aria-label="Medical record sections" aria-orientation="horizontal" style="display: none;">
             <div class="tab active" data-section="demographics" data-i18n-key="nav_demographics">📋 Demographics</div>
             <div class="tab" data-section="emergency" data-i18n-key="nav_emergency">🆘 Emergency</div>
             <div class="tab" data-section="medications" data-i18n-key="nav_medications">💊 Medications</div>
@@ -2394,13 +2822,13 @@
             <div class="tab" data-section="notes" data-i18n-key="nav_notes">📝 Notes</div>
             <div class="tab" data-section="attachments" data-i18n-key="nav_attachments">📎 Attachments</div>
             <!-- Module tabs added dynamically -->
-        </div>
+        </nav>
 
     <!-- Settings Modal -->
-    <div class="modal" id="settingsModal">
+    <div class="modal" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 data-i18n-key="settings_title">⚙️ Settings &amp; Modules</h3>
+                <h3 id="settingsModalTitle" data-i18n-key="settings_title">⚙️ Settings &amp; Modules</h3>
                 <p class="settings-version">
                     <strong>Version:</strong>
                     <span id="appVersion">2024.04.07.1200</span>
@@ -2534,10 +2962,10 @@
     </div>
 
     <!-- TOTP Setup Modal -->
-    <div class="modal" id="totpModal">
+    <div class="modal" id="totpModal" role="dialog" aria-modal="true" aria-labelledby="totpModalTitle" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 data-i18n-key="totp_setup_title">🔐 Setup Two-Factor Authentication</h3>
+                <h3 id="totpModalTitle" data-i18n-key="totp_setup_title">🔐 Setup Two-Factor Authentication</h3>
             </div>
             <div class="modal-body">
                 <div class="totp-setup">
@@ -2565,7 +2993,7 @@
     </div>
 
     <!-- Password Modal -->
-    <div class="modal" id="passwordModal">
+    <div class="modal" id="passwordModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="modalTitle" data-i18n-key="password_modal_title">Set Encryption Password</h3>
@@ -2598,10 +3026,10 @@
     </div>
 
     <!-- Password Update Modal -->
-    <div class="modal" id="passwordUpdateModal">
+    <div class="modal" id="passwordUpdateModal" role="dialog" aria-modal="true" aria-labelledby="passwordUpdateTitle" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 data-i18n-key="save_vault_title">Save Vault</h3>
+                <h3 id="passwordUpdateTitle" data-i18n-key="save_vault_title">Save Vault</h3>
             </div>
             <div class="modal-body">
                 <div class="password-update-option">
@@ -2677,10 +3105,10 @@
     </div>
 
     <!-- Export Modal -->
-    <div class="modal" id="exportModal">
+    <div class="modal" id="exportModal" role="dialog" aria-modal="true" aria-labelledby="exportModalTitle" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 data-i18n-key="export_title">📄 Export &amp; Share</h3>
+                <h3 id="exportModalTitle" data-i18n-key="export_title">📄 Export &amp; Share</h3>
             </div>
             <div class="modal-body">
                 <p data-i18n-key="export_prompt">Select how you'd like to share or archive this record.</p>
@@ -3176,7 +3604,7 @@
             </div>
         </div>
 
-        <div class="modal" id="attachmentPreviewModal">
+        <div class="modal" id="attachmentPreviewModal" role="dialog" aria-modal="true" aria-labelledby="attachmentPreviewTitle" aria-hidden="true">
             <div class="modal-content attachment-preview-modal">
                 <div class="modal-header">
                     <div>
@@ -3660,6 +4088,508 @@
         const APP_VERSION = '2024.04.07.1200';
         const APP_LAST_UPDATED = '2024-04-07T12:00:00Z';
         const DEFAULT_SCHEMA_VERSION = '1.0.0';
+
+        class FocusTrap {
+            constructor(element) {
+                this.element = element;
+                this.focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+                this.handleKeyDown = this.handleKeyDown.bind(this);
+                this.addedTabIndex = false;
+            }
+
+            getFocusableElements() {
+                if (!(this.element instanceof HTMLElement)) {
+                    return [];
+                }
+
+                return Array.from(this.element.querySelectorAll(this.focusableSelector)).filter((el) => {
+                    if (!(el instanceof HTMLElement)) {
+                        return false;
+                    }
+
+                    const isDisabled = el.hasAttribute('disabled') || el.getAttribute('aria-disabled') === 'true';
+                    const isHidden = el.getAttribute('aria-hidden') === 'true' || (el.offsetParent === null && el.getClientRects().length === 0);
+                    return !isDisabled && !isHidden;
+                });
+            }
+
+            activate() {
+                if (!(this.element instanceof HTMLElement)) {
+                    return;
+                }
+
+                const focusable = this.getFocusableElements();
+                this.firstFocusableElement = focusable[0] || this.element;
+                this.lastFocusableElement = focusable[focusable.length - 1] || this.element;
+
+                this.element.addEventListener('keydown', this.handleKeyDown);
+
+                const initialTarget = focusable[0] || this.element;
+                if (initialTarget && typeof initialTarget.focus === 'function') {
+                    if (initialTarget === this.element && !this.element.hasAttribute('tabindex')) {
+                        this.element.setAttribute('tabindex', '-1');
+                        this.addedTabIndex = true;
+                    } else {
+                        this.addedTabIndex = false;
+                    }
+                    initialTarget.focus();
+                }
+            }
+
+            deactivate() {
+                if (!(this.element instanceof HTMLElement)) {
+                    return;
+                }
+
+                this.element.removeEventListener('keydown', this.handleKeyDown);
+
+                if (this.addedTabIndex) {
+                    this.element.removeAttribute('tabindex');
+                    this.addedTabIndex = false;
+                }
+            }
+
+            handleKeyDown(event) {
+                if (event.key !== 'Tab') {
+                    return;
+                }
+
+                const focusable = this.getFocusableElements();
+                if (!focusable.length) {
+                    event.preventDefault();
+                    if (this.element instanceof HTMLElement) {
+                        this.element.focus();
+                    }
+                    return;
+                }
+
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+
+                if (event.shiftKey) {
+                    if (document.activeElement === first || !focusable.includes(document.activeElement)) {
+                        last.focus();
+                        event.preventDefault();
+                    }
+                } else if (document.activeElement === last) {
+                    first.focus();
+                    event.preventDefault();
+                }
+            }
+        }
+
+        const modalAccessibility = {
+            traps: new Map(),
+            previousFocus: new Map()
+        };
+
+        const modalObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                const modal = mutation.target;
+                if (!(modal instanceof HTMLElement)) {
+                    return;
+                }
+
+                if (modal.classList.contains('active')) {
+                    activateModalAccessibility(modal);
+                } else {
+                    deactivateModalAccessibility(modal);
+                }
+            });
+        });
+
+        function activateModalAccessibility(modal) {
+            if (!(modal instanceof HTMLElement)) {
+                return;
+            }
+
+            modal.setAttribute('aria-hidden', 'false');
+
+            let trap = modalAccessibility.traps.get(modal);
+            if (!trap) {
+                trap = new FocusTrap(modal);
+                modalAccessibility.traps.set(modal, trap);
+            }
+
+            const activeElement = document.activeElement;
+            if (activeElement instanceof HTMLElement && !modal.contains(activeElement)) {
+                modalAccessibility.previousFocus.set(modal, activeElement);
+            }
+
+            trap.activate();
+        }
+
+        function deactivateModalAccessibility(modal) {
+            if (!(modal instanceof HTMLElement)) {
+                return;
+            }
+
+            modal.setAttribute('aria-hidden', 'true');
+
+            const trap = modalAccessibility.traps.get(modal);
+            if (trap) {
+                trap.deactivate();
+            }
+
+            const previous = modalAccessibility.previousFocus.get(modal);
+            if (previous && typeof previous.focus === 'function') {
+                previous.focus();
+            }
+
+            modalAccessibility.previousFocus.delete(modal);
+        }
+
+        function setupModalAccessibility() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach((modal) => {
+                if (!(modal instanceof HTMLElement)) {
+                    return;
+                }
+
+                if (!modal.hasAttribute('aria-hidden')) {
+                    modal.setAttribute('aria-hidden', modal.classList.contains('active') ? 'false' : 'true');
+                }
+
+                if (!modal.dataset.a11yObserved) {
+                    modalObserver.observe(modal, { attributes: true, attributeFilter: ['class'] });
+                    modal.dataset.a11yObserved = 'true';
+                }
+            });
+        }
+
+        class AccessibilityManager {
+            constructor() {
+                this.fontScale = 100;
+                this.settings = {
+                    highContrast: false,
+                    reducedMotion: false,
+                    enhancedFocus: true,
+                    underlineLinks: false
+                };
+                this.hasPersistedSettings = false;
+                this.handleDocumentClick = this.handleDocumentClick.bind(this);
+                this.handleDocumentKeydown = this.handleDocumentKeydown.bind(this);
+                this.init();
+            }
+
+            init() {
+                this.loadSettings();
+                this.setupEventListeners();
+                this.applySettings();
+                this.updateFontSize();
+                this.checkSystemPreferences();
+            }
+
+            setupEventListeners() {
+                const toggle = document.getElementById('a11yToggle');
+                const panel = document.getElementById('a11yPanel');
+
+                if (toggle && panel) {
+                    toggle.addEventListener('click', () => {
+                        const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+                        const nextState = !isExpanded;
+                        toggle.setAttribute('aria-expanded', String(nextState));
+                        panel.hidden = !nextState;
+
+                        if (!nextState) {
+                            panel.setAttribute('aria-hidden', 'true');
+                        } else {
+                            panel.removeAttribute('aria-hidden');
+                        }
+                    });
+                }
+
+                const increaseBtn = document.getElementById('fontIncrease');
+                const decreaseBtn = document.getElementById('fontDecrease');
+                const resetBtn = document.getElementById('fontReset');
+
+                increaseBtn?.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    this.changeFontSize(10);
+                });
+
+                decreaseBtn?.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    this.changeFontSize(-10);
+                });
+
+                resetBtn?.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    this.resetFontSize();
+                });
+
+                document.getElementById('highContrastToggle')?.addEventListener('change', (event) => {
+                    const target = event.target;
+                    if (!(target instanceof HTMLInputElement)) {
+                        return;
+                    }
+                    this.settings.highContrast = target.checked;
+                    this.applySettings();
+                    this.saveSettings();
+                });
+
+                document.getElementById('reducedMotionToggle')?.addEventListener('change', (event) => {
+                    const target = event.target;
+                    if (!(target instanceof HTMLInputElement)) {
+                        return;
+                    }
+                    this.settings.reducedMotion = target.checked;
+                    this.applySettings();
+                    this.saveSettings();
+                });
+
+                document.getElementById('focusIndicatorsToggle')?.addEventListener('change', (event) => {
+                    const target = event.target;
+                    if (!(target instanceof HTMLInputElement)) {
+                        return;
+                    }
+                    this.settings.enhancedFocus = target.checked;
+                    this.applySettings();
+                    this.saveSettings();
+                });
+
+                document.getElementById('linkUnderlineToggle')?.addEventListener('change', (event) => {
+                    const target = event.target;
+                    if (!(target instanceof HTMLInputElement)) {
+                        return;
+                    }
+                    this.settings.underlineLinks = target.checked;
+                    this.applySettings();
+                    this.saveSettings();
+                });
+
+                document.addEventListener('click', this.handleDocumentClick);
+                document.addEventListener('keydown', this.handleDocumentKeydown);
+            }
+
+            handleDocumentClick(event) {
+                const controls = document.getElementById('a11yControls');
+                const panel = document.getElementById('a11yPanel');
+                const toggle = document.getElementById('a11yToggle');
+
+                if (!controls || !panel || !toggle || panel.hidden) {
+                    return;
+                }
+
+                if (controls.contains(event.target)) {
+                    return;
+                }
+
+                panel.hidden = true;
+                toggle.setAttribute('aria-expanded', 'false');
+                panel.setAttribute('aria-hidden', 'true');
+            }
+
+            handleDocumentKeydown(event) {
+                if (event.key !== 'Escape') {
+                    return;
+                }
+
+                const panel = document.getElementById('a11yPanel');
+                const toggle = document.getElementById('a11yToggle');
+
+                if (panel && toggle && !panel.hidden) {
+                    panel.hidden = true;
+                    panel.setAttribute('aria-hidden', 'true');
+                    toggle.setAttribute('aria-expanded', 'false');
+                    toggle.focus();
+                }
+            }
+
+            changeFontSize(delta) {
+                const newScale = Math.max(80, Math.min(150, this.fontScale + delta));
+                if (newScale === this.fontScale) {
+                    return;
+                }
+
+                this.fontScale = newScale;
+                this.updateFontSize();
+                this.saveSettings();
+                this.announceChange(`Font size ${this.fontScale}%`);
+            }
+
+            resetFontSize() {
+                this.fontScale = 100;
+                this.updateFontSize();
+                this.saveSettings();
+                this.announceChange('Font size reset to 100%');
+            }
+
+            updateFontSize() {
+                const html = document.documentElement;
+                const existingScaleClasses = Array.from(html.classList).filter((cls) => cls.startsWith('font-scale-'));
+                existingScaleClasses.forEach((cls) => html.classList.remove(cls));
+
+                html.classList.add(`font-scale-${this.fontScale}`);
+
+                const display = document.getElementById('fontSizeDisplay');
+                if (display) {
+                    display.textContent = `${this.fontScale}%`;
+                }
+            }
+
+            applySettings() {
+                const html = document.documentElement;
+
+                html.classList.toggle('high-contrast', this.settings.highContrast);
+                html.classList.toggle('reduced-motion', this.settings.reducedMotion);
+                html.classList.toggle('enhanced-focus', this.settings.enhancedFocus);
+                html.classList.toggle('underline-links', this.settings.underlineLinks);
+
+                const highContrastToggle = document.getElementById('highContrastToggle');
+                const reducedMotionToggle = document.getElementById('reducedMotionToggle');
+                const focusToggle = document.getElementById('focusIndicatorsToggle');
+                const linkToggle = document.getElementById('linkUnderlineToggle');
+
+                if (highContrastToggle instanceof HTMLInputElement) {
+                    highContrastToggle.checked = this.settings.highContrast;
+                }
+                if (reducedMotionToggle instanceof HTMLInputElement) {
+                    reducedMotionToggle.checked = this.settings.reducedMotion;
+                }
+                if (focusToggle instanceof HTMLInputElement) {
+                    focusToggle.checked = this.settings.enhancedFocus;
+                }
+                if (linkToggle instanceof HTMLInputElement) {
+                    linkToggle.checked = this.settings.underlineLinks;
+                }
+            }
+
+            checkSystemPreferences() {
+                if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+                    return;
+                }
+
+                const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+                const contrastQuery = window.matchMedia('(prefers-contrast: high)');
+
+                if (!this.hasPersistedSettings && reducedMotionQuery.matches) {
+                    this.settings.reducedMotion = true;
+                    this.applySettings();
+                }
+
+                if (!this.hasPersistedSettings && contrastQuery.matches) {
+                    this.settings.highContrast = true;
+                    this.applySettings();
+                }
+
+                const reducedMotionListener = (event) => {
+                    if (!this.hasPersistedSettings) {
+                        this.settings.reducedMotion = event.matches;
+                        this.applySettings();
+                    }
+                };
+
+                const contrastListener = (event) => {
+                    if (!this.hasPersistedSettings) {
+                        this.settings.highContrast = event.matches;
+                        this.applySettings();
+                    }
+                };
+
+                if (typeof reducedMotionQuery.addEventListener === 'function') {
+                    reducedMotionQuery.addEventListener('change', reducedMotionListener);
+                } else if (typeof reducedMotionQuery.addListener === 'function') {
+                    reducedMotionQuery.addListener(reducedMotionListener);
+                }
+
+                if (typeof contrastQuery.addEventListener === 'function') {
+                    contrastQuery.addEventListener('change', contrastListener);
+                } else if (typeof contrastQuery.addListener === 'function') {
+                    contrastQuery.addListener(contrastListener);
+                }
+            }
+
+            saveSettings() {
+                const data = {
+                    fontScale: this.fontScale,
+                    settings: this.settings
+                };
+
+                try {
+                    localStorage.setItem('a11y-settings', JSON.stringify(data));
+                    this.hasPersistedSettings = true;
+                } catch (error) {
+                    console.warn('Could not save accessibility settings', error);
+                }
+            }
+
+            loadSettings() {
+                try {
+                    const saved = localStorage.getItem('a11y-settings');
+                    if (!saved) {
+                        return;
+                    }
+
+                    const data = JSON.parse(saved);
+                    if (data && typeof data === 'object') {
+                        if (typeof data.fontScale === 'number') {
+                            this.fontScale = data.fontScale;
+                        }
+                        if (data.settings && typeof data.settings === 'object') {
+                            this.settings = { ...this.settings, ...data.settings };
+                        }
+                        this.hasPersistedSettings = true;
+                    }
+                } catch (error) {
+                    console.warn('Could not load accessibility settings', error);
+                }
+            }
+
+            announceChange(message) {
+                let liveRegion = document.getElementById('a11y-live-region');
+                if (!liveRegion) {
+                    liveRegion = document.createElement('div');
+                    liveRegion.id = 'a11y-live-region';
+                    liveRegion.className = 'sr-only';
+                    liveRegion.setAttribute('aria-live', 'polite');
+                    liveRegion.setAttribute('aria-atomic', 'true');
+                    document.body.appendChild(liveRegion);
+                }
+
+                liveRegion.textContent = message;
+
+                window.setTimeout(() => {
+                    liveRegion.textContent = '';
+                }, 1000);
+            }
+        }
+
+        function announce(message, priority = 'polite') {
+            const regionId = priority === 'assertive' ? 'alert-announcements' : 'status-announcements';
+            const region = document.getElementById(regionId);
+            if (!region) {
+                return;
+            }
+
+            region.textContent = '';
+            window.setTimeout(() => {
+                region.textContent = message;
+            }, 100);
+        }
+
+        function initializeGlobalAccessibility() {
+            if (typeof window === 'undefined') {
+                return;
+            }
+
+            setupModalAccessibility();
+
+            if (!window.a11yManager || !(window.a11yManager instanceof AccessibilityManager)) {
+                window.a11yManager = new AccessibilityManager();
+            } else {
+                window.a11yManager.applySettings();
+                window.a11yManager.updateFontSize();
+            }
+        }
+
+        if (typeof document !== 'undefined') {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initializeGlobalAccessibility);
+            } else {
+                initializeGlobalAccessibility();
+            }
+        }
 
         class LocalizationManager {
             constructor() {
@@ -4688,9 +5618,11 @@
                 document.getElementById('exportCloseBtn')?.addEventListener('click', () => this.closeExportOptions());
                 
                 // Navigation
-                document.querySelectorAll('.tab').forEach(tab => {
-                    tab.addEventListener('click', (e) => this.navigateToSection(e));
+                document.querySelectorAll('.tab').forEach((tab) => {
+                    tab.addEventListener('click', (event) => this.navigateToSection(event));
                 });
+
+                this.initializeTabAccessibility();
                 
                 // Module toggles
                 ['identity', 'gac', 'mental', 'chronic'].forEach(module => {
@@ -5053,7 +5985,7 @@
                         <h3 style="margin: 0 0 10px 0; color: #1e293b;">Your Vault Identity</h3>
                         <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
                             <h2 id="vaultName" style="color: #3b82f6; margin: 0;">🔷 ${this.vaultIdentity}</h2>
-                            <button onclick="app.regenerateVaultName()" style="padding: 8px 12px; background: #e0e7ff; border: none; border-radius: 6px; cursor: pointer; font-size: 16pt;">🎲</button>
+                            <button onclick="app.regenerateVaultName()" style="padding: 8px 12px; background: #e0e7ff; border: none; border-radius: 6px; cursor: pointer; font-size: 16pt;" aria-label="Generate a new vault identity">🎲</button>
                         </div>
                         <p style="margin: 10px 0 0 0; color: #64748b; font-size: 9pt;">
                             This unique name identifies your vault across all saves.<br>
@@ -5321,16 +6253,118 @@
                 }
             }
             
-            navigateToSection(e) {
-                const sectionId = e.target.dataset.section;
+            navigateToSection(event) {
+                const rawTarget = event.currentTarget instanceof HTMLElement
+                    ? event.currentTarget
+                    : event.target instanceof HTMLElement
+                        ? event.target.closest('.tab')
+                        : null;
+
+                if (!(rawTarget instanceof HTMLElement)) {
+                    return;
+                }
+
+                const sectionId = rawTarget.dataset.section;
+                if (!sectionId) {
+                    return;
+                }
+
                 const section = document.getElementById(`${sectionId}-section`);
-                if (section) {
-                    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-                    e.target.classList.add('active');
-                    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (!section) {
+                    return;
+                }
+
+                const tabs = Array.from(document.querySelectorAll('.nav-tabs .tab'));
+                tabs.forEach((tab) => {
+                    if (!(tab instanceof HTMLElement)) {
+                        return;
+                    }
+                    tab.classList.remove('active');
+                    tab.setAttribute('aria-selected', 'false');
+                    tab.setAttribute('tabindex', '-1');
+                });
+
+                rawTarget.classList.add('active');
+                rawTarget.setAttribute('aria-selected', 'true');
+                rawTarget.setAttribute('tabindex', '0');
+
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                const label = rawTarget.textContent ? rawTarget.textContent.trim() : '';
+                if (label) {
+                    announce(`${label} section selected`);
                 }
             }
-            
+
+            initializeTabAccessibility() {
+                const tabs = Array.from(document.querySelectorAll('.nav-tabs .tab'));
+                if (!tabs.length) {
+                    return;
+                }
+
+                const activeTab = tabs.find((tab) => tab instanceof HTMLElement && tab.classList.contains('active'));
+
+                tabs.forEach((tab, index) => {
+                    if (!(tab instanceof HTMLElement)) {
+                        return;
+                    }
+
+                    tab.setAttribute('role', 'tab');
+                    const sectionId = tab.dataset.section;
+                    if (sectionId) {
+                        tab.setAttribute('aria-controls', `${sectionId}-section`);
+                    }
+
+                    const isActive = tab.classList.contains('active') || (!activeTab && index === 0);
+                    tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                    tab.setAttribute('tabindex', isActive ? '0' : '-1');
+
+                    if (!tab.dataset.a11yInitialized) {
+                        tab.addEventListener('keydown', (keyboardEvent) => this.handleTabKeydown(keyboardEvent));
+                        tab.dataset.a11yInitialized = 'true';
+                    }
+                });
+            }
+
+            handleTabKeydown(event) {
+                const tabs = Array.from(document.querySelectorAll('.nav-tabs .tab'));
+                const currentIndex = tabs.indexOf(event.currentTarget);
+
+                if (!tabs.length || currentIndex === -1) {
+                    return;
+                }
+
+                let newIndex = null;
+
+                switch (event.key) {
+                    case 'ArrowRight':
+                        newIndex = (currentIndex + 1) % tabs.length;
+                        break;
+                    case 'ArrowLeft':
+                        newIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+                        break;
+                    case 'Home':
+                        newIndex = 0;
+                        break;
+                    case 'End':
+                        newIndex = tabs.length - 1;
+                        break;
+                    default:
+                        break;
+                }
+
+                if (newIndex === null) {
+                    return;
+                }
+
+                const nextTab = tabs[newIndex];
+                if (nextTab instanceof HTMLElement) {
+                    event.preventDefault();
+                    nextTab.focus();
+                    nextTab.click();
+                }
+            }
+
             toggleModule(moduleName) {
                 this.modules[moduleName] = document.getElementById(`module-${moduleName}`).checked;
                 this.updateModuleVisibility();
@@ -5417,9 +6451,11 @@
                     navTabs.appendChild(chronicTab);
                 }
 
-                navTabs.querySelectorAll('.module-tab').forEach(tab => {
-                    tab.addEventListener('click', (e) => this.navigateToSection(e));
+                navTabs.querySelectorAll('.module-tab').forEach((tab) => {
+                    tab.addEventListener('click', (event) => this.navigateToSection(event));
                 });
+
+                this.initializeTabAccessibility();
 
                 window.localization?.applyTranslations();
             }
@@ -9433,7 +10469,7 @@
                             )
                         )
                     ),
-                    React.createElement('footer', { className: 'no-print' },
+                    React.createElement('footer', { className: 'no-print', role: 'contentinfo' },
                         React.createElement('div', { className: 'page-shell' },
                             React.createElement('div', { className: 'footer-cards' },
                                 React.createElement('div', { className: 'footer-card' },
