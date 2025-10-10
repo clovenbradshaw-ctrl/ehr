@@ -7820,7 +7820,7 @@
                         <div class="warning-box">
                             ⚠️ <strong>No 2FA</strong> - Strong password required:
                             <ul>
-                                <li>At least 16 characters</li>
+                                <li>At least 12 characters</li>
                                 <li>Uppercase, lowercase, numbers, and special characters</li>
                                 <li>Must not be a common password</li>
                                 <li>High entropy (random characters preferred)</li>
@@ -7945,7 +7945,7 @@
 
             validatePasswordRequirements(password, has2FA) {
                 const requirements = {
-                    minLength: has2FA ? 12 : 16,
+                    minLength: 12,
                     requireUpper: true,
                     requireLower: true,
                     requireNumber: true,
@@ -8007,7 +8007,7 @@
                 }
 
                 const checks = {
-                    length: password.length >= (has2FA ? 12 : 16),
+                    length: password.length >= 12,
                     upper: /[A-Z]/.test(password),
                     lower: /[a-z]/.test(password),
                     number: /[0-9]/.test(password),
