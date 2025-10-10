@@ -12065,26 +12065,10 @@
                     title.textContent = vault.displayName || vault.vaultIdentity || 'Encrypted Vault';
                     card.appendChild(title);
 
-                    if (vault.vaultIdentity) {
-                        const identity = document.createElement('span');
-                        identity.className = 'vault-identity-pill';
-                        identity.textContent = `🔷 ${vault.vaultIdentity}`;
-                        card.appendChild(identity);
-                    }
-
-                    const meta = document.createElement('div');
-                    meta.className = 'vault-card-meta';
-                    meta.appendChild(this.buildMetaRow('Last opened', this.formatTimestamp(vault.lastOpened, 'Never')));
-                    meta.appendChild(this.buildMetaRow('Last saved', this.formatTimestamp(vault.lastModified || vault.savedDate, 'Unknown')));
-
-                    if (vault.fileName) {
-                        const sizeText = this.formatFileSize(vault.lastKnownSize);
-                        const fileRow = `${vault.fileName}${sizeText ? ` • ${sizeText}` : ''}`;
-                        meta.appendChild(this.buildMetaRow('File', fileRow));
-                    }
-
-                    meta.appendChild(this.buildMetaRow('Security', vault.requires2FA ? 'Password + authenticator code' : 'Password only'));
-                    card.appendChild(meta);
+                const meta = document.createElement('div');
+                meta.className = 'vault-card-meta';
+                meta.appendChild(this.buildMetaRow('Last updated', this.formatTimestamp(vault.lastModified || vault.savedDate, 'Unknown')));
+                card.appendChild(meta);
 
                     const actions = document.createElement('div');
                     actions.className = 'vault-card-actions';
