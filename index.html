@@ -11422,9 +11422,33 @@
                         return arr;
                     };
 
-                    const salt = base64ToArray(encryptedData.salt);
-                    const iv = base64ToArray(encryptedData.iv);
-                    const data = base64ToArray(encryptedData.data);
+                    const normalizeChunk = (value, label) => {
+                        if (value instanceof Uint8Array) {
+                            return value;
+                        }
+
+                        if (Array.isArray(value)) {
+                            return new Uint8Array(value);
+                        }
+
+                        if (value && typeof value === 'object' && value.type === 'Buffer' && Array.isArray(value.data)) {
+                            return new Uint8Array(value.data);
+                        }
+
+                        if (typeof value === 'string') {
+                            try {
+                                return base64ToArray(value);
+                            } catch (error) {
+                                throw new Error(`Unable to decode ${label} from base64.`);
+                            }
+                        }
+
+                        throw new Error(`Unsupported encrypted data format for ${label}.`);
+                    };
+
+                    const salt = normalizeChunk(encryptedData?.salt, 'salt');
+                    const iv = normalizeChunk(encryptedData?.iv, 'IV');
+                    const data = normalizeChunk(encryptedData?.data, 'payload');
                     const key = await this.deriveKey(password, salt);
 
                     const decrypted = await crypto.subtle.decrypt(
