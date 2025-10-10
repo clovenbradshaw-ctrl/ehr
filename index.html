@@ -8417,8 +8417,18 @@
                     .join('\n');
             }
 
+            getCanonicalCodeRepresentation(htmlContent = null) {
+                const source = htmlContent ?? this.getApplicationHTML();
+                const criticalSections = this.extractCriticalCode(source);
+                if (criticalSections && criticalSections.trim().length > 0) {
+                    return criticalSections;
+                }
+
+                return source || '';
+            }
+
             async hashCode(htmlContent) {
-                const criticalSections = this.extractCriticalCode(htmlContent);
+                const canonicalContent = this.getCanonicalCodeRepresentation(htmlContent);
                 const encoder = new TextEncoder();
                 const webCrypto = window.crypto || globalThis.crypto;
 
@@ -8428,7 +8438,7 @@
 
                 const hashBuffer = await webCrypto.subtle.digest(
                     'SHA-256',
-                    encoder.encode(criticalSections || htmlContent)
+                    encoder.encode(canonicalContent)
                 );
 
                 return btoa(String.fromCharCode(...new Uint8Array(hashBuffer)));
@@ -8494,6 +8504,7 @@
                 }
 
                 const htmlContent = this.getApplicationHTML();
+                const canonicalContent = this.getCanonicalCodeRepresentation(htmlContent);
 
                 if (codeHash) {
                     const currentHash = await this.hashCode(htmlContent);
@@ -8505,9 +8516,17 @@
                 if (codeSignature) {
                     const hmacKey = await this.deriveHMACKey(password);
                     if (hmacKey) {
-                        const expectedSignature = await this.createHMAC(hmacKey, htmlContent);
+                        let expectedSignature = '';
+
+                        if (canonicalContent) {
+                            expectedSignature = await this.createHMAC(hmacKey, canonicalContent);
+                        }
+
                         if (expectedSignature && expectedSignature !== codeSignature) {
-                            throw new Error('TAMPERING_DETECTED');
+                            const legacySignature = await this.createHMAC(hmacKey, htmlContent);
+                            if (legacySignature !== codeSignature) {
+                                throw new Error('TAMPERING_DETECTED');
+                            }
                         }
                     }
                 }
@@ -8672,9 +8691,14 @@
 
                 try {
                     const htmlContent = this.getApplicationHTML();
+                    const canonicalContent = this.getCanonicalCodeRepresentation(htmlContent);
                     const codeHash = await this.hashCode(htmlContent);
                     const hmacKey = await this.deriveHMACKey(password);
-                    const codeSignature = await this.createHMAC(hmacKey, htmlContent);
+                    let codeSignature = '';
+
+                    if (hmacKey && canonicalContent) {
+                        codeSignature = await this.createHMAC(hmacKey, canonicalContent);
+                    }
 
                     formData.codeHash = codeHash;
                     formData.codeSignature = codeSignature;
