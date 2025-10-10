@@ -2430,6 +2430,15 @@
         }
         
         @media (max-width: 768px) {
+            .site-header {
+                position: static;
+                width: 100%;
+            }
+
+            body:not(:has(#mainContent[style*="display: block"])) .page-shell {
+                padding-top: var(--layout-gutter);
+            }
+
             .grid-2,
             .grid-3 {
                 grid-template-columns: 1fr;
