@@ -1217,6 +1217,24 @@
             transform: translateY(-1px);
         }
 
+        .vault-manager-button[data-variant="ghost"] {
+            background: rgba(148, 163, 184, 0.12);
+            color: #cbd5f5;
+            padding: 8px 14px;
+        }
+
+        .vault-manager-button[data-variant="ghost"]:hover {
+            background: rgba(148, 163, 184, 0.22);
+            color: #38bdf8;
+            transform: translateY(-1px);
+        }
+
+        .vault-manager-button[data-variant="ghost"][disabled] {
+            opacity: 0.45;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .vault-manager-button:focus-visible {
             outline: 3px solid #fbbf24;
             outline-offset: 2px;
@@ -1266,10 +1284,157 @@
             justify-content: center;
         }
 
+        .vault-manager-organizer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .vault-folder-panel,
+        .vault-tag-panel {
+            flex: 1 1 280px;
+            background: rgba(15, 23, 42, 0.55);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .vault-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .vault-panel-header h3 {
+            margin: 0;
+            font-size: 1rem;
+            color: #e0f2fe;
+        }
+
+        .vault-folder-list,
+        .vault-tag-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .vault-folder-button,
+        .vault-tag-filter {
+            width: 100%;
+            text-align: left;
+            background: rgba(148, 163, 184, 0.15);
+            border: 1px solid transparent;
+            border-radius: 12px;
+            padding: 8px 12px;
+            color: #e2e8f0;
+            cursor: pointer;
+            transition: background 0.2s, border 0.2s, transform 0.2s;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .vault-folder-button::before {
+            content: '';
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            background: rgba(148, 163, 184, 0.25);
+        }
+
+        .vault-folder-button[data-folder-id=""]::before {
+            display: none;
+        }
+
+        .vault-folder-button[data-depth] {
+            padding-left: calc(12px + (var(--depth, 0) * 14px));
+        }
+
+        .vault-folder-button:hover,
+        .vault-tag-filter:hover {
+            background: rgba(148, 163, 184, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .vault-folder-button.is-active,
+        .vault-tag-filter.is-active {
+            background: rgba(56, 189, 248, 0.2);
+            border-color: rgba(56, 189, 248, 0.6);
+            color: #38bdf8;
+        }
+
+        .vault-tag-filter {
+            justify-content: space-between;
+        }
+
+        .vault-tag-filter span {
+            flex: 1 1 auto;
+        }
+
         .vault-card-grid {
             display: grid;
             gap: 20px;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        }
+
+        .vault-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .vault-group-versions {
+            background: rgba(15, 23, 42, 0.45);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: 14px;
+            padding: 8px 12px;
+        }
+
+        .vault-group-versions summary {
+            cursor: pointer;
+            color: #cbd5f5;
+            font-weight: 600;
+            outline: none;
+        }
+
+        .vault-group-versions summary:focus-visible {
+            outline: 3px solid #fbbf24;
+            outline-offset: 2px;
+        }
+
+        .vault-group-versions[open] summary {
+            margin-bottom: 8px;
+        }
+
+        .vault-group-versions summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .vault-group-versions summary::before {
+            content: '▸';
+            display: inline-block;
+            margin-right: 8px;
+            transition: transform 0.2s;
+        }
+
+        .vault-group-versions[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        .vault-group-versions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .vault-card {
@@ -1287,6 +1452,15 @@
             border-color: rgba(56, 189, 248, 0.5);
             transform: translateY(-2px);
             box-shadow: 0 12px 30px rgba(15, 23, 42, 0.35);
+        }
+
+        .vault-card--version {
+            background: rgba(15, 23, 42, 0.45);
+            border-style: dashed;
+        }
+
+        .vault-card--version:hover {
+            border-color: rgba(56, 189, 248, 0.35);
         }
 
         .vault-card h3 {
@@ -1308,12 +1482,28 @@
             width: fit-content;
         }
 
+        .vault-version-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(99, 102, 241, 0.18);
+            color: #c7d2fe;
+            padding: 3px 9px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
         .vault-card-meta {
             display: flex;
             flex-direction: column;
             gap: 4px;
             font-size: 0.85rem;
             color: #94a3b8;
+        }
+
+        .vault-card-meta strong {
+            color: #cbd5f5;
         }
 
         .vault-card-actions {
@@ -1344,16 +1534,6 @@
             transform: translateY(-1px);
         }
 
-        .vault-card-actions button[data-variant="rename"] {
-            background: rgba(148, 163, 184, 0.18);
-            color: #e2e8f0;
-        }
-
-        .vault-card-actions button[data-variant="rename"]:hover {
-            background: rgba(148, 163, 184, 0.28);
-            transform: translateY(-1px);
-        }
-
         .vault-card-actions button[data-variant="remove"] {
             background: rgba(248, 113, 113, 0.14);
             color: #f87171;
@@ -1367,6 +1547,82 @@
         .vault-card-actions button:focus-visible {
             outline: 3px solid #fbbf24;
             outline-offset: 2px;
+        }
+
+        .vault-folder-control,
+        .vault-tag-editor {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .vault-folder-control label,
+        .vault-tag-editor label {
+            font-size: 0.8rem;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            color: rgba(148, 163, 184, 0.85);
+        }
+
+        .vault-folder-select {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            border-radius: 10px;
+            padding: 8px 12px;
+            color: #e2e8f0;
+            font-size: 0.9rem;
+        }
+
+        .vault-tag-list-inline {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .vault-tag-chip {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .vault-tag-chip button {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .vault-tag-input {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            border-radius: 10px;
+            padding: 8px 12px;
+            color: #e2e8f0;
+            font-size: 0.9rem;
+        }
+
+        .vault-tag-input::placeholder {
+            color: rgba(148, 163, 184, 0.7);
+        }
+
+        .vault-tag-help {
+            font-size: 0.75rem;
+            color: rgba(148, 163, 184, 0.7);
+        }
+
+        @media (max-width: 840px) {
+            .vault-card-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .chart-controls {
@@ -3133,6 +3389,22 @@
                     <button type="button" id="vaultManagerCreateBtn" class="vault-manager-button" data-variant="primary" data-i18n-key="vault_manager_create_button">Create New Vault</button>
                     <button type="button" id="vaultManagerImportBtn" class="vault-manager-button" data-variant="secondary" data-i18n-key="vault_manager_import_button">Add Existing Vault</button>
                 </div>
+            </div>
+            <div class="vault-manager-organizer" aria-label="Vault organization controls">
+                <section class="vault-folder-panel" aria-labelledby="vaultManagerFoldersHeading">
+                    <div class="vault-panel-header">
+                        <h3 id="vaultManagerFoldersHeading">Folders</h3>
+                        <button type="button" id="vaultManagerAddFolder" class="vault-manager-button" data-variant="ghost">New Folder</button>
+                    </div>
+                    <ul id="vaultManagerFolderList" class="vault-folder-list" role="tree"></ul>
+                </section>
+                <section class="vault-tag-panel" aria-labelledby="vaultManagerTagsHeading">
+                    <div class="vault-panel-header">
+                        <h3 id="vaultManagerTagsHeading">Tags</h3>
+                        <button type="button" id="vaultManagerClearTag" class="vault-manager-button" data-variant="ghost">Clear</button>
+                    </div>
+                    <div id="vaultManagerTagFilters" class="vault-tag-list" role="list"></div>
+                </section>
             </div>
             <div id="vaultManagerStatus" class="vault-manager-status" aria-live="polite"></div>
             <div id="vaultManagerEmpty" class="vault-manager-empty" hidden>
@@ -11572,9 +11844,15 @@
                 this.statusElement = document.getElementById('vaultManagerStatus');
                 this.searchInput = document.getElementById('vaultManagerSearch');
                 this.fileInput = document.getElementById('vaultManagerFileInput');
+                this.folderListElement = document.getElementById('vaultManagerFolderList');
+                this.addFolderButton = document.getElementById('vaultManagerAddFolder');
+                this.tagFilterContainer = document.getElementById('vaultManagerTagFilters');
+                this.clearTagFilterButton = document.getElementById('vaultManagerClearTag');
 
                 this.pendingAction = null;
                 this.searchTerm = '';
+                this.activeFolderId = null;
+                this.activeTag = null;
 
                 this.attachEventListeners();
                 this.render();
@@ -11592,6 +11870,45 @@
                 if (this.fileInput) {
                     this.fileInput.addEventListener('change', (event) => {
                         this.handleFileInputChange(event);
+                    });
+                }
+
+                if (this.folderListElement) {
+                    this.folderListElement.addEventListener('click', (event) => {
+                        const target = event.target;
+                        if (!(target instanceof HTMLElement)) {
+                            return;
+                        }
+
+                        const button = target.closest('button[data-folder-id]');
+                        if (!(button instanceof HTMLButtonElement)) {
+                            return;
+                        }
+
+                        const folderId = button.dataset.folderId || null;
+                        this.setActiveFolder(folderId);
+                    });
+                }
+
+                if (this.addFolderButton) {
+                    this.addFolderButton.addEventListener('click', () => this.promptForNewFolder());
+                }
+
+                if (this.tagFilterContainer) {
+                    this.tagFilterContainer.addEventListener('click', (event) => {
+                        const target = event.target instanceof HTMLElement ? event.target.closest('button[data-tag]') : null;
+                        if (!(target instanceof HTMLButtonElement)) {
+                            return;
+                        }
+
+                        const tag = target.dataset.tag || '';
+                        this.setActiveTag(tag || null);
+                    });
+                }
+
+                if (this.clearTagFilterButton) {
+                    this.clearTagFilterButton.addEventListener('click', () => {
+                        this.setActiveTag(null);
                     });
                 }
 
@@ -11649,6 +11966,639 @@
                 if (!Array.isArray(this.registry.folders)) {
                     this.registry.folders = [];
                 }
+
+                this.registry.folders = this.registry.folders
+                    .filter((folder) => folder && typeof folder === 'object')
+                    .map((folder) => this.normalizeFolder(folder));
+
+                this.registry.vaults = this.registry.vaults
+                    .filter((vault) => vault && typeof vault === 'object')
+                    .map((vault) => this.normalizeVaultEntry(vault));
+            }
+
+            normalizeFolder(folder) {
+                const normalized = { ...folder };
+                const name = typeof normalized.name === 'string' ? normalized.name.trim() : '';
+
+                normalized.id = typeof normalized.id === 'string' && normalized.id.trim()
+                    ? normalized.id.trim()
+                    : this.generateFolderId();
+                normalized.name = name || 'Untitled Folder';
+                normalized.parentId = typeof normalized.parentId === 'string' && normalized.parentId.trim()
+                    ? normalized.parentId.trim()
+                    : null;
+
+                return normalized;
+            }
+
+            normalizeVaultEntry(entry) {
+                const normalized = { ...entry };
+
+                normalized.id = typeof normalized.id === 'string' && normalized.id.trim()
+                    ? normalized.id.trim()
+                    : this.generateId();
+
+                if (typeof normalized.displayName !== 'string' || !normalized.displayName.trim()) {
+                    const fallback = normalized.vaultIdentity || normalized.fileName || 'Encrypted Vault';
+                    normalized.displayName = fallback;
+                }
+
+                if (!Array.isArray(normalized.tags)) {
+                    if (typeof normalized.tags === 'string' && normalized.tags.trim()) {
+                        normalized.tags = [normalized.tags.trim()];
+                    } else {
+                        normalized.tags = [];
+                    }
+                }
+
+                normalized.tags = normalized.tags
+                    .map((tag) => (typeof tag === 'string' ? tag.trim() : ''))
+                    .filter((tag, index, array) => tag && array.indexOf(tag) === index);
+
+                if (typeof normalized.folderId === 'string' && normalized.folderId.trim()) {
+                    normalized.folderId = normalized.folderId.trim();
+                } else {
+                    normalized.folderId = null;
+                }
+
+                if (!normalized.folderId && typeof normalized.folder === 'string') {
+                    const legacyName = normalized.folder.trim();
+                    if (legacyName && legacyName.toLowerCase() !== 'uncategorized') {
+                        normalized.folderId = this.ensureFolder(legacyName, null);
+                    }
+                    delete normalized.folder;
+                }
+
+                if (normalized.folderId && !this.findFolderById(normalized.folderId)) {
+                    normalized.folderId = null;
+                }
+
+                if (!normalized.notes || typeof normalized.notes !== 'string') {
+                    normalized.notes = '';
+                }
+
+                return normalized;
+            }
+
+            generateFolderId() {
+                return `folder-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+            }
+
+            findFolderById(folderId) {
+                if (!folderId) {
+                    return null;
+                }
+
+                return this.registry.folders.find((folder) => folder.id === folderId) || null;
+            }
+
+            ensureFolder(name, parentId = null) {
+                const trimmed = typeof name === 'string' ? name.trim() : '';
+                if (!trimmed) {
+                    return null;
+                }
+
+                const normalizedParent = typeof parentId === 'string' && parentId.trim()
+                    ? parentId.trim()
+                    : null;
+
+                const existing = this.registry.folders.find((folder) => (
+                    folder.name.toLowerCase() === trimmed.toLowerCase()
+                        && (folder.parentId || null) === normalizedParent
+                ));
+
+                if (existing) {
+                    return existing.id;
+                }
+
+                const newFolder = this.normalizeFolder({
+                    id: this.generateFolderId(),
+                    name: trimmed,
+                    parentId: normalizedParent
+                });
+
+                this.registry.folders.push(newFolder);
+                return newFolder.id;
+            }
+
+            getFolderChildren(parentId = null) {
+                const normalizedParent = parentId || null;
+                return this.registry.folders
+                    .filter((folder) => (folder.parentId || null) === normalizedParent)
+                    .sort((a, b) => a.name.localeCompare(b.name));
+            }
+
+            getFolderOptions(parentId = null, depth = 0, accumulator = []) {
+                const children = this.getFolderChildren(parentId);
+                children.forEach((folder) => {
+                    const labelPrefix = depth > 0 ? `${'• '.repeat(depth)}` : '';
+                    accumulator.push({
+                        id: folder.id,
+                        label: `${labelPrefix}${folder.name}`,
+                        depth
+                    });
+                    this.getFolderOptions(folder.id, depth + 1, accumulator);
+                });
+
+                return accumulator;
+            }
+
+            promptForNewFolder() {
+                const response = window.prompt('Folder name');
+                if (typeof response !== 'string') {
+                    return;
+                }
+
+                const trimmed = response.trim();
+                if (!trimmed) {
+                    return;
+                }
+
+                const parentId = this.activeFolderId;
+                const normalizedParent = typeof parentId === 'string' && parentId.trim() ? parentId.trim() : null;
+                const existing = this.registry.folders.find((folder) => (
+                    folder.name.toLowerCase() === trimmed.toLowerCase()
+                        && (folder.parentId || null) === normalizedParent
+                ));
+
+                const folderId = this.ensureFolder(trimmed, normalizedParent);
+                if (!folderId) {
+                    return;
+                }
+                this.saveRegistry();
+                this.setActiveFolder(folderId);
+                if (existing) {
+                    this.updateStatus(`Switched to folder "${trimmed}".`);
+                } else {
+                    this.updateStatus(`Folder "${trimmed}" created.`);
+                }
+            }
+
+            renderFolderList() {
+                if (!this.folderListElement) {
+                    return;
+                }
+
+                const fragment = document.createDocumentFragment();
+                const allItem = document.createElement('li');
+                allItem.setAttribute('role', 'none');
+                const allButton = document.createElement('button');
+                allButton.type = 'button';
+                allButton.className = 'vault-folder-button';
+                if (!this.activeFolderId) {
+                    allButton.classList.add('is-active');
+                }
+                allButton.dataset.folderId = '';
+                allButton.setAttribute('role', 'treeitem');
+                allButton.setAttribute('aria-level', '1');
+                allButton.setAttribute('aria-current', !this.activeFolderId ? 'true' : 'false');
+                allButton.textContent = 'All vaults';
+                allItem.appendChild(allButton);
+                fragment.appendChild(allItem);
+
+                const buildItems = (parentId = null, depth = 0) => {
+                    const children = this.getFolderChildren(parentId);
+                    children.forEach((folder) => {
+                        const item = document.createElement('li');
+                        item.setAttribute('role', 'none');
+                        const button = document.createElement('button');
+                        button.type = 'button';
+                        button.className = 'vault-folder-button';
+                        if (folder.id === this.activeFolderId) {
+                            button.classList.add('is-active');
+                        }
+                        button.dataset.folderId = folder.id;
+                        button.dataset.depth = String(depth);
+                        button.style.setProperty('--depth', String(depth));
+                        button.setAttribute('role', 'treeitem');
+                        button.setAttribute('aria-level', String(depth + 1));
+                        button.setAttribute('aria-current', folder.id === this.activeFolderId ? 'true' : 'false');
+                        const hasChildren = this.getFolderChildren(folder.id).length > 0;
+                        if (hasChildren) {
+                            button.setAttribute('aria-expanded', 'true');
+                        } else {
+                            button.removeAttribute('aria-expanded');
+                        }
+                        button.textContent = folder.name;
+                        item.appendChild(button);
+                        fragment.appendChild(item);
+                        buildItems(folder.id, depth + 1);
+                    });
+                };
+
+                buildItems();
+
+                this.folderListElement.innerHTML = '';
+                this.folderListElement.appendChild(fragment);
+            }
+
+            setActiveFolder(folderId) {
+                const normalized = typeof folderId === 'string' && folderId.trim()
+                    ? folderId.trim()
+                    : null;
+
+                const resolved = normalized && this.findFolderById(normalized)
+                    ? normalized
+                    : null;
+
+                if (this.activeFolderId === resolved) {
+                    this.activeFolderId = resolved;
+                    this.render();
+                    return;
+                }
+
+                this.activeFolderId = resolved;
+                this.render();
+            }
+
+            assignVaultFolder(vaultId, folderId) {
+                const entry = this.registry.vaults.find((vault) => vault.id === vaultId);
+                if (!entry) {
+                    return;
+                }
+
+                const normalized = typeof folderId === 'string' && folderId.trim()
+                    ? folderId.trim()
+                    : null;
+
+                if (normalized && !this.findFolderById(normalized)) {
+                    this.updateStatus('That folder is no longer available.', true);
+                    return;
+                }
+
+                entry.folderId = normalized;
+                this.saveRegistry();
+                this.render();
+            }
+
+            collectAllTags() {
+                const tagSet = new Set();
+                const activeFolder = this.activeFolderId;
+                this.registry.vaults.forEach((vault) => {
+                    if (activeFolder && vault.folderId !== activeFolder) {
+                        return;
+                    }
+
+                    if (!Array.isArray(vault.tags)) {
+                        return;
+                    }
+
+                    vault.tags.forEach((tag) => {
+                        if (tag) {
+                            tagSet.add(tag);
+                        }
+                    });
+                });
+
+                return Array.from(tagSet).sort((a, b) => a.localeCompare(b));
+            }
+
+            countVaultsWithTag(tag) {
+                const normalized = typeof tag === 'string' ? tag.trim().toLowerCase() : '';
+                if (!normalized) {
+                    return 0;
+                }
+
+                const activeFolder = this.activeFolderId;
+
+                return this.registry.vaults.filter((vault) => {
+                    if (activeFolder && vault.folderId !== activeFolder) {
+                        return false;
+                    }
+
+                    return Array.isArray(vault.tags)
+                        && vault.tags.some((value) => value.toLowerCase() === normalized);
+                }).length;
+            }
+
+            renderTagFilters() {
+                if (!this.tagFilterContainer) {
+                    return;
+                }
+
+                this.tagFilterContainer.innerHTML = '';
+
+                const tags = this.collectAllTags();
+                if (tags.length === 0) {
+                    const empty = document.createElement('p');
+                    empty.className = 'vault-tag-help';
+                    empty.textContent = 'Add tags to your vaults to filter them quickly.';
+                    this.tagFilterContainer.appendChild(empty);
+                } else {
+                    tags.forEach((tag) => {
+                        const count = this.countVaultsWithTag(tag);
+                        const button = document.createElement('button');
+                        button.type = 'button';
+                        button.className = 'vault-tag-filter';
+                        const isActive = this.activeTag && this.activeTag.toLowerCase() === tag.toLowerCase();
+                        if (isActive) {
+                            button.classList.add('is-active');
+                        }
+                        button.dataset.tag = tag;
+                        button.setAttribute('role', 'listitem');
+                        button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+
+                        const label = document.createElement('span');
+                        label.textContent = tag;
+                        button.appendChild(label);
+
+                        const badge = document.createElement('span');
+                        badge.textContent = count.toString();
+                        badge.setAttribute('aria-hidden', 'true');
+                        button.appendChild(badge);
+
+                        this.tagFilterContainer.appendChild(button);
+                    });
+                }
+
+                if (this.clearTagFilterButton) {
+                    const disabled = !this.activeTag;
+                    this.clearTagFilterButton.disabled = disabled;
+                    this.clearTagFilterButton.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+                }
+            }
+
+            setActiveTag(tag) {
+                const normalized = typeof tag === 'string' && tag.trim()
+                    ? tag.trim()
+                    : null;
+
+                if (normalized && this.activeTag && this.activeTag.toLowerCase() === normalized.toLowerCase()) {
+                    this.activeTag = null;
+                } else {
+                    this.activeTag = normalized;
+                }
+
+                this.render();
+            }
+
+            addTagToVault(vaultId, tag) {
+                const normalized = typeof tag === 'string' ? tag.trim() : '';
+                if (!normalized) {
+                    return;
+                }
+
+                const entry = this.registry.vaults.find((vault) => vault.id === vaultId);
+                if (!entry) {
+                    return;
+                }
+
+                const existing = Array.isArray(entry.tags) ? entry.tags : [];
+                if (existing.some((value) => value.toLowerCase() === normalized.toLowerCase())) {
+                    this.updateStatus(`Tag "${normalized}" already added.`, true);
+                    return;
+                }
+
+                existing.push(normalized);
+                existing.sort((a, b) => a.localeCompare(b));
+                entry.tags = existing;
+                this.saveRegistry();
+                this.render();
+                this.updateStatus(`Tag "${normalized}" added.`);
+            }
+
+            removeTagFromVault(vaultId, tag) {
+                const entry = this.registry.vaults.find((vault) => vault.id === vaultId);
+                if (!entry || !Array.isArray(entry.tags)) {
+                    return;
+                }
+
+                const normalized = typeof tag === 'string' ? tag.trim() : '';
+                if (!normalized) {
+                    return;
+                }
+
+                const index = entry.tags.findIndex((value) => value.toLowerCase() === normalized.toLowerCase());
+                if (index === -1) {
+                    return;
+                }
+
+                entry.tags.splice(index, 1);
+                this.saveRegistry();
+
+                if (this.activeTag && this.activeTag.toLowerCase() === normalized.toLowerCase()) {
+                    this.activeTag = null;
+                }
+
+                this.render();
+                this.updateStatus(`Tag "${normalized}" removed.`);
+            }
+
+            buildTagEditor(vault, { showHelp = true } = {}) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'vault-tag-editor';
+
+                const label = document.createElement('label');
+                const inputId = `vault-tag-input-${vault.id}`;
+                label.setAttribute('for', inputId);
+                label.textContent = 'Tags';
+                wrapper.appendChild(label);
+
+                const tagsContainer = document.createElement('div');
+                tagsContainer.className = 'vault-tag-list-inline';
+
+                if (Array.isArray(vault.tags) && vault.tags.length) {
+                    vault.tags.forEach((tag) => {
+                        const chip = document.createElement('span');
+                        chip.className = 'vault-tag-chip';
+                        chip.textContent = tag;
+
+                        const removeButton = document.createElement('button');
+                        removeButton.type = 'button';
+                        removeButton.setAttribute('aria-label', `Remove tag ${tag}`);
+                        removeButton.textContent = '×';
+                        removeButton.addEventListener('click', () => this.removeTagFromVault(vault.id, tag));
+                        chip.appendChild(removeButton);
+                        tagsContainer.appendChild(chip);
+                    });
+                } else {
+                    const empty = document.createElement('span');
+                    empty.className = 'vault-tag-help';
+                    empty.textContent = 'No tags yet.';
+                    tagsContainer.appendChild(empty);
+                }
+
+                wrapper.appendChild(tagsContainer);
+
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = inputId;
+                input.className = 'vault-tag-input';
+                input.placeholder = 'Add a tag and press Enter';
+
+                input.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        const value = input.value.trim();
+                        if (value) {
+                            this.addTagToVault(vault.id, value);
+                            input.value = '';
+                        }
+                    }
+                });
+
+                input.addEventListener('blur', () => {
+                    const value = input.value.trim();
+                    if (value) {
+                        this.addTagToVault(vault.id, value);
+                        input.value = '';
+                    }
+                });
+
+                wrapper.appendChild(input);
+
+                if (showHelp) {
+                    const help = document.createElement('p');
+                    help.className = 'vault-tag-help';
+                    help.textContent = 'Tags make it easier to search and filter related vaults.';
+                    wrapper.appendChild(help);
+                }
+
+                return wrapper;
+            }
+
+            buildFolderControl(vault) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'vault-folder-control';
+
+                const selectId = `vault-folder-${vault.id}`;
+                const label = document.createElement('label');
+                label.setAttribute('for', selectId);
+                label.textContent = 'Folder';
+                wrapper.appendChild(label);
+
+                const select = document.createElement('select');
+                select.id = selectId;
+                select.className = 'vault-folder-select';
+
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = 'No folder';
+                select.appendChild(defaultOption);
+
+                const options = this.getFolderOptions();
+                options.forEach((option) => {
+                    const opt = document.createElement('option');
+                    opt.value = option.id;
+                    opt.textContent = option.label;
+                    select.appendChild(opt);
+                });
+
+                select.value = vault.folderId || '';
+                select.addEventListener('change', () => {
+                    this.assignVaultFolder(vault.id, select.value);
+                });
+
+                wrapper.appendChild(select);
+                return wrapper;
+            }
+
+            getVersionTimestamp(vault) {
+                const opened = this.parseTime(vault.lastOpened);
+                const modified = this.parseTime(vault.lastModified || vault.savedDate);
+                const added = this.parseTime(vault.addedAt);
+                return Math.max(opened, modified, added, 0);
+            }
+
+            buildVaultGroups(vaults) {
+                const groups = new Map();
+
+                vaults.forEach((vault) => {
+                    const key = (vault.vaultIdentity && vault.vaultIdentity.trim())
+                        || (vault.displayName && vault.displayName.trim())
+                        || vault.fileName
+                        || vault.id;
+
+                    if (!groups.has(key)) {
+                        groups.set(key, []);
+                    }
+
+                    groups.get(key).push(vault);
+                });
+
+                const list = Array.from(groups.values()).map((items) => {
+                    const sorted = items.slice().sort((a, b) => this.getVersionTimestamp(b) - this.getVersionTimestamp(a));
+                    const primary = sorted[0];
+                    return {
+                        identity: primary?.vaultIdentity || primary?.displayName || 'Vault',
+                        vaults: sorted,
+                        primaryTimestamp: this.getVersionTimestamp(primary || {})
+                    };
+                });
+
+                list.sort((a, b) => b.primaryTimestamp - a.primaryTimestamp);
+                return list;
+            }
+
+            buildVaultCard(vault, { isPrimary = false, totalVersions = 1 } = {}) {
+                const card = document.createElement('article');
+                card.className = 'vault-card';
+                card.dataset.vaultId = vault.id;
+
+                const title = document.createElement('h3');
+                title.textContent = vault.displayName || vault.vaultIdentity || 'Encrypted Vault';
+                card.appendChild(title);
+
+                const badgeRow = document.createElement('div');
+                badgeRow.className = 'vault-tag-list-inline';
+
+                if (vault.vaultIdentity) {
+                    const identity = document.createElement('span');
+                    identity.className = 'vault-identity-pill';
+                    identity.textContent = `🔷 ${vault.vaultIdentity}`;
+                    badgeRow.appendChild(identity);
+                }
+
+                const versionLabel = document.createElement('span');
+                versionLabel.className = 'vault-version-label';
+                if (isPrimary) {
+                    versionLabel.textContent = totalVersions > 1
+                        ? 'Latest version'
+                        : 'Current version';
+                } else {
+                    const savedTime = this.formatTimestamp(vault.lastModified || vault.savedDate, 'Unknown date');
+                    versionLabel.textContent = `Saved ${savedTime}`;
+                }
+                badgeRow.appendChild(versionLabel);
+
+                card.appendChild(badgeRow);
+
+                const meta = document.createElement('div');
+                meta.className = 'vault-card-meta';
+                meta.appendChild(this.buildMetaRow('Last opened', this.formatTimestamp(vault.lastOpened, 'Never')));
+                meta.appendChild(this.buildMetaRow('Last saved', this.formatTimestamp(vault.lastModified || vault.savedDate, 'Unknown')));
+
+                if (vault.fileName) {
+                    const sizeText = this.formatFileSize(vault.lastKnownSize);
+                    const fileRow = `${vault.fileName}${sizeText ? ` • ${sizeText}` : ''}`;
+                    meta.appendChild(this.buildMetaRow('File', fileRow));
+                }
+
+                meta.appendChild(this.buildMetaRow('Security', vault.requires2FA ? 'Password + authenticator code' : 'Password only'));
+                card.appendChild(meta);
+
+                card.appendChild(this.buildFolderControl(vault));
+                card.appendChild(this.buildTagEditor(vault, { showHelp: isPrimary }));
+
+                const actions = document.createElement('div');
+                actions.className = 'vault-card-actions';
+
+                const openButton = document.createElement('button');
+                openButton.type = 'button';
+                openButton.dataset.variant = 'open';
+                openButton.textContent = 'Open Vault';
+                openButton.addEventListener('click', () => this.openVault(vault.id));
+                actions.appendChild(openButton);
+
+                const removeButton = document.createElement('button');
+                removeButton.type = 'button';
+                removeButton.dataset.variant = 'remove';
+                removeButton.textContent = 'Remove';
+                removeButton.addEventListener('click', () => this.removeVault(vault.id));
+                actions.appendChild(removeButton);
+
+                card.appendChild(actions);
+                return card;
             }
 
             saveRegistry() {
@@ -11756,8 +12706,7 @@
                         requires2FA: Boolean(metadata.requires2FA),
                         schemaVersion: metadata.schemaVersion || null,
                         appVersion: metadata.appVersion || null,
-                        folder: 'Uncategorized',
-                        favorite: false,
+                        folderId: null,
                         notes: '',
                         tags: [],
                         addedAt: nowIso
@@ -11770,8 +12719,9 @@
                             ...baseEntry,
                             id: previous.id || baseEntry.id,
                             displayName: previous.displayName || baseEntry.displayName,
-                            folder: previous.folder || baseEntry.folder,
-                            favorite: Boolean(previous.favorite),
+                            folderId: typeof previous.folderId === 'string' && previous.folderId.trim()
+                                ? previous.folderId.trim()
+                                : null,
                             notes: previous.notes || '',
                             tags: Array.isArray(previous.tags) ? previous.tags : [],
                             addedAt: previous.addedAt || nowIso,
@@ -11834,30 +12784,6 @@
                     const message = error instanceof Error ? error.message : 'Unable to open that vault file.';
                     this.updateStatus(message, true);
                 }
-            }
-
-            renameVault(vaultId) {
-                const entry = this.registry.vaults.find((item) => item.id === vaultId);
-                if (!entry) {
-                    return;
-                }
-
-                const currentName = entry.displayName || entry.vaultIdentity || 'Encrypted Vault';
-                const response = window.prompt('Name this vault', currentName);
-
-                if (typeof response !== 'string') {
-                    return;
-                }
-
-                const trimmed = response.trim();
-                if (!trimmed) {
-                    return;
-                }
-
-                entry.displayName = trimmed;
-                this.saveRegistry();
-                this.render();
-                this.updateStatus('Vault name updated.');
             }
 
             removeVault(vaultId) {
@@ -12005,35 +12931,37 @@
             getFilteredVaults() {
                 this.ensureRegistryShape();
                 const vaults = [...this.registry.vaults];
-                const term = this.searchTerm.trim();
+                const term = this.searchTerm.trim().toLowerCase();
+                const activeFolder = this.activeFolderId;
+                const activeTag = this.activeTag ? this.activeTag.toLowerCase() : null;
 
-                const filtered = term
-                    ? vaults.filter((vault) => {
-                        const haystacks = [
-                            vault.displayName,
-                            vault.vaultIdentity,
-                            vault.notes,
-                            ...(Array.isArray(vault.tags) ? vault.tags : [])
-                        ].filter(Boolean).map((value) => value.toString().toLowerCase());
-                        const searchTerm = term.toLowerCase();
-                        return haystacks.some((value) => value.includes(searchTerm));
-                    })
-                    : vaults;
-
-                filtered.sort((a, b) => {
-                    const aTime = this.parseTime(a.lastOpened);
-                    const bTime = this.parseTime(b.lastOpened);
-
-                    if (aTime !== bTime) {
-                        return bTime - aTime;
+                return vaults.filter((vault) => {
+                    if (activeFolder && vault.folderId !== activeFolder) {
+                        return false;
                     }
 
-                    const aName = (a.displayName || a.vaultIdentity || '').toString().toLowerCase();
-                    const bName = (b.displayName || b.vaultIdentity || '').toString().toLowerCase();
-                    return aName.localeCompare(bName);
-                });
+                    if (activeTag) {
+                        const tags = Array.isArray(vault.tags) ? vault.tags : [];
+                        const matchesTag = tags.some((tag) => tag.toLowerCase() === activeTag);
+                        if (!matchesTag) {
+                            return false;
+                        }
+                    }
 
-                return filtered;
+                    if (!term) {
+                        return true;
+                    }
+
+                    const haystacks = [
+                        vault.displayName,
+                        vault.vaultIdentity,
+                        vault.notes,
+                        vault.fileName,
+                        ...(Array.isArray(vault.tags) ? vault.tags : [])
+                    ].filter(Boolean).map((value) => value.toString().toLowerCase());
+
+                    return haystacks.some((value) => value.includes(term));
+                });
             }
 
             setEmptyState(isEmpty) {
@@ -12051,73 +12979,66 @@
                     return;
                 }
 
+                this.renderFolderList();
+                this.renderTagFilters();
+
                 const vaults = this.getFilteredVaults();
                 this.listElement.innerHTML = '';
 
                 this.setEmptyState(vaults.length === 0);
 
-                vaults.forEach((vault) => {
-                    const card = document.createElement('article');
-                    card.className = 'vault-card';
-                    card.dataset.vaultId = vault.id;
+                const groups = this.buildVaultGroups(vaults);
+                groups.forEach((group) => {
+                    const section = document.createElement('section');
+                    section.className = 'vault-group';
 
-                    const title = document.createElement('h3');
-                    title.textContent = vault.displayName || vault.vaultIdentity || 'Encrypted Vault';
-                    card.appendChild(title);
-
-                    if (vault.vaultIdentity) {
-                        const identity = document.createElement('span');
-                        identity.className = 'vault-identity-pill';
-                        identity.textContent = `🔷 ${vault.vaultIdentity}`;
-                        card.appendChild(identity);
+                    const [latest, ...previousVersions] = group.vaults;
+                    if (latest) {
+                        section.appendChild(this.buildVaultCard(latest, {
+                            isPrimary: true,
+                            totalVersions: group.vaults.length
+                        }));
                     }
 
-                    const meta = document.createElement('div');
-                    meta.className = 'vault-card-meta';
-                    meta.appendChild(this.buildMetaRow('Last opened', this.formatTimestamp(vault.lastOpened, 'Never')));
-                    meta.appendChild(this.buildMetaRow('Last saved', this.formatTimestamp(vault.lastModified || vault.savedDate, 'Unknown')));
+                    if (previousVersions.length) {
+                        const versions = document.createElement('details');
+                        versions.className = 'vault-group-versions';
+                        versions.setAttribute('role', 'group');
+                        versions.setAttribute('aria-label', `Previous versions of ${group.identity}`);
 
-                    if (vault.fileName) {
-                        const sizeText = this.formatFileSize(vault.lastKnownSize);
-                        const fileRow = `${vault.fileName}${sizeText ? ` • ${sizeText}` : ''}`;
-                        meta.appendChild(this.buildMetaRow('File', fileRow));
+                        const summary = document.createElement('summary');
+                        summary.textContent = `${previousVersions.length} earlier version${previousVersions.length === 1 ? '' : 's'}`;
+                        versions.appendChild(summary);
+
+                        const list = document.createElement('div');
+                        list.className = 'vault-group-versions-list';
+
+                        previousVersions.forEach((version) => {
+                            const card = this.buildVaultCard(version, {
+                                isPrimary: false,
+                                totalVersions: group.vaults.length
+                            });
+                            card.classList.add('vault-card--version');
+                            list.appendChild(card);
+                        });
+
+                        versions.appendChild(list);
+                        section.appendChild(versions);
                     }
 
-                    meta.appendChild(this.buildMetaRow('Security', vault.requires2FA ? 'Password + authenticator code' : 'Password only'));
-                    card.appendChild(meta);
-
-                    const actions = document.createElement('div');
-                    actions.className = 'vault-card-actions';
-
-                    const openButton = document.createElement('button');
-                    openButton.type = 'button';
-                    openButton.dataset.variant = 'open';
-                    openButton.textContent = 'Open Vault';
-                    openButton.addEventListener('click', () => this.openVault(vault.id));
-                    actions.appendChild(openButton);
-
-                    const renameButton = document.createElement('button');
-                    renameButton.type = 'button';
-                    renameButton.dataset.variant = 'rename';
-                    renameButton.textContent = 'Rename';
-                    renameButton.addEventListener('click', () => this.renameVault(vault.id));
-                    actions.appendChild(renameButton);
-
-                    const removeButton = document.createElement('button');
-                    removeButton.type = 'button';
-                    removeButton.dataset.variant = 'remove';
-                    removeButton.textContent = 'Remove';
-                    removeButton.addEventListener('click', () => this.removeVault(vault.id));
-                    actions.appendChild(removeButton);
-
-                    card.appendChild(actions);
-                    this.listElement.appendChild(card);
+                    this.listElement.appendChild(section);
                 });
             }
 
             buildMetaRow(label, value) {
                 const row = document.createElement('div');
-                row.textContent = `${label}: ${value}`;
+                const labelElement = document.createElement('strong');
+                labelElement.textContent = `${label}:`;
+                const valueElement = document.createElement('span');
+                valueElement.textContent = value;
+                row.appendChild(labelElement);
+                row.appendChild(document.createTextNode(' '));
+                row.appendChild(valueElement);
                 return row;
             }
 
