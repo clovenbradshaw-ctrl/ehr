@@ -6056,6 +6056,18 @@
                 document.getElementById('generateRecoveryKeyBtn')?.addEventListener('click', () => this.handleGenerateRecoveryKey());
                 document.getElementById('disableRecoveryKeyBtn')?.addEventListener('click', () => this.handleDisableRecoveryKey());
 
+                ['unlock-password', 'totp-code', 'recovery-key'].forEach((inputId) => {
+                    const input = document.getElementById(inputId);
+                    if (input instanceof HTMLInputElement) {
+                        input.addEventListener('keydown', (event) => {
+                            if (event.key === 'Enter') {
+                                event.preventDefault();
+                                this.attemptUnlock();
+                            }
+                        });
+                    }
+                });
+
                 const profilePhotoInput = document.getElementById('profilePhotoInput');
                 if (profilePhotoInput) {
                     profilePhotoInput.addEventListener('change', (event) => this.handleProfilePhotoSelect(event));
