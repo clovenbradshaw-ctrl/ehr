@@ -13473,6 +13473,29 @@
         }
 
         // Initialize localization and app
+        const appReadyDeferred = (() => {
+            let resolveFn;
+            let settled = false;
+            const promise = new Promise((res) => {
+                resolveFn = (value) => {
+                    if (settled) {
+                        return;
+                    }
+                    settled = true;
+                    res(value);
+                };
+            });
+
+            return {
+                promise,
+                resolve(value) {
+                    if (typeof resolveFn === 'function') {
+                        resolveFn(value);
+                    }
+                }
+            };
+        })();
+        window.appReady = appReadyDeferred.promise;
         const localization = new LocalizationManager();
         window.localization = localization;
 
@@ -13493,9 +13516,16 @@
 
         Promise.allSettled([localizationReady, compressionReady])
             .finally(() => {
-                window.app = new HealthVaultApp();
-                window.vaultManager = new VaultManager(window.app);
-                window.vaultManager.syncWithApp();
+                try {
+                    window.app = new HealthVaultApp();
+                    window.vaultManager = new VaultManager(window.app);
+                    window.vaultManager.syncWithApp();
+                    appReadyDeferred.resolve(window.app);
+                    window.dispatchEvent(new CustomEvent('app:ready', { detail: { app: window.app } }));
+                } catch (error) {
+                    appReadyDeferred.resolve(null);
+                    throw error;
+                }
             });
 
         offlineBundleManager.init();
@@ -13510,12 +13540,53 @@
         const classNames = (...classes) => classes.filter(Boolean).join(' ');
 
         function HealthVaultLanding() {
+            const [isAppReady, setIsAppReady] = useState(Boolean(window.app?.promptVaultImport));
+            const [hoveredVault, setHoveredVault] = useState(null);
+
             useEffect(() => {
                 window.offlineBundleManager?.init?.();
                 window.offlineBundleManager?.refresh?.();
             }, []);
 
-            const [hoveredVault, setHoveredVault] = useState(null);
+            useEffect(() => {
+                if (isAppReady) {
+                    return undefined;
+                }
+
+                let isSubscribed = true;
+
+                const markReadyIfAvailable = (appInstance) => {
+                    if (!isSubscribed) {
+                        return;
+                    }
+
+                    const app = appInstance || window.app;
+                    if (app && typeof app.promptVaultImport === 'function') {
+                        setIsAppReady(true);
+                    }
+                };
+
+                const handleAppReadyEvent = (event) => {
+                    markReadyIfAvailable(event?.detail?.app);
+                };
+
+                if (window.appReady && typeof window.appReady.then === 'function') {
+                    window.appReady.then((appInstance) => {
+                        markReadyIfAvailable(appInstance);
+                    }).catch(() => {
+                        // Swallow errors - readiness will be handled elsewhere if needed
+                    });
+                }
+
+                window.addEventListener('app:ready', handleAppReadyEvent);
+                // In case the app finished initializing before listeners attached
+                markReadyIfAvailable(window.app);
+
+                return () => {
+                    isSubscribed = false;
+                    window.removeEventListener('app:ready', handleAppReadyEvent);
+                };
+            }, [isAppReady]);
 
             const recentVaults = [
                 {
@@ -13573,6 +13644,10 @@
 
             const handleOpenVault = (event) => {
                 event?.preventDefault?.();
+                if (!isAppReady) {
+                    return;
+                }
+
                 if (window.app?.promptVaultImport) {
                     window.app.promptVaultImport();
                 } else {
@@ -13581,6 +13656,10 @@
             };
 
             const handleCreateVault = () => {
+                if (!isAppReady) {
+                    return;
+                }
+
                 if (window.app?.startSetup) {
                     window.app.startSetup();
                 }
@@ -13617,16 +13696,32 @@
                                     React.createElement('button', {
                                         onClick: handleOpenVault,
                                         type: 'button',
-                                        className: 'px-6 py-3 bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-2xl transition-all hover:scale-105'
+                                        disabled: !isAppReady,
+                                        'aria-busy': !isAppReady ? 'true' : undefined,
+                                        className: classNames(
+                                            'px-6 py-3 rounded-xl font-semibold transition-all',
+                                            'bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 text-white shadow-lg',
+                                            isAppReady
+                                                ? 'hover:shadow-2xl hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-purple-500'
+                                                : 'opacity-60 cursor-not-allowed'
+                                        )
                                     },
-                                        'Open an Existing Vault'
+                                        isAppReady ? 'Open an Existing Vault' : 'Preparing secure tools…'
                                     ),
                                     React.createElement('button', {
                                         onClick: handleCreateVault,
                                         type: 'button',
-                                        className: 'px-6 py-3 bg-white/80 hover:bg-white rounded-xl font-semibold text-slate-700 border border-white shadow-sm transition-all'
+                                        disabled: !isAppReady,
+                                        'aria-busy': !isAppReady ? 'true' : undefined,
+                                        className: classNames(
+                                            'px-6 py-3 rounded-xl font-semibold transition-all border',
+                                            'bg-white/80 text-slate-700 border-white shadow-sm',
+                                            isAppReady
+                                                ? 'hover:bg-white hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-purple-400'
+                                                : 'opacity-60 cursor-not-allowed'
+                                        )
                                     },
-                                        'Create a New Vault'
+                                        isAppReady ? 'Create a New Vault' : 'Preparing setup…'
                                     )
                                 )
                             ),
@@ -13685,10 +13780,23 @@
                                     React.createElement('button', {
                                         onClick: handleOpenVault,
                                         type: 'button',
-                                        className: `w-full py-3 bg-gradient-to-r ${vault.gradient} text-white rounded-xl font-semibold shadow-lg group-hover:shadow-2xl transition-all flex items-center justify-center gap-2 group-hover:scale-105`
+                                        disabled: !isAppReady,
+                                        'aria-busy': !isAppReady ? 'true' : undefined,
+                                        className: classNames(
+                                            'w-full py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2',
+                                            `bg-gradient-to-r ${vault.gradient} text-white`,
+                                            isAppReady
+                                                ? 'shadow-lg group-hover:shadow-2xl group-hover:scale-105'
+                                                : 'shadow-lg opacity-60 cursor-not-allowed'
+                                        )
                                     },
-                                        'Open Vault',
-                                        React.createElement(ChevronRight, { className: 'w-4 h-4 transition-transform group-hover:translate-x-1' })
+                                        isAppReady ? 'Open Vault' : 'Preparing…',
+                                        React.createElement(ChevronRight, {
+                                            className: classNames(
+                                                'w-4 h-4 transition-transform',
+                                                isAppReady ? 'group-hover:translate-x-1' : ''
+                                            )
+                                        })
                                     )
                                 )
                             )
@@ -13707,9 +13815,15 @@
                             React.createElement('button', {
                                 onClick: handleCreateVault,
                                 type: 'button',
-                                className: 'px-8 py-4 bg-white text-slate-800 rounded-xl font-semibold hover:shadow-xl transition-all hover:scale-105 inline-flex items-center gap-2'
+                                disabled: !isAppReady,
+                                'aria-busy': !isAppReady ? 'true' : undefined,
+                                className: classNames(
+                                    'px-8 py-4 rounded-xl font-semibold transition-all inline-flex items-center gap-2',
+                                    'bg-white text-slate-800',
+                                    isAppReady ? 'hover:shadow-xl hover:scale-105' : 'opacity-60 cursor-not-allowed'
+                                )
                             },
-                                'Create New Vault',
+                                isAppReady ? 'Create New Vault' : 'Preparing setup…',
                                 React.createElement(ChevronRight, { className: 'w-5 h-5' })
                             )
                         )
