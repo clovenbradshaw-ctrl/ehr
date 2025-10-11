@@ -5992,6 +5992,7 @@
                 this.emergencyAccessConfig = null;
                 this.schemaVersion = schemaManager.currentVersion;
                 this.pendingSchemaNotice = null;
+                this.inMemoryVaultSnapshot = null;
                 this.attachments = [];
                 this.currentPreviewAttachmentId = null;
                 this.activePreviewObjectUrl = null;
@@ -6739,6 +6740,7 @@
                     this.clearSessionData();
                     this.updateLockTimerDisplay();
                     this.clearUnlockFields();
+                    this.inMemoryVaultSnapshot = null;
 
                     targetScript.textContent = embeddedText;
 
@@ -7043,6 +7045,42 @@
                     const migrationResult = schemaManager.migrate(decryptedPayload, incomingSchemaVersion);
                     const normalizedData = fieldRegistry.normalizeIncomingData(migrationResult.data);
 
+                    const snapshotMetadata = this.inMemoryVaultSnapshot;
+                    if (snapshotMetadata) {
+                        if (snapshotMetadata.emergencyAccess) {
+                            this.emergencyAccessConfig = snapshotMetadata.emergencyAccess;
+                        } else {
+                            this.emergencyAccessConfig = null;
+                        }
+
+                        this.temporaryAccess = snapshotMetadata.temporaryAccess ?? this.temporaryAccess ?? null;
+                        this.recoveryAccess = snapshotMetadata.recoveryAccess ?? this.recoveryAccess ?? null;
+
+                        if (snapshotMetadata.modules) {
+                            this.savedModules = snapshotMetadata.modules;
+                        }
+
+                        if (typeof snapshotMetadata.requires2FA === 'boolean') {
+                            this.requires2FA = snapshotMetadata.requires2FA;
+                        }
+
+                        if (snapshotMetadata.vaultIdentity) {
+                            this.vaultIdentity = snapshotMetadata.vaultIdentity;
+                            const vaultNameEl = document.getElementById('vaultName');
+                            if (vaultNameEl) {
+                                vaultNameEl.innerHTML = `🔷 ${this.vaultIdentity}`;
+                            }
+                        }
+
+                        if (snapshotMetadata.version) {
+                            this.version = snapshotMetadata.version;
+                        }
+
+                        if (snapshotMetadata.schemaVersion) {
+                            this.schemaVersion = snapshotMetadata.schemaVersion;
+                        }
+                    }
+
                     this.sessionPassword = password;
                     this.totpSecret = normalizedData.totpSecret;
                     this.schemaVersion = migrationResult.version;
@@ -7056,6 +7094,12 @@
                     this.clearUnlockFields();
                     this.applyVersionMetadata();
                     this.unlock();
+                    this.inMemoryVaultSnapshot = null;
+                    this.updateTemporaryAccessHint();
+                    this.updateRecoveryFieldVisibility();
+                    if (typeof this.renderRecoveryKeyStatus === 'function') {
+                        this.renderRecoveryKeyStatus();
+                    }
 
                     const needsResave = Boolean(migrationResult?.needsResave);
                     const isNewerSchema = Boolean(migrationResult?.newerThanApp);
@@ -8809,6 +8853,7 @@
                 this.updateSaveStatus();
                 this.pendingSchemaNotice = null;
                 this.updateTemporaryAccessHint();
+                this.inMemoryVaultSnapshot = null;
 
                 if (document.getElementById('totpStatus')) {
                     this.renderTOTPStatus();
@@ -11425,17 +11470,77 @@
 
                 return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
             }
-            
-            toggleLock() {
+
+            async prepareLockSnapshot() {
+                if (!this.sessionPassword) {
+                    return false;
+                }
+
+                try {
+                    const formData = this.collectFormData();
+                    formData.schemaVersion = schemaManager.currentVersion;
+                    formData.appVersion = APP_VERSION;
+
+                    const headerText = document.getElementById('lastUpdatedHeader')?.textContent || '';
+                    const lastUpdatedMatch = headerText.match(/Last Updated:\s*(.*)$/i);
+                    if (lastUpdatedMatch && lastUpdatedMatch[1]) {
+                        formData.lastUpdated = lastUpdatedMatch[1].trim();
+                    } else if (!formData.lastUpdated && this.lastSaved) {
+                        try {
+                            formData.lastUpdated = new Date(this.lastSaved).toLocaleString();
+                        } catch (error) {
+                            console.warn('Unable to format last saved timestamp', error);
+                        }
+                    }
+
+                    const emergencyAccess = this.collectEmergencyData(formData);
+                    const encrypted = await this.crypto.encrypt(formData, this.sessionPassword);
+
+                    const clone = (value) => (value ? JSON.parse(JSON.stringify(value)) : null);
+
+                    this.encryptedData = encrypted;
+                    this.savedModules = { ...this.modules };
+                    this.inMemoryVaultSnapshot = {
+                        emergencyAccess,
+                        temporaryAccess: clone(this.temporaryAccess),
+                        recoveryAccess: clone(this.recoveryAccess),
+                        modules: { ...this.modules },
+                        requires2FA: this.requires2FA,
+                        vaultIdentity: this.vaultIdentity,
+                        version: this.version,
+                        schemaVersion: this.schemaVersion
+                    };
+
+                    if (emergencyAccess) {
+                        this.emergencyAccessConfig = emergencyAccess;
+                    }
+
+                    return true;
+                } catch (error) {
+                    console.error('Failed to capture encrypted snapshot before locking', error);
+                    return false;
+                }
+            }
+
+            async toggleLock() {
                 if (this.isLocked) {
                     this.focusUnlockField();
                     return;
                 }
 
-                this.lock();
+                await this.lock();
             }
 
-            lock() {
+            async lock() {
+                if (this.isLocked) {
+                    return;
+                }
+
+                let snapshotCreated = false;
+                if (this.sessionPassword) {
+                    snapshotCreated = await this.prepareLockSnapshot();
+                }
+
                 this.isLocked = true;
                 this.stopLockCountdown();
                 this._lastActivityUpdate = 0;
@@ -11453,6 +11558,10 @@
                 }
 
                 this.clearSessionData();
+
+                if (!snapshotCreated && !this.encryptedData) {
+                    console.warn('Locked without available encrypted data. Unlocking may fail until a vault is saved.');
+                }
 
                 const mainContent = document.getElementById('mainContent');
                 if (mainContent) {
@@ -11621,14 +11730,14 @@
                 timerEl.textContent = `Session: ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
             }
 
-            handleLockTimeout() {
+            async handleLockTimeout() {
                 if (this._lockTimeoutHandled || this.isLocked) {
                     return;
                 }
 
                 this._lockTimeoutHandled = true;
-                this.lock();
-                alert('Your session timed out after 45 minutes. All data has been cleared for security. Please unlock the vault again.');
+                await this.lock();
+                alert('Your session timed out after 45 minutes. Re-enter your password to continue.');
             }
 
             handleUserActivity() {
