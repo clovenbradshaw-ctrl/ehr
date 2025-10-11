@@ -10,12 +10,37 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js" integrity="sha512-g2TeAWw5GPnX7z0Kn8nFbYfeHcvAu/tx6d6mrLe/90mkCxO+RcptyYpksUz35EO337F83bZwcmUyHiHamspkfg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
-        if (!window.pako) {
+        window.__pakoReady = new Promise((resolve, reject) => {
+            const resolveIfReady = () => {
+                if (window.pako && typeof window.pako.inflate === 'function' && typeof window.pako.deflate === 'function') {
+                    resolve(window.pako);
+                    return true;
+                }
+                return false;
+            };
+
+            if (resolveIfReady()) {
+                return;
+            }
+
             const script = document.createElement('script');
             script.src = 'pako.min.js';
             script.referrerPolicy = 'no-referrer';
-            script.onerror = () => console.warn('Local pako fallback failed to load.');
+            script.onload = () => {
+                if (!resolveIfReady()) {
+                    reject(new Error('Local pako fallback loaded, but compression library is unavailable.'));
+                }
+            };
+            script.onerror = () => {
+                reject(new Error('Local pako fallback failed to load.'));
+            };
             document.head.appendChild(script);
+        });
+
+        if (window.__pakoReady && typeof window.__pakoReady.catch === 'function') {
+            window.__pakoReady.catch((error) => {
+                console.warn(error.message);
+            });
         }
     </script>
     <script src="jszip.min.js"></script>
@@ -13451,10 +13476,22 @@
         const localization = new LocalizationManager();
         window.localization = localization;
 
-        localization.init()
+        const localizationReady = localization.init()
             .catch(error => {
                 console.error('[Localization] Initialization error', error);
-            })
+            });
+
+        const hasCompression = window.pako && typeof window.pako.inflate === 'function' && typeof window.pako.deflate === 'function';
+        const compressionReady = (window.__pakoReady instanceof Promise
+            ? window.__pakoReady
+            : hasCompression
+                ? Promise.resolve(window.pako)
+                : Promise.reject(new Error('Compression library not available.')))
+            .catch(error => {
+                console.error('[Compression] Initialization error', error);
+            });
+
+        Promise.allSettled([localizationReady, compressionReady])
             .finally(() => {
                 window.app = new HealthVaultApp();
                 window.vaultManager = new VaultManager(window.app);
