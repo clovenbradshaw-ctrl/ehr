@@ -3391,8 +3391,8 @@
       "zh-Hans": "Download Updated Vault (.ehv)"
     },
     "always_encrypted": {
-      "en": "Always Encrypted",
-      "es": "Siempre cifrado",
+      "en": "Matrix room sync",
+      "es": "Sincronizado con la sala de Matrix",
       "my": "အမြဲလုံခြုံစွာ ကုဒ်ထည့်ထားသည်",
       "ar": "Always Encrypted",
       "fil": "Always Encrypted",
@@ -3539,8 +3539,8 @@
       "es": "Bóveda de salud personal"
     },
     "header_subtitle": {
-      "en": "Your encrypted medical record hub",
-      "es": "Tu centro de historial médico cifrado"
+      "en": "Matrix-connected personal health record",
+      "es": "Registro de salud personal conectado a Matrix"
     },
     "skip_to_main_content": {
       "en": "Skip to main content",
@@ -4395,8 +4395,8 @@
       "zh-Hans": "🖨️ Printable Care Summary"
     },
     "save_button_create": {
-      "en": "Create Encrypted Vault",
-      "es": "Crear bóveda cifrada",
+      "en": "Save to Matrix Room",
+      "es": "Guardar en la sala de Matrix",
       "my": "ကုဒ်ဖြင့်ဗေါ့ ဖန်တီးပါ",
       "ar": "Create Encrypted Vault",
       "fil": "Create Encrypted Vault",
@@ -4907,8 +4907,8 @@
       "zh-Hans": "This recovery key can unlock your vault by itself. Copy it to an offline password manager or secure storage and keep it private."
     },
     "recovery_key_save_hint": {
-      "en": "Download a new .ehv file after saving so this recovery key is included.",
-      "es": "Descarga un nuevo archivo .ehv después de guardar para que se incluya esta clave de recuperación.",
+      "en": "Save to the Matrix room after generating this key so it is stored with your record.",
+      "es": "Guarda en la sala de Matrix después de generar esta clave para que quede almacenada con tu registro.",
       "my": "ဤ ပြန်လည်ရယူသော ကီး ပါဝင်စေရန် သိမ်းပြီးနောက် .ehv ဖိုင်အသစ်ကို ဒေါင်းလုဒ်ဆွဲပါ။",
       "ar": "Download a new .ehv file after saving so this recovery key is included.",
       "fil": "Download a new .ehv file after saving so this recovery key is included.",
@@ -5099,8 +5099,8 @@
       "zh-Hans": "Hide recovery key option"
     },
     "vault_notice": {
-      "en": "This vault file (.ehv) will contain your encrypted data. Always download and save the updated .ehv file after making changes.",
-      "es": "Este archivo de bóveda (.ehv) contendrá tus datos cifrados. Descarga y guarda siempre el archivo .ehv actualizado después de realizar cambios.",
+      "en": "This health record lives inside your connected Matrix room. Use the save button to keep it updated.",
+      "es": "Este registro de salud vive dentro de tu sala de Matrix conectada. Usa el botón de guardar para mantenerlo actualizado.",
       "my": "ဤဗေါ့ဖိုင် (.ehv) တွင် သင်၏ ကုဒ်ဖြင့်လုံခြုံထားသော ဒေတာများ ပါဝင်ပါမည်။ ပြင်ဆင်မှုများ ပြုလုပ်ပြီးတိုင်း အပ်ဒိတ် .ehv ဖိုင်ကို ဒေါင်းလုဒ်ဆွဲပြီး သိမ်းဆည်းပါ။",
       "ar": "This vault file (.ehv) will contain your encrypted data. Always download and save the updated .ehv file after making changes.",
       "fil": "This vault file (.ehv) will contain your encrypted data. Always download and save the updated .ehv file after making changes.",
@@ -5268,16 +5268,16 @@
     "es": "Presión arterial objetivo"
   },
   "final_info_line1": {
-    "en": "This vault file (.ehv) contains all your encrypted medical data.",
-    "es": "Este archivo de bóveda (.ehv) contiene todos tus datos médicos cifrados."
+    "en": "This health record is automatically saved inside your current Matrix room.",
+    "es": "Este registro de salud se guarda automáticamente dentro de tu sala de Matrix actual."
   },
   "final_info_line2": {
-    "en": "After making changes, click \"Download Updated Vault (.ehv)\" to save the new file.",
-    "es": "Después de realizar cambios, haz clic en \"Descargar bóveda actualizada (.ehv)\" para guardar el nuevo archivo."
+    "en": "Use the save button whenever you make changes to sync them to the room.",
+    "es": "Usa el botón de guardar cada vez que hagas cambios para sincronizarlos con la sala."
   },
   "final_info_line3": {
-    "en": "Replace your old file with the new one. Keep backups in secure locations.",
-    "es": "Reemplaza tu archivo anterior con el nuevo. Conserva copias de seguridad en lugares seguros."
+    "en": "Anyone with access to the room can read the updated record.",
+    "es": "Cualquier persona con acceso a la sala puede leer el registro actualizado."
   },
   "offline_download_title": {
     "en": "Want to use this 100% offline?",

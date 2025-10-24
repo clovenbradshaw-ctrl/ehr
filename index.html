@@ -819,6 +819,20 @@
             color: rgba(226, 232, 240, 0.75);
         }
 
+        .matrix-room-display {
+            margin: 0;
+            font-size: 9pt;
+            color: rgba(148, 163, 184, 0.85);
+        }
+
+        .matrix-room-display[data-state="ready"] {
+            color: #38bdf8;
+        }
+
+        .matrix-room-display[data-state="fallback"] {
+            color: #f97316;
+        }
+
         .logo-container {
             display: flex;
             align-items: center;
@@ -3409,7 +3423,8 @@
                 </div>
                 <div class="site-header__title">
                     <h1 data-i18n-key="header_title">Personal Health Vault</h1>
-                    <p data-i18n-key="header_subtitle">Your encrypted medical record hub</p>
+                    <p data-i18n-key="header_subtitle">Matrix-connected personal health record</p>
+                    <p id="matrixRoomDisplay" class="matrix-room-display" data-state="pending">Detecting Matrix room…</p>
                 </div>
             </div>
         </div>
@@ -3640,7 +3655,7 @@
                             <strong data-i18n-key="recovery_key_warning_title">Store this key securely!</strong>
                             <p style="margin: 10px 0;" data-i18n-key="recovery_key_warning">This recovery key can unlock your vault by itself. Copy it to an offline password manager or secure storage and keep it private.</p>
                             <code id="recoveryKeyValue" class="recovery-key-value"></code>
-                            <p class="recovery-key-note" style="margin-top: 12px;" data-i18n-key="recovery_key_save_hint">Download a new .ehv file after saving so this recovery key is included.</p>
+                            <p class="recovery-key-note" style="margin-top: 12px;" data-i18n-key="recovery_key_save_hint">Save to the Matrix room after generating this key so it is stored with your record.</p>
                         </div>
                     </div>
 
@@ -3890,7 +3905,7 @@
                         <button class="btn btn-secondary" id="settingsBtn" data-i18n-key="settings_button">⚙️ Settings</button>
                         <button class="btn btn-lock" id="lockBtn" style="display: none;" data-i18n-key="unlock_action">🔓 Lock</button>
                         <button class="btn btn-secondary" id="exportBtn" data-i18n-key="export_button">Export/Print</button>
-                        <button class="btn btn-save" id="saveBtn" data-i18n-key="save_button_create">Create Encrypted Vault</button>
+                        <button class="btn btn-save" id="saveBtn" data-i18n-key="save_button_create">Save to Matrix Room</button>
                     </div>
                 </div>
             </div>
@@ -3898,10 +3913,10 @@
             <div class="chart-header-status">
                 <div class="security-status">
                     <div class="status-icon"></div>
-                    <span id="securityText" data-i18n-key="always_encrypted">Always Encrypted</span>
-                    <span id="lockTimer" aria-live="polite">Session: --:--</span>
+                    <span id="securityText" data-i18n-key="always_encrypted">Matrix room sync</span>
+                    <span id="lockTimer" aria-live="polite">Room: pending…</span>
                 </div>
-                <div class="save-status never-saved" id="saveStatus" data-i18n-key="not_initialized">⚠️ Not Initialized - Create Your Vault</div>
+                <div class="save-status never-saved" id="saveStatus" data-i18n-key="status_not_initialized">⚠️ Connecting to Matrix room…</div>
             </div>
 
             <!-- Patient demographics content continues here... -->
@@ -4534,9 +4549,9 @@
         </div>
 
     <div class="info-box" style="margin-top: 30px;">
-        <strong data-i18n-key="important_notice">Important:</strong> <span data-i18n-key="final_info_line1">This vault file (.ehv) contains all your encrypted medical data.</span>
-        <span data-i18n-key="final_info_line2">After making changes, click "Download Updated Vault (.ehv)" to save the new file.</span>
-        <span data-i18n-key="final_info_line3">Replace your old file with the new one. Keep backups in secure locations.</span>
+        <strong data-i18n-key="important_notice">Important:</strong> <span data-i18n-key="final_info_line1">This health record is automatically saved inside your current Matrix room.</span>
+        <span data-i18n-key="final_info_line2">Use the save button whenever you make changes to sync them to the room.</span>
+        <span data-i18n-key="final_info_line3">Anyone with access to the room can read the updated record.</span>
     </div>
     </div>
 
@@ -5971,11 +5986,167 @@
             { key: 'emergencyAccessEnabled', label: 'Emergency Access Enabled', aliases: ['enableEmergencyAccess'] }
         ]);
 
+        class MatrixRoomStorage {
+            constructor(options = {}) {
+                this.accountDataType = options.accountDataType || 'dev.intelechia.matrix.ehr.vault';
+                this.localStoragePrefix = options.localStoragePrefix || 'matrix-room-vault';
+                this.widgetApi = null;
+                this.mode = 'standalone';
+                this.lastSaveMode = null;
+                this.captureContext();
+            }
+
+            captureContext() {
+                const params = new URLSearchParams(window.location.search || '');
+                this.roomId = params.get('room_id') || params.get('roomId') || null;
+                this.widgetId = params.get('widgetId') || params.get('widget_id') || null;
+                this.parentUrl = params.get('parentUrl') || params.get('parent_url') || null;
+                this.parentOrigin = this.safeOrigin(this.parentUrl);
+                this.localStorageKey = `${this.localStoragePrefix}:${this.roomId || 'standalone'}`;
+            }
+
+            safeOrigin(url) {
+                if (!url) {
+                    return '*';
+                }
+
+                try {
+                    return new URL(url, window.location.href).origin;
+                } catch (error) {
+                    console.warn('Unable to derive Matrix parent origin', error);
+                    return '*';
+                }
+            }
+
+            async init() {
+                if (this.roomId) {
+                    this.mode = 'matrix';
+                } else {
+                    this.mode = 'standalone';
+                }
+
+                if (!this.roomId || typeof window === 'undefined') {
+                    return { roomId: this.roomId, mode: this.mode };
+                }
+
+                if (window.matrixWidgetApi) {
+                    this.widgetApi = window.matrixWidgetApi;
+
+                    const capabilities = [
+                        'org.matrix.msc2762.get_room_account_data',
+                        'org.matrix.msc2762.set_room_account_data'
+                    ];
+
+                    try {
+                        if (typeof this.widgetApi.requestCapabilities === 'function') {
+                            this.widgetApi.requestCapabilities(capabilities);
+                        } else if (typeof this.widgetApi.requestCapability === 'function') {
+                            capabilities.forEach((capability) => this.widgetApi.requestCapability(capability));
+                        }
+
+                        if (typeof this.widgetApi.start === 'function') {
+                            await this.widgetApi.start();
+                        } else if (typeof this.widgetApi.ready === 'function') {
+                            await this.widgetApi.ready();
+                        }
+
+                        this.mode = 'matrix-widget';
+                    } catch (error) {
+                        console.warn('Matrix widget API initialization failed', error);
+                        this.widgetApi = null;
+                        this.mode = 'matrix-local';
+                    }
+                } else {
+                    this.mode = 'matrix-local';
+                }
+
+                return { roomId: this.roomId, mode: this.mode };
+            }
+
+            async load() {
+                let payload = null;
+
+                if (this.widgetApi && this.roomId && typeof this.widgetApi.getRoomAccountData === 'function') {
+                    try {
+                        const result = await this.widgetApi.getRoomAccountData(this.accountDataType, this.roomId);
+                        if (result && typeof result === 'object') {
+                            this.lastSaveMode = 'matrix-widget';
+                            return result;
+                        }
+                    } catch (error) {
+                        console.warn('Unable to load Matrix room account data', error);
+                    }
+                }
+
+                payload = this.loadFromLocal();
+                if (payload) {
+                    this.lastSaveMode = this.roomId ? 'matrix-local' : 'standalone';
+                }
+                return payload;
+            }
+
+            async save(payload) {
+                let savedToMatrix = false;
+
+                if (this.widgetApi && this.roomId && typeof this.widgetApi.setRoomAccountData === 'function') {
+                    try {
+                        await this.widgetApi.setRoomAccountData(this.accountDataType, payload, this.roomId);
+                        savedToMatrix = true;
+                        this.lastSaveMode = 'matrix-widget';
+                    } catch (error) {
+                        console.warn('Unable to write Matrix room account data', error);
+                    }
+                }
+
+                this.saveToLocal(payload);
+
+                if (!savedToMatrix) {
+                    this.lastSaveMode = this.roomId ? 'matrix-local' : 'standalone';
+                }
+
+                return this.lastSaveMode;
+            }
+
+            loadFromLocal() {
+                if (typeof window === 'undefined' || !window.localStorage) {
+                    return null;
+                }
+
+                try {
+                    const raw = window.localStorage.getItem(this.localStorageKey);
+                    if (!raw) {
+                        return null;
+                    }
+                    return JSON.parse(raw);
+                } catch (error) {
+                    console.warn('Unable to load Matrix vault from local storage', error);
+                    return null;
+                }
+            }
+
+            saveToLocal(payload) {
+                if (typeof window === 'undefined' || !window.localStorage) {
+                    return;
+                }
+
+                try {
+                    window.localStorage.setItem(this.localStorageKey, JSON.stringify(payload));
+                } catch (error) {
+                    console.warn('Unable to persist Matrix vault locally', error);
+                }
+            }
+        }
+
         // NOTE: Update APP_VERSION and APP_LAST_UPDATED to match the latest deployment timestamp whenever changes are pushed.
 
         // Main Application Class
         class HealthVaultApp {
             constructor() {
+                this.useMatrixStorage = true;
+                this.matrixStorage = new MatrixRoomStorage();
+                this.matrixContext = { roomId: this.matrixStorage.roomId, mode: this.matrixStorage.mode };
+                this.matrixInitializationPending = true;
+
                 // Vault identity word lists - expanded for 1M+ combinations
                 this.adjectives = [
                     'gentle', 'crystal', 'golden', 'silver', 'cosmic', 'serene',
@@ -6042,7 +6213,7 @@
                 ];
                 this.hasBenchmarkedKDF = false;
                 
-                this.lockTimeoutMs = 45 * 60 * 1000;
+                this.lockTimeoutMs = this.isMatrixMode() ? (24 * 60 * 60 * 1000) : (45 * 60 * 1000);
                 this.lockTimerInterval = null;
                 this.lockTimerExpiresAt = null;
                 this._lastActivityUpdate = 0;
@@ -6056,7 +6227,19 @@
                 // Initialize
                 this.init();
                 this.updateLockTimerDisplay();
-                this.scheduleKDFBenchmark();
+                if (!this.isMatrixMode()) {
+                    this.scheduleKDFBenchmark();
+                }
+
+                this.matrixReadyPromise = this.setupMatrixIntegration()
+                    .catch((error) => {
+                        console.error('Matrix initialization failed', error);
+                        this.matrixInitializationPending = false;
+                        this.refreshMatrixContextLabel({ state: 'fallback' });
+                        this.updateSaveStatus();
+                    });
+
+                this.updateSaveStatus();
             }
             
             generateVaultName() {
@@ -6065,7 +6248,11 @@
                 const num = Math.floor(Math.random() * 1000);
                 return `${adj}-${noun}-${num}`;
             }
-            
+
+            isMatrixMode() {
+                return Boolean(this.useMatrixStorage);
+            }
+
             checkInitialization() {
                 const embeddedData = document.getElementById('embedded-vault-data');
                 const dataContent = embeddedData?.textContent?.trim();
@@ -6079,6 +6266,21 @@
 
                 if (emergencyDisplay) {
                     emergencyDisplay.innerHTML = '';
+                }
+
+                if (this.isMatrixMode()) {
+                    if (embeddedData) {
+                        embeddedData.textContent = '';
+                    }
+
+                    this.isInitialized = true;
+                    this.encryptedData = null;
+                    this.savedModules = null;
+                    this.requires2FA = false;
+                    this.temporaryAccess = null;
+                    this.recoveryAccess = null;
+                    this.pendingTemporaryAccessRemoval = false;
+                    return;
                 }
 
                 if (dataContent && dataContent !== '') {
@@ -6194,6 +6396,194 @@
                     this.schemaVersion = schemaManager.currentVersion;
                     this.applyVersionMetadata();
                 }
+            }
+
+            updateMatrixContextLabel(text, state = 'ready') {
+                if (!this.isMatrixMode()) {
+                    return;
+                }
+
+                const label = document.getElementById('matrixRoomDisplay');
+                if (!label) {
+                    return;
+                }
+
+                label.textContent = text;
+                if (state) {
+                    label.dataset.state = state;
+                } else {
+                    delete label.dataset.state;
+                }
+            }
+
+            refreshMatrixContextLabel(options = {}) {
+                if (!this.isMatrixMode()) {
+                    return;
+                }
+
+                if (this.matrixInitializationPending) {
+                    this.updateMatrixContextLabel('Detecting Matrix room…', 'pending');
+                    return;
+                }
+
+                const roomId = this.matrixStorage?.roomId;
+                const mode = this.matrixStorage?.lastSaveMode || this.matrixContext?.mode;
+
+                if (roomId) {
+                    if (mode === 'matrix-widget') {
+                        this.updateMatrixContextLabel(`Room: ${roomId}`, 'ready');
+                    } else if (mode === 'matrix-local') {
+                        this.updateMatrixContextLabel(`Room: ${roomId} (local cache)`, 'fallback');
+                    } else {
+                        this.updateMatrixContextLabel(`Room: ${roomId}`, options.state || 'ready');
+                    }
+                } else {
+                    this.updateMatrixContextLabel('Standalone mode - no Matrix room detected', 'fallback');
+                }
+            }
+
+            enableUnlockedMode() {
+                if (!this.isMatrixMode()) {
+                    return;
+                }
+
+                const unlockScreen = document.getElementById('unlockScreen');
+                if (unlockScreen) {
+                    unlockScreen.remove();
+                }
+
+                const emergencyBanner = document.getElementById('emergencyAccessBanner');
+                if (emergencyBanner) {
+                    emergencyBanner.remove();
+                }
+
+                const mainContent = document.getElementById('mainContent');
+                if (mainContent) {
+                    mainContent.style.display = 'block';
+                }
+
+                const navTabs = document.getElementById('navTabs');
+                if (navTabs) {
+                    navTabs.style.display = 'flex';
+                }
+
+                this.sessionPassword = this.sessionPassword || 'matrix-room-session';
+                this.isLocked = false;
+            }
+
+            async setupMatrixIntegration() {
+                if (!this.isMatrixMode()) {
+                    this.matrixInitializationPending = false;
+                    this.updateSaveStatus();
+                    return this.matrixContext;
+                }
+
+                try {
+                    this.enableUnlockedMode();
+                    this.updateMatrixContextLabel('Detecting Matrix room…', 'pending');
+
+                    const context = await this.matrixStorage.init();
+                    this.matrixContext = context;
+                    this.refreshMatrixContextLabel();
+
+                    const stored = await this.matrixStorage.load();
+                    if (stored) {
+                        this.applyStoredPayload(stored);
+                        announce('Loaded health record from Matrix context.', 'polite');
+                    } else {
+                        this.isInitialized = true;
+                        this.hasUnsavedChanges = false;
+                        this.updateSaveStatus();
+                    }
+                } catch (error) {
+                    console.error('Matrix integration error', error);
+                    this.updateMatrixContextLabel('Matrix room unavailable - saving locally', 'fallback');
+                    this.isInitialized = true;
+                    this.hasUnsavedChanges = false;
+                    this.updateSaveStatus();
+                } finally {
+                    this.matrixInitializationPending = false;
+                    this.refreshMatrixContextLabel();
+                    this.updateSaveStatus();
+                }
+
+                return this.matrixContext;
+            }
+
+            applyStoredPayload(payload = {}) {
+                if (!payload || typeof payload !== 'object') {
+                    return;
+                }
+
+                const formData = (payload.formData && typeof payload.formData === 'object') ? payload.formData : {};
+                this.modules = { ...this.modules, ...(payload.modules || {}) };
+                this.syncModuleToggles();
+                this.loadFormData(formData);
+                this.emergencyAccessConfig = payload.emergencyAccess || null;
+                this.lastSaved = payload.savedAt || null;
+                this.hasUnsavedChanges = false;
+                this.isInitialized = true;
+
+                const header = document.getElementById('lastUpdatedHeader');
+                const lastUpdated = formData.lastUpdated || (this.lastSaved ? new Date(this.lastSaved).toLocaleString() : 'Never');
+                if (header) {
+                    header.textContent = `Last Updated: ${lastUpdated}`;
+                }
+
+                this.updatePatientSummaryDisplay();
+                this.refreshMatrixContextLabel();
+                this.updateSaveStatus();
+            }
+
+            syncModuleToggles() {
+                const moduleKeys = ['identity', 'gac', 'mental', 'chronic'];
+                moduleKeys.forEach((key) => {
+                    const settingsToggle = document.getElementById(`module-${key}`);
+                    if (settingsToggle) {
+                        settingsToggle.checked = Boolean(this.modules[key]);
+                    }
+
+                    const setupToggle = document.getElementById(`setup-module-${key}`);
+                    if (setupToggle) {
+                        setupToggle.checked = Boolean(this.modules[key]);
+                    }
+                });
+
+                if (typeof this.updateModuleVisibility === 'function') {
+                    this.updateModuleVisibility();
+                }
+            }
+
+            buildMatrixPayload() {
+                const formData = this.collectFormData();
+                const savedAt = new Date().toISOString();
+                let formattedTimestamp = savedAt;
+
+                try {
+                    formattedTimestamp = new Date(savedAt).toLocaleString();
+                } catch (error) {
+                    formattedTimestamp = savedAt;
+                }
+
+                formData.lastUpdated = formattedTimestamp;
+
+                const header = document.getElementById('lastUpdatedHeader');
+                if (header) {
+                    header.textContent = `Last Updated: ${formattedTimestamp}`;
+                }
+
+                const emergencyAccess = this.collectEmergencyData(formData);
+                this.emergencyAccessConfig = emergencyAccess;
+
+                return {
+                    formData,
+                    emergencyAccess,
+                    modules: { ...this.modules },
+                    savedAt,
+                    version: schemaManager.currentVersion,
+                    appVersion: APP_VERSION,
+                    roomId: this.matrixStorage?.roomId || null
+                };
             }
 
             showEmergencyAccess(emergencyData = {}) {
@@ -7428,40 +7818,126 @@
                 const statusEl = document.getElementById('saveStatus');
                 const saveBtn = document.getElementById('saveBtn');
 
-                const translateText = window.translate
-                    || ((key, fallback) => window.localization?.t(key, fallback) ?? fallback ?? key);
+                if (!statusEl || !saveBtn) {
+                    return;
+                }
+
+                if (!this.isMatrixMode()) {
+                    const translateText = window.translate
+                        || ((key, fallback) => window.localization?.t(key, fallback) ?? fallback ?? key);
+
+                    if (!this.isInitialized) {
+                        statusEl.className = 'save-status never-saved';
+                        statusEl.setAttribute('data-i18n-key', 'status_not_initialized');
+                        statusEl.textContent = translateText('status_not_initialized', '⚠️ Not Initialized - Create Your Vault');
+                        saveBtn.className = 'btn btn-save';
+                        saveBtn.setAttribute('data-i18n-key', 'action_create_vault');
+                        saveBtn.textContent = translateText('action_create_vault', 'Create Encrypted Vault');
+                    } else if (this.hasUnsavedChanges) {
+                        statusEl.className = 'save-status unsaved';
+                        statusEl.setAttribute('data-i18n-key', 'status_unsaved');
+                        statusEl.textContent = translateText('status_unsaved', '⚠️ Unsaved Changes - Download Updated Vault (.ehv)');
+                        saveBtn.className = 'btn btn-save';
+                        saveBtn.setAttribute('data-i18n-key', 'action_download_updated');
+                        saveBtn.textContent = translateText('action_download_updated', 'Download Updated Vault (.ehv)');
+                    } else {
+                        statusEl.className = 'save-status saved';
+                        statusEl.setAttribute('data-i18n-key', 'status_saved');
+                        statusEl.textContent = translateText('status_saved', '✓ Data Encrypted in This Vault (.ehv)');
+                        saveBtn.className = 'btn btn-save saved';
+                        saveBtn.setAttribute('data-i18n-key', 'action_download_current');
+                        saveBtn.textContent = translateText('action_download_current', 'Download Current Vault (.ehv)');
+                    }
+
+                    window.localization?.applyTranslations();
+                    return;
+                }
+
+                statusEl.removeAttribute('data-i18n-key');
+                saveBtn.removeAttribute('data-i18n-key');
+
+                if (this.matrixInitializationPending) {
+                    statusEl.className = 'save-status never-saved';
+                    statusEl.textContent = '⚠️ Connecting to Matrix room…';
+                    saveBtn.className = 'btn btn-save';
+                    saveBtn.textContent = 'Save to Matrix Room';
+                    saveBtn.disabled = true;
+                    return;
+                }
+
+                saveBtn.disabled = false;
+
+                const roomId = this.matrixStorage?.roomId;
+
+                if (!roomId) {
+                    statusEl.className = this.hasUnsavedChanges ? 'save-status unsaved' : 'save-status never-saved';
+                    statusEl.textContent = this.hasUnsavedChanges
+                        ? '⚠️ Unsaved changes - saving locally'
+                        : '⚠️ No Matrix room detected - saving locally';
+                    saveBtn.className = 'btn btn-save';
+                    saveBtn.textContent = 'Save Locally';
+                    return;
+                }
 
                 if (!this.isInitialized) {
                     statusEl.className = 'save-status never-saved';
-                    statusEl.setAttribute('data-i18n-key', 'status_not_initialized');
-                    statusEl.textContent = translateText('status_not_initialized', '⚠️ Not Initialized - Create Your Vault');
+                    statusEl.textContent = `⚠️ Ready to create record in ${roomId}`;
                     saveBtn.className = 'btn btn-save';
-                    saveBtn.setAttribute('data-i18n-key', 'action_create_vault');
-                    saveBtn.textContent = translateText('action_create_vault', 'Create Encrypted Vault');
-                } else if (this.hasUnsavedChanges) {
-                    statusEl.className = 'save-status unsaved';
-                    statusEl.setAttribute('data-i18n-key', 'status_unsaved');
-                    statusEl.textContent = translateText('status_unsaved', '⚠️ Unsaved Changes - Download Updated Vault (.ehv)');
-                    saveBtn.className = 'btn btn-save';
-                    saveBtn.setAttribute('data-i18n-key', 'action_download_updated');
-                    saveBtn.textContent = translateText('action_download_updated', 'Download Updated Vault (.ehv)');
-                } else {
-                    statusEl.className = 'save-status saved';
-                    statusEl.setAttribute('data-i18n-key', 'status_saved');
-                    statusEl.textContent = translateText('status_saved', '✓ Data Encrypted in This Vault (.ehv)');
-                    saveBtn.className = 'btn btn-save saved';
-                    saveBtn.setAttribute('data-i18n-key', 'action_download_current');
-                    saveBtn.textContent = translateText('action_download_current', 'Download Current Vault (.ehv)');
+                    saveBtn.textContent = 'Save to Matrix Room';
+                    return;
                 }
 
-                window.localization?.applyTranslations();
+                if (this.hasUnsavedChanges) {
+                    statusEl.className = 'save-status unsaved';
+                    statusEl.textContent = `⚠️ Unsaved changes - Save to room ${roomId}`;
+                    saveBtn.className = 'btn btn-save';
+                    saveBtn.textContent = 'Save to Matrix Room';
+                } else {
+                    let friendlyTimestamp = null;
+                    if (this.lastSaved) {
+                        try {
+                            friendlyTimestamp = new Date(this.lastSaved).toLocaleString();
+                        } catch (error) {
+                            friendlyTimestamp = this.lastSaved;
+                        }
+                    }
+
+                    statusEl.className = 'save-status saved';
+                    statusEl.textContent = friendlyTimestamp
+                        ? `✓ Synced to room ${roomId} (${friendlyTimestamp})`
+                        : `✓ Synced to room ${roomId}`;
+                    saveBtn.className = 'btn btn-save saved';
+                    saveBtn.textContent = 'Save to Matrix Room';
+                }
             }
             
             async saveVault() {
-                if (!this.sessionPassword) {
-                    this.showPasswordModal();
-                } else {
-                    this.showPasswordUpdateModal();
+                if (!this.isMatrixMode()) {
+                    if (!this.sessionPassword) {
+                        this.showPasswordModal();
+                    } else {
+                        this.showPasswordUpdateModal();
+                    }
+                    return;
+                }
+
+                if (this.matrixInitializationPending) {
+                    alert('Still connecting to the Matrix room. Please try again in a moment.');
+                    return;
+                }
+
+                try {
+                    const payload = this.buildMatrixPayload();
+                    const saveMode = await this.matrixStorage.save(payload);
+                    this.lastSaved = payload.savedAt;
+                    this.hasUnsavedChanges = false;
+                    this.isInitialized = true;
+                    this.refreshMatrixContextLabel({ state: saveMode === 'matrix-widget' ? 'ready' : 'fallback' });
+                    this.updateSaveStatus();
+                    announce('Health record saved to your Matrix context.', 'polite');
+                } catch (error) {
+                    console.error('Failed to save Matrix-backed vault', error);
+                    alert('Unable to save your health record to Matrix. Please try again.');
                 }
             }
             
@@ -8205,7 +8681,7 @@
                     this.hasUnsavedChanges = true;
                     this.updateSaveStatus();
 
-                    alert('✅ Recovery key generated!\n\nCopy the key shown and store it in a secure location.\nDownload a new .ehv file after saving so this backup is preserved.');
+                    alert('✅ Recovery key generated!\n\nCopy the key shown and store it in a secure location.\nSave the record to the Matrix room so this backup is preserved.');
                 } catch (error) {
                     console.error('Failed to generate recovery key', error);
                     alert('Unable to generate recovery key. Try again.');
@@ -11561,6 +12037,10 @@
             }
 
             async toggleLock() {
+                if (this.isMatrixMode()) {
+                    return;
+                }
+
                 if (this.isLocked) {
                     this.focusUnlockField();
                     return;
@@ -11570,6 +12050,10 @@
             }
 
             async lock() {
+                if (this.isMatrixMode()) {
+                    return;
+                }
+
                 if (this.isLocked) {
                     return;
                 }
@@ -11638,6 +12122,12 @@
             }
 
             unlock() {
+                if (this.isMatrixMode()) {
+                    this.enableUnlockedMode();
+                    this.updateLockTimerDisplay();
+                    return;
+                }
+
                 this.isLocked = false;
                 this._lockTimeoutHandled = false;
                 this._lastActivityUpdate = Date.now();
@@ -11698,6 +12188,12 @@
             }
 
             startLockCountdown() {
+                if (this.isMatrixMode()) {
+                    this.lockTimerExpiresAt = null;
+                    this.updateLockTimerDisplay();
+                    return;
+                }
+
                 if (this.isLocked || !this.sessionPassword) {
                     this.lockTimerExpiresAt = null;
                     this.updateLockTimerDisplay();
@@ -11713,6 +12209,10 @@
             }
 
             resetLockCountdown() {
+                if (this.isMatrixMode()) {
+                    return;
+                }
+
                 if (this.isLocked || !this.sessionPassword) {
                     return;
                 }
@@ -11729,6 +12229,15 @@
             }
 
             stopLockCountdown() {
+                if (this.isMatrixMode()) {
+                    this.lockTimerExpiresAt = null;
+                    if (this.lockTimerInterval) {
+                        window.clearInterval(this.lockTimerInterval);
+                        this.lockTimerInterval = null;
+                    }
+                    return;
+                }
+
                 if (this.lockTimerInterval) {
                     window.clearInterval(this.lockTimerInterval);
                     this.lockTimerInterval = null;
@@ -11739,6 +12248,30 @@
             updateLockTimerDisplay() {
                 const timerEl = document.getElementById('lockTimer');
                 if (!timerEl) {
+                    return;
+                }
+
+                if (this.isMatrixMode()) {
+                    timerEl.classList.remove('locked');
+
+                    if (this.matrixInitializationPending) {
+                        timerEl.textContent = 'Room: pending…';
+                        return;
+                    }
+
+                    const roomId = this.matrixStorage?.roomId;
+                    const mode = this.matrixStorage?.lastSaveMode || this.matrixContext?.mode;
+
+                    if (roomId) {
+                        if (mode === 'matrix-local') {
+                            timerEl.textContent = `Room: ${roomId} (local cache)`;
+                        } else {
+                            timerEl.textContent = `Room: ${roomId}`;
+                        }
+                    } else {
+                        timerEl.textContent = 'Room: not detected';
+                    }
+
                     return;
                 }
 
@@ -11769,6 +12302,10 @@
             }
 
             async handleLockTimeout() {
+                if (this.isMatrixMode()) {
+                    return;
+                }
+
                 if (this._lockTimeoutHandled || this.isLocked) {
                     return;
                 }
@@ -11876,6 +12413,10 @@
 
                 if (typeof VAULT_REGISTRY_STORAGE_KEY === 'string' && VAULT_REGISTRY_STORAGE_KEY.length > 0) {
                     keysToPreserve.push(VAULT_REGISTRY_STORAGE_KEY);
+                }
+
+                if (this.matrixStorage?.localStorageKey) {
+                    keysToPreserve.push(this.matrixStorage.localStorageKey);
                 }
 
                 keysToPreserve.forEach((key) => {
